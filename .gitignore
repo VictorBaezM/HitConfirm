@@ -1,0 +1,17 @@
+# System files
+.Xauthority
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.vncrc
+.xsession-errors
+.cache/
+.gemini/
+.local/
+.vnc/
+scopedStorage
+sdcard
+
+# Deployment and scripts
+deploy.py

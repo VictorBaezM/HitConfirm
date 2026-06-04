@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HitConfirm // Fight Game Combos, Strategies & Clips</title>
+  <!-- SEO Tags -->
+  <meta name="description" content="HitConfirm is the ultimate social network for fighting game players. Share combos, study matchup guides, watch video clips, and level up together.">
+  <meta name="keywords" content="fighting games, combos, frame data, street fighter, tekken, guilty gear, smash, combo builder, fgc">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- App Stylesheets -->
+  <link rel="stylesheet" href="src/css/variables.css">
+  <link rel="stylesheet" href="src/css/main.css">
+  <link rel="stylesheet" href="src/css/components.css">
+  <link rel="stylesheet" href="src/css/combo-parser.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Navbar (Rendered dynamically in js) -->
+    <header id="navbar-mount"></header>
+
+    <!-- Main Content (Dynamic Page Views) -->
+    <main id="content-mount" class="has-right-sidebar"></main>
+  </div>
+
+  <!-- Shared Global Modals -->
+  <div id="modal-container" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" class="gradient-text">Modal Header</h3>
+        <button id="modal-close" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Injected form or content -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-notification" style="
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(16, 18, 23, 0.95);
+    border: 1px solid var(--color-primary);
+    box-shadow: var(--glow-primary);
+    border-radius: var(--radius-sm);
+    padding: 16px 24px;
+    z-index: 9999;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    transform: translateY(150px);
+    transition: transform var(--transition-md);
+  "></div>
+
+  <!-- Entry Script -->
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

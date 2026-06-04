@@ -1,0 +1,180 @@
+/* Combos Dojo Page Controller */
+import store from '../store.js';
+import { renderComboCard } from '../components/combo-card.js';
+
+export function renderCombosPage(navigateCallback, initialFilters = {}) {
+  const mount = document.getElementById('content-mount');
+  if (!mount) return;
+
+  // Single column page layout for focusing on combos
+  mount.className = 'has-right-sidebar'; // Keep the dashboard standard, but can use different sidebar widgets
+
+  const games = store.getGames();
+  const currentUser = store.getCurrentUser();
+
+  // Load initial filters (if navigated from sidebar)
+  let activeGame = initialFilters.game || 'all';
+  let activeDifficulty = 'all';
+  let searchQuery = '';
+
+  mount.innerHTML = `
+    <!-- Dojo Content (Left) -->
+    <div id="dojo-left-pane">
+      <div class="flex justify-between items-center" style="margin-bottom: 24px;">
+        <div>
+          <h1 class="gradient-text" style="font-size: 1.8rem;">TRAINING DOJO</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">Browse community optimization combos and inputs.</p>
+        </div>
+        <button class="btn btn-primary" id="dojo-create-combo-btn">
+          <i class="fa-solid fa-plus"></i> Share Combo
+        </button>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="card" style="padding: 16px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center;">
+          <!-- Search box -->
+          <div style="position: relative;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input type="text" id="dojo-search-char" class="form-input" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." style="padding-left: 38px; font-size: 0.9rem;" value="" />
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+            <!-- Game selector drop -->
+            <div>
+              <select id="dojo-game-filter" class="form-select" style="font-size: 0.85rem; padding: 10px 14px;">
+                <option value="all">All Games</option>
+                ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+              </select>
+            </div>
+
+            <!-- Difficulty selector drop -->
+            <div>
+              <select id="dojo-difficulty-filter" class="form-select" style="font-size: 0.85rem; padding: 10px 14px;">
+                <option value="all">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combo Grid -->
+      <div id="dojo-combos-list"></div>
+    </div>
+
+    <!-- Dojo Sidebar (Right) -->
+    <div id="dojo-sidebar" class="flex flex-col gap-6">
+      <div class="card" style="padding: 20px;">
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+          <i class="fa-solid fa-circle-question" style="color: var(--color-secondary);"></i> Reading Notations
+        </h3>
+        <ul style="padding-left: 18px; font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Anime (GG):</strong> Numpad directions (e.g., 236 = QCF) and buttons: <strong>P</strong> (Punch), <strong>K</strong> (Kick), <strong>S</strong> (Slash), <strong>HS</strong> (Heavy), <strong>D</strong> (Dust).</li>
+          <li><strong>SF6:</strong> Classic directions (2MK = cr.MK) and buttons: <strong>LP/LK</strong>, <strong>MP/MK</strong>, <strong>HP/HK</strong>.</li>
+          <li><strong>Tekken:</strong> Buttons <strong>1</strong> (LP), <strong>2</strong> (RP), <strong>3</strong> (LK), <strong>4</strong> (RK) with arrow directions.</li>
+        </ul>
+      </div>
+
+      <div class="card" style="padding: 20px;">
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+          <i class="fa-solid fa-trophy" style="color: var(--color-accent);"></i> Top Lab Masters
+        </h3>
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
+            <span style="font-weight: 700; color: var(--color-secondary);">1. SolManiac</span>
+            <span style="color: var(--text-muted);">18 combos</span>
+          </div>
+          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
+            <span style="font-weight: 700; color: var(--color-secondary);">2. DaigoFan99</span>
+            <span style="color: var(--text-muted);">14 combos</span>
+          </div>
+          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
+            <span style="font-weight: 700; color: var(--color-secondary);">3. ElectricWindGod</span>
+            <span style="color: var(--text-muted);">11 combos</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Restore filters if passed from feed
+  if (initialFilters.game) {
+    const gameSel = document.getElementById('dojo-game-filter');
+    if (gameSel) gameSel.value = initialFilters.game;
+  }
+
+  // Draw list function
+  const drawList = () => {
+    const listMount = document.getElementById('dojo-combos-list');
+    if (!listMount) return;
+
+    const combos = store.getCombos();
+    
+    // Perform Filtering
+    const filtered = combos.filter(c => {
+      // Game Filter
+      if (activeGame !== 'all' && c.game !== activeGame) return false;
+      // Difficulty Filter
+      if (activeDifficulty !== 'all' && c.difficulty !== activeDifficulty) return false;
+      // Character Search query
+      if (searchQuery) {
+        const charName = c.character.toLowerCase();
+        const titleText = c.title.toLowerCase();
+        const searchNorm = searchQuery.toLowerCase();
+        if (!charName.includes(searchNorm) && !titleText.includes(searchNorm)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      listMount.innerHTML = `
+        <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+          <i class="fa-solid fa-compass" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-primary);"></i>
+          <h3>No matching combos found</h3>
+          <p style="font-size: 0.9rem; margin-top: 4px;">Try modifying your search queries or game filter categories.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listMount.innerHTML = '';
+    filtered.forEach(combo => {
+      listMount.appendChild(renderComboCard(combo, navigateCallback));
+    });
+  };
+
+  drawList();
+
+  // Attach filter event handlers
+  const searchInput = document.getElementById('dojo-search-char');
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    drawList();
+  });
+
+  const gameFilter = document.getElementById('dojo-game-filter');
+  gameFilter.addEventListener('change', (e) => {
+    activeGame = e.target.value;
+    drawList();
+  });
+
+  const difficultyFilter = document.getElementById('dojo-difficulty-filter');
+  difficultyFilter.addEventListener('change', (e) => {
+    activeDifficulty = e.target.value;
+    drawList();
+  });
+
+  // Attach Create button click
+  document.getElementById('dojo-create-combo-btn').addEventListener('click', () => {
+    if (!currentUser) {
+      window.openAuthModal('login', navigateCallback);
+    } else {
+      navigateCallback('builder');
+    }
+  });
+}

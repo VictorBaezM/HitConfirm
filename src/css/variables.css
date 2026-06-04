@@ -1,0 +1,63 @@
+/* Design System Variables */
+:root {
+  /* Colors */
+  --bg-darkest: #060709;
+  --bg-darker: #0a0b0d;
+  --bg-card: rgba(16, 18, 23, 0.7);
+  --bg-card-hover: rgba(22, 25, 32, 0.85);
+  --bg-input: #12141c;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.15);
+  --text-primary: #f5f6f9;
+  --text-secondary: #9aa0a6;
+  --text-muted: #606468;
+
+  /* Accent Colors */
+  --color-primary: #ff005b; /* Neon Pink/Red */
+  --color-primary-rgb: 255, 0, 91;
+  --color-secondary: #00f0ff; /* Neon Cyan/Blue */
+  --color-secondary-rgb: 0, 240, 255;
+  --color-accent: #ffaa00; /* Neon Gold/Yellow */
+  --color-accent-rgb: 255, 170, 0;
+  
+  --color-success: #00ff66;
+  --color-danger: #ff3333;
+  --color-info: #00d4ff;
+
+  /* Buttons & Direction Colors */
+  --btn-punch: #ff4d4d;
+  --btn-kick: #4da6ff;
+  --btn-slash: #d966ff;
+  --btn-hslash: #ffb84d;
+  --btn-dust: #66ffb3;
+  --btn-special: #ffaa00;
+
+  /* Typography */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+
+  /* Shadows & Glows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.9);
+  --glow-primary: 0 0 15px rgba(255, 0, 91, 0.45);
+  --glow-secondary: 0 0 15px rgba(0, 240, 255, 0.45);
+  --glow-accent: 0 0 15px rgba(255, 170, 0, 0.45);
+
+  /* Borders & Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-round: 50%;
+  
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-md: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout sizing */
+  --nav-height: 70px;
+  --sidebar-width: 260px;
+  --content-max-width: 1200px;
+}
