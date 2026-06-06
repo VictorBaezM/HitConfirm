@@ -436,6 +436,15 @@ class Store {
    * @param {string} mainChar - Chosen character name.
    * @returns {Promise<Object>} Object indicating success status and new user object or error message.
    */
+  /**
+   * Registers a new user account in Supabase using Email/Password Auth.
+   * @param {string} email - User email address.
+   * @param {string} password - User password.
+   * @param {string} username - Chosen username.
+   * @param {string} mainGame - Chosen game ID.
+   * @param {string} mainChar - Chosen character name.
+   * @returns {Promise<Object>} Object indicating success status and new user object or error message.
+   */
   async registerUser(email, password, username, mainGame, mainChar) {
     // Check duplicate locally first (fast check)
     if (this.usersCache.some(u => u.username.toLowerCase() === username.toLowerCase())) {
@@ -467,23 +476,31 @@ class Store {
       return { success: false, error: 'Sign up succeeded, but user data not returned.' };
     }
 
+    const newUser = {
+      id: authUser.id, // UUID from Supabase Auth
+      username,
+      avatarColor: randomColor,
+      mainGame,
+      mainChar,
+      rank: 'Beginner',
+      savedCombos: []
+    };
+
     // If auto-logged in (email confirmation disabled)
     if (data.session) {
-      // Small delay to allow the DB trigger to complete inserting user record in public.users
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (!profileError && profile) {
-        const clientUser = mapUserFromDb(profile);
-        this.usersCache.push(clientUser);
-        this.setCurrentUser(clientUser);
-        return { success: true, user: clientUser };
+      // Try to create the profile row directly on the client side
+      const { error: insertError } = await supabase.from('users').insert(mapUserToDb(newUser));
+      
+      if (insertError) {
+        // Unique violation (23505) is ignored since it means the DB trigger already created it
+        if (insertError.code !== '23505') {
+          return { success: false, error: insertError.message };
+        }
       }
+
+      this.usersCache.push(newUser);
+      this.setCurrentUser(newUser);
+      return { success: true, user: newUser };
     }
 
     // If session is null (email confirmation is enabled, user must verify email)
@@ -511,13 +528,38 @@ class Store {
     }
 
     const authUser = data.user;
-    const { data: profile, error: profileError } = await supabase
+    
+    // Fetch profile
+    let { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
       .eq('id', authUser.id)
       .single();
 
-    if (profileError) {
+    // Fallback: If no profile row is found (e.g. signup failed to insert or trigger didn't run),
+    // create it now since the client is fully authenticated and auth.uid() equals authUser.id.
+    if (profileError && (profileError.code === 'PGRST116' || profileError.message.includes('0 rows'))) {
+      const colors = ['#ff005b', '#00f0ff', '#ffaa00', '#00ff66', '#d966ff', '#ff8800'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      
+      const newUser = {
+        id: authUser.id,
+        username: authUser.user_metadata?.username || 'Player_' + authUser.id.substring(0, 8),
+        avatarColor: authUser.user_metadata?.avatar_color || randomColor,
+        mainGame: authUser.user_metadata?.main_game || 'sf6',
+        mainChar: authUser.user_metadata?.main_char || 'Ryu',
+        rank: 'Beginner',
+        savedCombos: []
+      };
+
+      const { error: insertError } = await supabase.from('users').insert(mapUserToDb(newUser));
+      if (!insertError) {
+        profile = mapUserToDb(newUser);
+        profileError = null;
+      } else {
+        return { success: false, error: 'Failed to create profile: ' + insertError.message };
+      }
+    } else if (profileError) {
       return { success: false, error: 'Profile not found: ' + profileError.message };
     }
 
