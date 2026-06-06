@@ -1,7 +1,15 @@
 /* Combo Dojo Card Component */
 import store from '../store.js';
 import { parseComboToHtml } from '../utils/combo-parser.js';
+import { escapeHtml } from '../utils/security.js';
 
+
+/**
+ * Creates and renders a styled combo card element containing details, comments, and upvote controls.
+ * @param {Object} combo - The combo metadata object.
+ * @param {function} navigateCallback - SPA router callback.
+ * @returns {HTMLDivElement} Configured card node element.
+ */
 export function renderComboCard(combo, navigateCallback) {
   const currentUser = store.getCurrentUser();
   const isUpvoted = currentUser && combo.upvotedBy && combo.upvotedBy.includes(currentUser.id);
@@ -57,14 +65,14 @@ export function renderComboCard(combo, navigateCallback) {
       <div class="flex items-center gap-2">
         ${gameBadge}
         ${difficultyBadge}
-        <span class="badge" style="background: rgba(255,255,255,0.05); border-color: var(--border-color);">${combo.character}</span>
+        <span class="badge" style="background: rgba(255,255,255,0.05); border-color: var(--border-color);">${escapeHtml(combo.character)}</span>
       </div>
       <div style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</div>
     </div>
 
-    <h3 style="margin-bottom: 8px; font-size: 1.25rem;">${combo.title}</h3>
+    <h3 style="margin-bottom: 8px; font-size: 1.25rem;">${escapeHtml(combo.title)}</h3>
     <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
-      Shared by <strong style="color: var(--text-primary);">${combo.username}</strong>
+      Shared by <strong style="color: var(--text-primary);">${escapeHtml(combo.username)}</strong>
     </div>
 
     <!-- Visual Combo Rendering -->
@@ -76,19 +84,19 @@ export function renderComboCard(combo, navigateCallback) {
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">
       <div style="text-align: center;">
         <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Damage</div>
-        <div style="font-weight: 700; color: var(--color-primary);">${combo.damage}</div>
+        <div style="font-weight: 700; color: var(--color-primary);">${escapeHtml(combo.damage)}</div>
       </div>
       <div style="text-align: center;">
         <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Meter Cost</div>
-        <div style="font-weight: 700; color: var(--color-secondary);">${combo.meter}</div>
+        <div style="font-weight: 700; color: var(--color-secondary);">${escapeHtml(combo.meter)}</div>
       </div>
       <div style="text-align: center;">
         <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Difficulty</div>
-        <div style="font-weight: 700; color: var(--color-accent); text-transform: capitalize;">${combo.difficulty}</div>
+        <div style="font-weight: 700; color: var(--color-accent); text-transform: capitalize;">${escapeHtml(combo.difficulty)}</div>
       </div>
     </div>
 
-    ${combo.description ? `<p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">${combo.description}</p>` : ''}
+    ${combo.description ? `<p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">${escapeHtml(combo.description)}</p>` : ''}
 
     ${videoHtml}
 
@@ -128,12 +136,12 @@ export function renderComboCard(combo, navigateCallback) {
 
   // Upvote Event Listener
   const upvoteBtn = card.querySelector('.btn-upvote');
-  upvoteBtn.addEventListener('click', () => {
+  upvoteBtn.addEventListener('click', async () => {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
     }
-    const result = store.upvoteCombo(combo.id);
+    const result = await store.upvoteCombo(combo.id);
     if (result.success) {
       const counter = card.querySelector('.upvote-count');
       counter.innerText = `${result.upvotes} 🔥`;
@@ -147,12 +155,12 @@ export function renderComboCard(combo, navigateCallback) {
 
   // Save/Bookmark Event Listener
   const saveBtn = card.querySelector('.btn-save');
-  saveBtn.addEventListener('click', () => {
+  saveBtn.addEventListener('click', async () => {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
     }
-    const result = store.toggleSaveCombo(combo.id);
+    const result = await store.toggleSaveCombo(combo.id);
     if (result.success) {
       if (result.saved) {
         saveBtn.classList.add('active');
@@ -235,7 +243,7 @@ export function renderComboCard(combo, navigateCallback) {
   const commentInput = card.querySelector('.combo-comment-input');
   const submitBtn = card.querySelector('.btn-submit-combo-comment');
   
-  const submitComboComment = () => {
+  const submitComboComment = async () => {
     const text = commentInput.value.trim();
     if (!text) return;
 
@@ -244,7 +252,7 @@ export function renderComboCard(combo, navigateCallback) {
       return;
     }
 
-    const result = store.addComboComment(combo.id, text);
+    const result = await store.addComboComment(combo.id, text);
     if (result.success) {
       commentInput.value = '';
       commentCountLabel.innerText = result.comments.length;
@@ -271,10 +279,10 @@ function renderCommentsList(comments) {
       ${comments.map(c => `
         <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${c.username}</span>
-            <span style="font-size:0.75rem; color:var(--text-muted);">${c.date}</span>
+            <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
           </div>
-          <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${c.text}</p>
+          <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
         </div>
       `).join('')}
     </div>

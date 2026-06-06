@@ -1,6 +1,11 @@
 /* Navigation Bar Component */
 import store from '../store.js';
 
+/**
+ * Dynamically renders the global navigation header bar.
+ * @param {string} activePage - The current active page ID to set active styling.
+ * @param {function} navigateCallback - Navigation routing callback.
+ */
 export function renderNavbar(activePage, navigateCallback) {
   const mount = document.getElementById('navbar-mount');
   if (!mount) return;

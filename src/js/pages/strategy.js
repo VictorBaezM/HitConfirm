@@ -1,6 +1,12 @@
 /* Strategy Guides & Matchup Hub Page Controller */
 import store from '../store.js';
+import { escapeHtml } from '../utils/security.js';
 
+/**
+ * Renders the Strategy Hub page, containing directories of matchup strategy articles,
+ * a frame punish cheat sheet reference directory table, and a dedicated guide reader view.
+ * @param {function} navigateCallback - SPA router callback.
+ */
 export function renderStrategyPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
@@ -167,12 +173,12 @@ export function renderStrategyPage(navigateCallback) {
         <div class="flex justify-between items-center" style="margin-bottom: 6px;">
           <div class="flex items-center gap-2">
             ${badge}
-            <span class="badge" style="background: rgba(255,255,255,0.05); font-size: 0.65rem;">${guide.character}</span>
+            <span class="badge" style="background: rgba(255,255,255,0.05); font-size: 0.65rem;">${escapeHtml(guide.character)}</span>
           </div>
           <span style="font-size: 0.75rem; color: var(--text-muted);">${guide.upvotes} 🔥</span>
         </div>
-        <h4 style="font-size: 1.05rem; margin-bottom: 4px;">${guide.title}</h4>
-        <div style="font-size: 0.75rem; color: var(--text-secondary);">By ${guide.author}</div>
+        <h4 style="font-size: 1.05rem; margin-bottom: 4px;">${escapeHtml(guide.title)}</h4>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">By ${escapeHtml(guide.author)}</div>
       `;
 
       item.addEventListener('click', () => {
@@ -211,12 +217,12 @@ export function renderStrategyPage(navigateCallback) {
     viewer.innerHTML = `
       <div class="flex items-center gap-2" style="margin-bottom: 12px; font-size: 0.75rem;">
         <span class="badge badge-${activeGuide.game}">${activeGuide.game.toUpperCase()}</span>
-        <span class="badge" style="background: rgba(255,255,255,0.05);">${activeGuide.character}</span>
+        <span class="badge" style="background: rgba(255,255,255,0.05);">${escapeHtml(activeGuide.character)}</span>
       </div>
 
-      <h2 style="font-size: 1.4rem; line-height: 1.2; margin-bottom: 8px;">${activeGuide.title}</h2>
+      <h2 style="font-size: 1.4rem; line-height: 1.2; margin-bottom: 8px;">${escapeHtml(activeGuide.title)}</h2>
       <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px;">
-        Written by <strong>${activeGuide.author}</strong>
+        Written by <strong>${escapeHtml(activeGuide.author)}</strong>
       </div>
 
       <div class="strategy-content" style="font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 24px; white-space: pre-wrap;">
@@ -235,12 +241,12 @@ export function renderStrategyPage(navigateCallback) {
     `;
 
     // Attach upvote event handler
-    viewer.querySelector('.btn-upvote-guide').addEventListener('click', () => {
+    viewer.querySelector('.btn-upvote-guide').addEventListener('click', async () => {
       if (!currentUser) {
         window.openAuthModal('login', navigateCallback);
         return;
       }
-      const result = store.upvoteStrategy(activeGuide.id);
+      const result = await store.upvoteStrategy(activeGuide.id);
       if (result.success) {
         viewer.querySelector('.guide-upvote-count').innerText = `${result.upvotes} 🔥`;
         const btn = viewer.querySelector('.btn-upvote-guide');
@@ -318,7 +324,7 @@ export function renderStrategyPage(navigateCallback) {
       overlay.classList.remove('open');
     });
 
-    document.getElementById('modal-guide-publish').addEventListener('click', () => {
+    document.getElementById('modal-guide-publish').addEventListener('click', async () => {
       const titleVal = document.getElementById('modal-guide-title').value.trim();
       const gameVal = modalGameSel.value;
       const charVal = modalCharSel.value;
@@ -329,7 +335,7 @@ export function renderStrategyPage(navigateCallback) {
         return;
       }
 
-      const result = store.saveStrategy({
+      const result = await store.saveStrategy({
         game: gameVal,
         character: charVal,
         title: titleVal,
@@ -352,8 +358,9 @@ export function renderStrategyPage(navigateCallback) {
 }
 
 function formatGuideMarkdown(text) {
+  const escaped = escapeHtml(text);
   // Simple custom Markdown rendering to HTML:
-  let formatted = text
+  let formatted = escaped
     .replace(/### (.*?)\n/g, '<h4 style="font-family:var(--font-heading); color:var(--color-secondary); margin-top:16px; margin-bottom:8px;">$1</h4>')
     .replace(/## (.*?)\n/g, '<h3 style="font-family:var(--font-heading); color:var(--color-secondary); margin-top:20px; margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:4px;">$1</h3>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);">$1</strong>')

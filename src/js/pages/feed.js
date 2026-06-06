@@ -3,6 +3,10 @@ import store from '../store.js';
 import { renderPostCard } from '../components/post-card.js';
 import { renderComboCard } from '../components/combo-card.js';
 
+/**
+ * Renders the main dashboard timeline feed, chip selectors, hottest combos, and Dojo challenge widget.
+ * @param {function} navigateCallback - SPA router callback.
+ */
 export function renderFeedPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
@@ -153,6 +157,11 @@ export function renderFeedPage(navigateCallback) {
   });
 }
 
+/**
+ * Renders the post creation panel. Displays a registration banner if logged out,
+ * or text area and tags inputs if logged in.
+ * @param {function} navigateCallback - SPA router callback.
+ */
 function renderCreatorBox(navigateCallback) {
   const mount = document.getElementById('post-creator-box');
   if (!mount) return;
@@ -221,7 +230,7 @@ function renderCreatorBox(navigateCallback) {
   const gameSelect = mount.querySelector('.post-game-select');
   const videoInput = mount.querySelector('.post-video-input');
 
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     const text = postContent.value.trim();
     if (!text) {
       window.showToast('Please type something to post.');
@@ -234,7 +243,7 @@ function renderCreatorBox(navigateCallback) {
       videoUrl: videoInput.value.trim() || ''
     };
 
-    const result = store.savePost(postData);
+    const result = await store.savePost(postData);
     if (result.success) {
       postContent.value = '';
       gameSelect.value = '';

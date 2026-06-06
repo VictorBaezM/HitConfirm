@@ -1,6 +1,11 @@
 /* User Registration & Login Modal Handlers */
 import store from '../store.js';
 
+/**
+ * Renders and launches the authentication login or registration form inside the global modal overlay.
+ * @param {string} [type='login'] - Type of the auth form ('login' or 'register').
+ * @param {function} navigateCallback - SPA router callback to trigger page changes after successful login.
+ */
 export function openAuthModal(type = 'login', navigateCallback) {
   const overlay = document.getElementById('modal-container');
   const titleMount = document.getElementById('modal-title');
@@ -14,11 +19,12 @@ export function openAuthModal(type = 'login', navigateCallback) {
     titleMount.innerText = 'DOJO MEMBER SIGN-IN';
     bodyMount.innerHTML = `
       <div class="form-group">
-        <label class="form-label">Username</label>
-        <input type="text" id="auth-username" class="form-input" placeholder="Enter your username..." />
+        <label class="form-label">Email Address</label>
+        <input type="email" id="auth-email" class="form-input" placeholder="Enter your email..." />
       </div>
-      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
-        Demo Accounts: <strong>SolManiac</strong>, <strong>DaigoFan99</strong>, or <strong>ElectricWindGod</strong>. Or type a new name and click "Create Account" instead!
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="auth-password" class="form-input" placeholder="Enter your password..." />
       </div>
       
       <div class="flex justify-between items-center" style="margin-top: 24px;">
@@ -32,27 +38,44 @@ export function openAuthModal(type = 'login', navigateCallback) {
 
     // Sign in trigger
     const submitBtn = bodyMount.querySelector('#btn-auth-submit');
-    const usernameInput = bodyMount.querySelector('#auth-username');
+    const emailInput = bodyMount.querySelector('#auth-email');
+    const passwordInput = bodyMount.querySelector('#auth-password');
     
-    const handleLogin = () => {
-      const usernameVal = usernameInput.value.trim();
-      if (!usernameVal) {
-        window.showToast('Please type a username.');
+    const handleLogin = async () => {
+      const emailVal = emailInput.value.trim();
+      const passwordVal = passwordInput.value;
+      if (!emailVal || !passwordVal) {
+        window.showToast('Please enter your email and password.');
         return;
       }
 
-      const result = store.loginUser(usernameVal);
-      if (result.success) {
-        window.showToast(`Welcome back, ${result.user.username}!`);
-        overlay.classList.remove('open');
-        navigateCallback('feed');
-      } else {
-        window.showToast(result.error || 'Login failed.');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Signing In...';
+
+      try {
+        const result = await store.loginUser(emailVal, passwordVal);
+        if (result.success) {
+          window.showToast(`Welcome back, ${result.user.username}!`);
+          overlay.classList.remove('open');
+          navigateCallback('feed');
+        } else {
+          window.showToast(result.error || 'Login failed.');
+        }
+      } catch (err) {
+        window.showToast(err.message || 'An unexpected error occurred.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In';
       }
     };
 
     submitBtn.addEventListener('click', handleLogin);
-    usernameInput.addEventListener('keypress', (e) => {
+    
+    // Support enter key on both fields
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+    passwordInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') handleLogin();
     });
 
@@ -65,8 +88,18 @@ export function openAuthModal(type = 'login', navigateCallback) {
     titleMount.innerText = 'CREATE DOJO ACCOUNT';
     bodyMount.innerHTML = `
       <div class="form-group">
-        <label class="form-label">Create Username</label>
+        <label class="form-label">Username</label>
         <input type="text" id="auth-username" class="form-input" placeholder="Choose a unique username..." />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="auth-email" class="form-input" placeholder="Enter your email address..." />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="auth-password" class="form-input" placeholder="Choose a secure password..." />
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -96,7 +129,9 @@ export function openAuthModal(type = 'login', navigateCallback) {
 
     const fillChars = () => {
       const gameId = gameSel.value;
-      charSel.innerHTML = games[gameId].characters.map(c => `<option value="${c}">${c}</option>`).join('');
+      charSel.innerHTML = games[gameId].characters.map(c => `
+        <option value="${c}">${c}</option>
+      `).join('');
     };
 
     gameSel.addEventListener('change', fillChars);
@@ -105,26 +140,52 @@ export function openAuthModal(type = 'login', navigateCallback) {
     // Register trigger
     const submitBtn = bodyMount.querySelector('#btn-auth-submit');
     const usernameInput = bodyMount.querySelector('#auth-username');
+    const emailInput = bodyMount.querySelector('#auth-email');
+    const passwordInput = bodyMount.querySelector('#auth-password');
     
-    const handleRegister = () => {
+    const handleRegister = async () => {
       const usernameVal = usernameInput.value.trim();
-      if (!usernameVal) {
-        window.showToast('Please choose a username.');
+      const emailVal = emailInput.value.trim();
+      const passwordVal = passwordInput.value;
+
+      if (!usernameVal || !emailVal || !passwordVal) {
+        window.showToast('Please fill out all credentials.');
         return;
       }
 
-      const result = store.registerUser(usernameVal, gameSel.value, charSel.value);
-      if (result.success) {
-        window.showToast(`Account created! Welcome, ${result.user.username}!`);
-        overlay.classList.remove('open');
-        navigateCallback('profile');
-      } else {
-        window.showToast(result.error || 'Failed to create account.');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Registering...';
+
+      try {
+        const result = await store.registerUser(emailVal, passwordVal, usernameVal, gameSel.value, charSel.value);
+        if (result.success) {
+          if (result.message) {
+            window.showToast(result.message, 6000);
+          } else {
+            window.showToast(`Account created! Welcome, ${result.user.username}!`);
+          }
+          overlay.classList.remove('open');
+          navigateCallback(result.message ? 'feed' : 'profile');
+        } else {
+          window.showToast(result.error || 'Failed to create account.');
+        }
+      } catch (err) {
+        window.showToast(err.message || 'An unexpected error occurred.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Register';
       }
     };
 
     submitBtn.addEventListener('click', handleRegister);
+    
     usernameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleRegister();
+    });
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleRegister();
+    });
+    passwordInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') handleRegister();
     });
 

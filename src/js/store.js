@@ -1,4 +1,6 @@
 /* LocalStorage State Manager (HitConfirm Database) */
+import { supabase } from './supabase.js';
+
 
 const DEFAULT_GAMES = {
   sf6: {
@@ -28,15 +30,15 @@ const DEFAULT_GAMES = {
 };
 
 const DEFAULT_USERS = [
-  { id: '1', username: 'SolManiac', avatarColor: '#ff005b', mainGame: 'ggst', mainChar: 'Sol Badguy', rank: 'Celestial' },
-  { id: '2', username: 'DaigoFan99', avatarColor: '#ffaa00', mainGame: 'sf6', mainChar: 'Ryu', rank: 'Master' },
-  { id: '3', username: 'ElectricWindGod', avatarColor: '#00f0ff', mainGame: 't8', mainChar: 'Kazuya', rank: 'Tekken King' }
+  { id: '00000000-0000-0000-0000-000000000001', username: 'SolManiac', avatarColor: '#ff005b', mainGame: 'ggst', mainChar: 'Sol Badguy', rank: 'Celestial' },
+  { id: '00000000-0000-0000-0000-000000000002', username: 'DaigoFan99', avatarColor: '#ffaa00', mainGame: 'sf6', mainChar: 'Ryu', rank: 'Master' },
+  { id: '00000000-0000-0000-0000-000000000003', username: 'ElectricWindGod', avatarColor: '#00f0ff', mainGame: 't8', mainChar: 'Kazuya', rank: 'Tekken King' }
 ];
 
 const DEFAULT_COMBOS = [
   {
     id: 'c1',
-    userId: '1',
+    userId: '00000000-0000-0000-0000-000000000001',
     username: 'SolManiac',
     avatarColor: '#ff005b',
     game: 'ggst',
@@ -58,7 +60,7 @@ const DEFAULT_COMBOS = [
   },
   {
     id: 'c2',
-    userId: '2',
+    userId: '00000000-0000-0000-0000-000000000002',
     username: 'DaigoFan99',
     avatarColor: '#ffaa00',
     game: 'sf6',
@@ -77,7 +79,7 @@ const DEFAULT_COMBOS = [
   },
   {
     id: 'c3',
-    userId: '3',
+    userId: '00000000-0000-0000-0000-000000000003',
     username: 'ElectricWindGod',
     avatarColor: '#00f0ff',
     game: 't8',
@@ -101,7 +103,7 @@ const DEFAULT_COMBOS = [
 const DEFAULT_POSTS = [
   {
     id: 'p1',
-    userId: '2',
+    userId: '00000000-0000-0000-0000-000000000002',
     username: 'DaigoFan99',
     avatarColor: '#ffaa00',
     game: 'sf6',
@@ -116,7 +118,7 @@ const DEFAULT_POSTS = [
   },
   {
     id: 'p2',
-    userId: '3',
+    userId: '00000000-0000-0000-0000-000000000003',
     username: 'ElectricWindGod',
     avatarColor: '#00f0ff',
     game: 't8',
@@ -154,48 +156,268 @@ const DEFAULT_STRATEGIES = [
   }
 ];
 
+// Database Object Mapping Utilities (snake_case database to camelCase frontend)
+
+function mapUserFromDb(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    username: row.username,
+    avatarColor: row.avatar_color,
+    mainGame: row.main_game,
+    mainChar: row.main_char,
+    rank: row.rank,
+    savedCombos: row.saved_combos || []
+  };
+}
+
+function mapUserToDb(user) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    username: user.username,
+    avatar_color: user.avatarColor,
+    main_game: user.mainGame,
+    main_char: user.mainChar,
+    rank: user.rank,
+    saved_combos: user.savedCombos || []
+  };
+}
+
+function mapComboFromDb(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    username: row.username,
+    avatarColor: row.avatar_color,
+    game: row.game,
+    character: row.character,
+    title: row.title,
+    notation: row.notation,
+    damage: row.damage,
+    meter: row.meter,
+    difficulty: row.difficulty,
+    description: row.description,
+    upvotes: row.upvotes || 0,
+    upvotedBy: row.upvoted_by || [],
+    comments: row.comments || [],
+    videoUrl: row.video_url,
+    createdAt: row.created_at
+  };
+}
+
+function mapComboToDb(combo) {
+  if (!combo) return null;
+  return {
+    id: combo.id,
+    user_id: combo.userId,
+    username: combo.username,
+    avatar_color: combo.avatarColor,
+    game: combo.game,
+    character: combo.character,
+    title: combo.title,
+    notation: combo.notation,
+    damage: combo.damage,
+    meter: combo.meter,
+    difficulty: combo.difficulty,
+    description: combo.description,
+    upvotes: combo.upvotes || 0,
+    upvoted_by: combo.upvotedBy || [],
+    comments: combo.comments || [],
+    video_url: combo.videoUrl,
+    created_at: combo.createdAt
+  };
+}
+
+function mapPostFromDb(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    username: row.username,
+    avatarColor: row.avatar_color,
+    game: row.game,
+    content: row.content,
+    videoUrl: row.video_url,
+    upvotes: row.upvotes || 0,
+    upvotedBy: row.upvoted_by || [],
+    comments: row.comments || [],
+    createdAt: row.created_at
+  };
+}
+
+function mapPostToDb(post) {
+  if (!post) return null;
+  return {
+    id: post.id,
+    user_id: post.userId,
+    username: post.username,
+    avatar_color: post.avatarColor,
+    game: post.game,
+    content: post.content,
+    video_url: post.videoUrl,
+    upvotes: post.upvotes || 0,
+    upvoted_by: post.upvotedBy || [],
+    comments: post.comments || [],
+    created_at: post.createdAt
+  };
+}
+
+function mapStrategyFromDb(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    game: row.game,
+    character: row.character,
+    title: row.title,
+    author: row.author,
+    content: row.content,
+    upvotes: row.upvotes || 0,
+    upvotedBy: row.upvoted_by || [],
+    createdAt: row.created_at
+  };
+}
+
+function mapStrategyToDb(strat) {
+  if (!strat) return null;
+  return {
+    id: strat.id,
+    game: strat.game,
+    character: strat.character,
+    title: strat.title,
+    author: strat.author,
+    content: strat.content,
+    upvotes: strat.upvotes || 0,
+    upvoted_by: strat.upvotedBy || [],
+    created_at: strat.createdAt
+  };
+}
+
 class Store {
   constructor() {
-    this.init();
-  }
-
-  init() {
-    // Check if data is already in local storage, if not, write seeds
-    if (!localStorage.getItem('hc_users')) {
-      localStorage.setItem('hc_users', JSON.stringify(DEFAULT_USERS));
-    }
-    if (!localStorage.getItem('hc_combos')) {
-      localStorage.setItem('hc_combos', JSON.stringify(DEFAULT_COMBOS));
-    }
-    if (!localStorage.getItem('hc_posts')) {
-      localStorage.setItem('hc_posts', JSON.stringify(DEFAULT_POSTS));
-    }
-    if (!localStorage.getItem('hc_strategies')) {
-      localStorage.setItem('hc_strategies', JSON.stringify(DEFAULT_STRATEGIES));
-    }
-
-    // Load active session
+    this.combos = [];
+    this.posts = [];
+    this.strategies = [];
+    this.usersCache = [];
     this.currentUser = JSON.parse(localStorage.getItem('hc_current_user')) || null;
   }
 
-  // Games DB (static)
+  /**
+   * Initializes the store system (legacy localstorage method, stubbed out for Supabase integration).
+   */
+  init() {
+    // Session is loaded in constructor.
+  }
+
+  /**
+   * Seeds default demo data to Supabase if the remote database is empty.
+   */
+  async seedSupabase() {
+    console.log('Seeding Supabase tables with initial demo records...');
+    
+    // Seed users
+    const dbUsers = DEFAULT_USERS.map(mapUserToDb);
+    await supabase.from('users').insert(dbUsers);
+
+    // Seed combos
+    const dbCombos = DEFAULT_COMBOS.map(mapComboToDb);
+    await supabase.from('combos').insert(dbCombos);
+
+    // Seed posts
+    const dbPosts = DEFAULT_POSTS.map(mapPostToDb);
+    await supabase.from('posts').insert(dbPosts);
+
+    // Seed strategies
+    const dbStrategies = DEFAULT_STRATEGIES.map(mapStrategyToDb);
+    await supabase.from('strategies').insert(dbStrategies);
+    
+    console.log('Seeding complete.');
+  }
+
+  /**
+   * Asynchronously loads and updates memory caches from Supabase.
+   * Automatically triggers seeding if the users table is completely empty.
+   */
+  async loadAllData() {
+    try {
+      // 1. Check user count to determine if database needs seeding
+      const usersCount = await supabase.from('users').select('id', { count: 'exact', head: true });
+      if (usersCount.count === 0) {
+        await this.seedSupabase();
+      }
+
+      // 2. Fetch all tables in parallel
+      const [combosRes, postsRes, strategiesRes, usersRes] = await Promise.all([
+        supabase.from('combos').select('*').order('created_at', { ascending: false }),
+        supabase.from('posts').select('*').order('created_at', { ascending: false }),
+        supabase.from('strategies').select('*').order('created_at', { ascending: false }),
+        supabase.from('users').select('*')
+      ]);
+
+      // 3. Map database rows to client objects
+      this.combos = (combosRes.data || []).map(mapComboFromDb);
+      this.posts = (postsRes.data || []).map(mapPostFromDb);
+      this.strategies = (strategiesRes.data || []).map(mapStrategyFromDb);
+      this.usersCache = (usersRes.data || []).map(mapUserFromDb);
+
+      // Keep local list sync for backward-compatible lookups
+      localStorage.setItem('hc_users', JSON.stringify(this.usersCache));
+
+      // 4. Sync active user state if logged in via Supabase Auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user) {
+        const freshUser = this.usersCache.find(u => u.id === session.user.id);
+        if (freshUser) {
+          this.setCurrentUser(freshUser);
+        } else {
+          this.setCurrentUser(null);
+        }
+      } else {
+        this.setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error('Supabase loadAllData failed:', err);
+    }
+  }
+
+  /**
+   * Retrieves all static game entries.
+   * @returns {Object} Static games dictionary.
+   */
   getGames() {
     return DEFAULT_GAMES;
   }
 
+  /**
+   * Retrieves a specific static game entry by its ID.
+   * @param {string} gameId - The identifier of the game.
+   * @returns {Object} Game metadata structure.
+   */
   getGame(gameId) {
     return DEFAULT_GAMES[gameId];
   }
 
-  // Users DB
+  /**
+   * Retrieves all cached user accounts.
+   * @returns {Array<Object>} List of registered profiles.
+   */
   getUsers() {
-    return JSON.parse(localStorage.getItem('hc_users'));
+    return this.usersCache;
   }
 
+  /**
+   * Retrieves the current logged in user profile session.
+   * @returns {Object|null} Active user profile session or null if logged out.
+   */
   getCurrentUser() {
     return this.currentUser;
   }
 
+  /**
+   * Sets the active user profile session.
+   * @param {Object|null} user - User profile object or null to clear session.
+   */
   setCurrentUser(user) {
     this.currentUser = user;
     if (user) {
@@ -205,57 +427,128 @@ class Store {
     }
   }
 
-  registerUser(username, mainGame, mainChar) {
-    const users = this.getUsers();
-    
-    // Check duplicate
-    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+  /**
+   * Registers a new user account in Supabase using Email/Password Auth.
+   * @param {string} email - User email address.
+   * @param {string} password - User password.
+   * @param {string} username - Chosen username.
+   * @param {string} mainGame - Chosen game ID.
+   * @param {string} mainChar - Chosen character name.
+   * @returns {Promise<Object>} Object indicating success status and new user object or error message.
+   */
+  async registerUser(email, password, username, mainGame, mainChar) {
+    // Check duplicate locally first (fast check)
+    if (this.usersCache.some(u => u.username.toLowerCase() === username.toLowerCase())) {
       return { success: false, error: 'Username already taken.' };
     }
 
     const colors = ['#ff005b', '#00f0ff', '#ffaa00', '#00ff66', '#d966ff', '#ff8800'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-    const newUser = {
-      id: 'u_' + Date.now(),
-      username,
-      avatarColor: randomColor,
-      mainGame,
-      mainChar,
-      rank: 'Beginner',
-      savedCombos: []
-    };
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username,
+          avatar_color: randomColor,
+          main_game: mainGame,
+          main_char: mainChar
+        }
+      }
+    });
 
-    users.push(newUser);
-    localStorage.setItem('hc_users', JSON.stringify(users));
-    this.setCurrentUser(newUser);
-    return { success: true, user: newUser };
-  }
-
-  loginUser(username) {
-    const users = this.getUsers();
-    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-    
-    if (user) {
-      this.setCurrentUser(user);
-      return { success: true, user };
+    if (signUpError) {
+      return { success: false, error: signUpError.message };
     }
-    return { success: false, error: 'User not found. Try registering instead!' };
+
+    const authUser = data.user;
+    if (!authUser) {
+      return { success: false, error: 'Sign up succeeded, but user data not returned.' };
+    }
+
+    // If auto-logged in (email confirmation disabled)
+    if (data.session) {
+      // Small delay to allow the DB trigger to complete inserting user record in public.users
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!profileError && profile) {
+        const clientUser = mapUserFromDb(profile);
+        this.usersCache.push(clientUser);
+        this.setCurrentUser(clientUser);
+        return { success: true, user: clientUser };
+      }
+    }
+
+    // If session is null (email confirmation is enabled, user must verify email)
+    return {
+      success: true,
+      user: { username },
+      message: 'Account created! Please check your email inbox to verify your account before logging in.'
+    };
   }
 
-  logout() {
+  /**
+   * Logs in an existing user account using Email/Password.
+   * @param {string} email - User email address.
+   * @param {string} password - User password.
+   * @returns {Promise<Object>} Object indicating success status and user profile or error message.
+   */
+  async loginUser(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    const authUser = data.user;
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', authUser.id)
+      .single();
+
+    if (profileError) {
+      return { success: false, error: 'Profile not found: ' + profileError.message };
+    }
+
+    const clientUser = mapUserFromDb(profile);
+    this.setCurrentUser(clientUser);
+    return { success: true, user: clientUser };
+  }
+
+  /**
+   * Logs out the current active session.
+   */
+  async logout() {
+    await supabase.auth.signOut();
     this.setCurrentUser(null);
   }
 
-  // Combos DB
+  /**
+   * Retrieves all cached shared combos.
+   * @returns {Array<Object>} List of shared combos.
+   */
   getCombos() {
-    return JSON.parse(localStorage.getItem('hc_combos'));
+    return this.combos;
   }
 
-  saveCombo(comboData) {
-    const combos = this.getCombos();
+  /**
+   * Saves a new combo to Supabase and automatically creates a corresponding timeline post.
+   * @param {Object} comboData - Raw metadata of the new combo.
+   * @returns {Promise<Object>} Object containing success status and the new combo object.
+   */
+  async saveCombo(comboData) {
     const user = this.getCurrentUser();
-    
     if (!user) return { success: false, error: 'Must be logged in to share combos.' };
 
     const newCombo = {
@@ -278,11 +571,15 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    combos.unshift(newCombo);
-    localStorage.setItem('hc_combos', JSON.stringify(combos));
+    const { error } = await supabase.from('combos').insert(mapComboToDb(newCombo));
+    if (error) {
+      return { success: false, error: error.message };
+    }
 
-    // Auto-create a feed post about it!
-    this.savePost({
+    this.combos.unshift(newCombo);
+
+    // Auto-create a feed post about it asynchronously (fire and forget / await both)
+    await this.savePost({
       game: comboData.game,
       content: `💥 Just shared a new combo for ${DEFAULT_GAMES[comboData.game].name} - **${comboData.character}**! \n\n"${comboData.title}"\nNotation: \`${comboData.notation}\``,
       videoUrl: comboData.videoUrl || ''
@@ -291,35 +588,56 @@ class Store {
     return { success: true, combo: newCombo };
   }
 
-  upvoteCombo(comboId) {
-    const combos = this.getCombos();
+  /**
+   * Toggles upvote state on a combo in Supabase.
+   * @param {string} comboId - Target combo identifier.
+   * @returns {Promise<Object>} Success flag and updated upvotes count and state.
+   */
+  async upvoteCombo(comboId) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const combo = combos.find(c => c.id === comboId);
+    const combo = this.combos.find(c => c.id === comboId);
     if (!combo) return { success: false };
 
-    if (!combo.upvotedBy) combo.upvotedBy = [];
+    const upvotedBy = [...combo.upvotedBy];
+    const index = upvotedBy.indexOf(user.id);
+    let upvotes = combo.upvotes;
 
-    const index = combo.upvotedBy.indexOf(user.id);
     if (index === -1) {
-      combo.upvotedBy.push(user.id);
-      combo.upvotes += 1;
+      upvotedBy.push(user.id);
+      upvotes += 1;
     } else {
-      combo.upvotedBy.splice(index, 1);
-      combo.upvotes -= 1;
+      upvotedBy.splice(index, 1);
+      upvotes -= 1;
     }
 
-    localStorage.setItem('hc_combos', JSON.stringify(combos));
-    return { success: true, upvotes: combo.upvotes, upvoted: index === -1 };
+    const { error } = await supabase.from('combos').update({
+      upvotes,
+      upvoted_by: upvotedBy
+    }).eq('id', comboId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    combo.upvotedBy = upvotedBy;
+    combo.upvotes = upvotes;
+
+    return { success: true, upvotes, upvoted: index === -1 };
   }
 
-  addComboComment(comboId, commentText) {
-    const combos = this.getCombos();
+  /**
+   * Appends an execution comment to a combo in Supabase.
+   * @param {string} comboId - Target combo identifier.
+   * @param {string} commentText - The text content of the reply.
+   * @returns {Promise<Object>} Success flag and updated list of comments.
+   */
+  async addComboComment(comboId, commentText) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to comment!' };
 
-    const combo = combos.find(c => c.id === comboId);
+    const combo = this.combos.find(c => c.id === comboId);
     if (!combo) return { success: false };
 
     const comment = {
@@ -329,43 +647,65 @@ class Store {
       date: new Date().toISOString().split('T')[0]
     };
 
-    combo.comments.push(comment);
-    localStorage.setItem('hc_combos', JSON.stringify(combos));
-    return { success: true, comments: combo.comments };
+    const comments = [...combo.comments, comment];
+
+    const { error } = await supabase.from('combos').update({ comments }).eq('id', comboId);
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    combo.comments = comments;
+    return { success: true, comments };
   }
 
-  // Saved / Bookmark Combos
-  toggleSaveCombo(comboId) {
+  /**
+   * Bookmarks or removes a combo from the user's saved list in Supabase.
+   * @param {string} comboId - Target combo identifier.
+   * @returns {Promise<Object>} Success flag and active bookmark state.
+   */
+  async toggleSaveCombo(comboId) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to bookmark combos!' };
 
-    const users = this.getUsers();
-    const dbUser = users.find(u => u.id === user.id);
-    
-    if (!dbUser.savedCombos) dbUser.savedCombos = [];
-    
-    const index = dbUser.savedCombos.indexOf(comboId);
+    const savedCombos = [...user.savedCombos];
+    const index = savedCombos.indexOf(comboId);
     let saved = false;
+
     if (index === -1) {
-      dbUser.savedCombos.push(comboId);
+      savedCombos.push(comboId);
       saved = true;
     } else {
-      dbUser.savedCombos.splice(index, 1);
+      savedCombos.splice(index, 1);
       saved = false;
     }
 
-    localStorage.setItem('hc_users', JSON.stringify(users));
-    this.setCurrentUser(dbUser); // update active session
+    const { error } = await supabase.from('users').update({
+      saved_combos: savedCombos
+    }).eq('id', user.id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    user.savedCombos = savedCombos;
+    this.setCurrentUser(user); // update local active session
     return { success: true, saved };
   }
 
-  // Feed Posts DB
+  /**
+   * Retrieves all cached timeline posts.
+   * @returns {Array<Object>} List of posts.
+   */
   getPosts() {
-    return JSON.parse(localStorage.getItem('hc_posts'));
+    return this.posts;
   }
 
-  savePost(postData) {
-    const posts = this.getPosts();
+  /**
+   * Saves a new discussion post to Supabase.
+   * @param {Object} postData - Post metadata (content, optional game, optional video).
+   * @returns {Promise<Object>} Success flag and the new post object.
+   */
+  async savePost(postData) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Must be logged in to post.' };
 
@@ -374,7 +714,7 @@ class Store {
       userId: user.id,
       username: user.username,
       avatarColor: user.avatarColor,
-      game: postData.game,
+      game: postData.game || null,
       content: postData.content,
       videoUrl: postData.videoUrl || '',
       upvotes: 0,
@@ -383,40 +723,64 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    posts.unshift(newPost);
-    localStorage.setItem('hc_posts', JSON.stringify(posts));
+    const { error } = await supabase.from('posts').insert(mapPostToDb(newPost));
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    this.posts.unshift(newPost);
     return { success: true, post: newPost };
   }
 
-  upvotePost(postId) {
-    const posts = this.getPosts();
+  /**
+   * Toggles upvote state on a post in Supabase.
+   * @param {string} postId - Target post identifier.
+   * @returns {Promise<Object>} Success flag, updated upvote count, and toggle state.
+   */
+  async upvotePost(postId) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const post = posts.find(p => p.id === postId);
+    const post = this.posts.find(p => p.id === postId);
     if (!post) return { success: false };
 
-    if (!post.upvotedBy) post.upvotedBy = [];
+    const upvotedBy = [...post.upvotedBy];
+    const index = upvotedBy.indexOf(user.id);
+    let upvotes = post.upvotes;
 
-    const index = post.upvotedBy.indexOf(user.id);
     if (index === -1) {
-      post.upvotedBy.push(user.id);
-      post.upvotes += 1;
+      upvotedBy.push(user.id);
+      upvotes += 1;
     } else {
-      post.upvotedBy.splice(index, 1);
-      post.upvotes -= 1;
+      upvotedBy.splice(index, 1);
+      upvotes -= 1;
     }
 
-    localStorage.setItem('hc_posts', JSON.stringify(posts));
-    return { success: true, upvotes: post.upvotes, upvoted: index === -1 };
+    const { error } = await supabase.from('posts').update({
+      upvotes,
+      upvoted_by: upvotedBy
+    }).eq('id', postId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    post.upvotedBy = upvotedBy;
+    post.upvotes = upvotes;
+    return { success: true, upvotes, upvoted: index === -1 };
   }
 
-  addPostComment(postId, commentText) {
-    const posts = this.getPosts();
+  /**
+   * Appends a comment to a timeline post in Supabase.
+   * @param {string} postId - Target post identifier.
+   * @param {string} commentText - Text content of the comment.
+   * @returns {Promise<Object>} Success flag and updated comment list.
+   */
+  async addPostComment(postId, commentText) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to comment!' };
 
-    const post = posts.find(p => p.id === postId);
+    const post = this.posts.find(p => p.id === postId);
     if (!post) return { success: false };
 
     const comment = {
@@ -426,18 +790,31 @@ class Store {
       date: new Date().toISOString().split('T')[0]
     };
 
-    post.comments.push(comment);
-    localStorage.setItem('hc_posts', JSON.stringify(posts));
-    return { success: true, comments: post.comments };
+    const comments = [...post.comments, comment];
+
+    const { error } = await supabase.from('posts').update({ comments }).eq('id', postId);
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    post.comments = comments;
+    return { success: true, comments };
   }
 
-  // Strategy Guides DB
+  /**
+   * Retrieves all cached strategy articles.
+   * @returns {Array<Object>} List of guides.
+   */
   getStrategies() {
-    return JSON.parse(localStorage.getItem('hc_strategies'));
+    return this.strategies;
   }
 
-  saveStrategy(strategyData) {
-    const strategies = this.getStrategies();
+  /**
+   * Saves a new strategy article in Supabase and cross-posts it to the social timeline.
+   * @param {Object} strategyData - Strategy metadata (game, character, title, content).
+   * @returns {Promise<Object>} Success flag and new strategy object.
+   */
+  async saveStrategy(strategyData) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Must be logged in to post guides.' };
 
@@ -453,11 +830,15 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    strategies.unshift(newStrategy);
-    localStorage.setItem('hc_strategies', JSON.stringify(strategies));
+    const { error } = await supabase.from('strategies').insert(mapStrategyToDb(newStrategy));
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    this.strategies.unshift(newStrategy);
 
     // Also share to feed!
-    this.savePost({
+    await this.savePost({
       game: strategyData.game,
       content: `📚 Just posted a new strategy guide: **"${strategyData.title}"** for **${strategyData.character}**! Check it out in the Strategy Hub.`
     });
@@ -465,27 +846,42 @@ class Store {
     return { success: true, strategy: newStrategy };
   }
 
-  upvoteStrategy(strategyId) {
-    const strategies = this.getStrategies();
+  /**
+   * Toggles upvote state on a strategy guide in Supabase.
+   * @param {string} strategyId - Target guide identifier.
+   * @returns {Promise<Object>} Success flag, updated upvotes count, and toggle state.
+   */
+  async upvoteStrategy(strategyId) {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const strategy = strategies.find(s => s.id === strategyId);
+    const strategy = this.strategies.find(s => s.id === strategyId);
     if (!strategy) return { success: false };
 
-    if (!strategy.upvotedBy) strategy.upvotedBy = [];
+    const upvotedBy = [...strategy.upvotedBy];
+    const index = upvotedBy.indexOf(user.id);
+    let upvotes = strategy.upvotes;
 
-    const index = strategy.upvotedBy.indexOf(user.id);
     if (index === -1) {
-      strategy.upvotedBy.push(user.id);
-      strategy.upvotes += 1;
+      upvotedBy.push(user.id);
+      upvotes += 1;
     } else {
-      strategy.upvotedBy.splice(index, 1);
-      strategy.upvotes -= 1;
+      upvotedBy.splice(index, 1);
+      upvotes -= 1;
     }
 
-    localStorage.setItem('hc_strategies', JSON.stringify(strategies));
-    return { success: true, upvotes: strategy.upvotes, upvoted: index === -1 };
+    const { error } = await supabase.from('strategies').update({
+      upvotes,
+      upvoted_by: upvotedBy
+    }).eq('id', strategyId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    strategy.upvotedBy = upvotedBy;
+    strategy.upvotes = upvotes;
+    return { success: true, upvotes, upvoted: index === -1 };
   }
 }
 

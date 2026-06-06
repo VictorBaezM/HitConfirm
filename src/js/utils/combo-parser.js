@@ -1,4 +1,5 @@
 /* Combo Notation Visual Parser */
+import { escapeHtml } from './security.js';
 
 // Directional mappings (Numpad notation)
 const DIRECTION_ARROWS = {
@@ -63,10 +64,13 @@ const BUTTON_CLASSES = {
 };
 
 /**
- * Parses a combo notation step (e.g., "236HS" or "d/f+2") and returns HTML components.
+ * Parses a single fighting game combo notation step (e.g. "236HS" or "d/f+2")
+ * into visual joystick arrow and styled action button HTML tags.
+ * @param {string} stepStr - The move input string.
+ * @returns {string} - The generated HTML string representing the styled move.
  */
 function parseComboStep(stepStr) {
-  let trimmed = stepStr.trim();
+  let trimmed = escapeHtml(stepStr.trim());
   if (!trimmed) return '';
 
   let html = `<div class="combo-step">`;
@@ -163,8 +167,10 @@ function parseComboStep(stepStr) {
 }
 
 /**
- * Main parser entry point. Takes a full combo string (e.g., "5K > 2D > 214K")
- * and converts it into a full sequence of beautiful HTML elements.
+ * Main parser entry point. Takes a full combo notation sequence (e.g. "5K > 2D > 214K"),
+ * normalizes delimiters, and converts it into a full sequence of beautiful HTML elements.
+ * @param {string} notationString - The raw fighting game combo notation sequence string.
+ * @returns {string} - Generated HTML content displaying the full graphical input list.
  */
 export function parseComboToHtml(notationString) {
   if (!notationString) return '<span class="text-muted">No inputs recorded</span>';

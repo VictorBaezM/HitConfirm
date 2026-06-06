@@ -2,6 +2,12 @@
 import store from '../store.js';
 import { renderComboCard } from '../components/combo-card.js';
 
+/**
+ * Renders the Training Dojo combos page containing text query search filters,
+ * game drop-down menus, difficulty tags, master boards, and combo lists.
+ * @param {function} navigateCallback - SPA router callback.
+ * @param {Object} [initialFilters={}] - Predefined filter parameters (e.g. { game: 'sf6' }).
+ */
 export function renderCombosPage(navigateCallback, initialFilters = {}) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;

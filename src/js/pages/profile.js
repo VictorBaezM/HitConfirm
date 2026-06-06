@@ -3,6 +3,11 @@ import store from '../store.js';
 import { renderComboCard } from '../components/combo-card.js';
 import { renderPostCard } from '../components/post-card.js';
 
+/**
+ * Renders the player dashboard profile page containing custom avatar highlights,
+ * status details, personal published combos, saved training bookmarks, and posts history.
+ * @param {function} navigateCallback - SPA router callback.
+ */
 export function renderProfilePage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
@@ -228,16 +233,23 @@ export function renderProfilePage(navigateCallback) {
       overlay.classList.remove('open');
     });
 
-    document.getElementById('modal-edit-save').addEventListener('click', () => {
-      const users = store.getUsers();
-      const dbUser = users.find(u => u.id === currentUser.id);
-
+    document.getElementById('modal-edit-save').addEventListener('click', async () => {
+      const dbUser = { ...currentUser };
       dbUser.mainGame = editGameSel.value;
       dbUser.mainChar = editCharSel.value;
 
-      localStorage.setItem('hc_users', JSON.stringify(users));
-      store.setCurrentUser(dbUser); // update active session
+      const { supabase } = await import('../supabase.js');
+      const { error } = await supabase.from('users').update({
+        main_game: editGameSel.value,
+        main_char: editCharSel.value
+      }).eq('id', currentUser.id);
 
+      if (error) {
+        window.showToast('Failed to save: ' + error.message);
+        return;
+      }
+
+      store.setCurrentUser(dbUser); // update active session
       window.showToast('Profile mains updated.');
       overlay.classList.remove('open');
       drawDashboard();

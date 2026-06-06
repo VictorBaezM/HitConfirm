@@ -1,4 +1,5 @@
 /* Main Application Router & Entry Point */
+import store from './store.js';
 import { renderNavbar } from './components/navbar.js';
 import { renderFeedPage } from './pages/feed.js';
 import { renderCombosPage } from './pages/combos.js';
@@ -11,7 +12,11 @@ import { openAuthModal } from './pages/auth.js';
 let currentPage = 'feed';
 let pageOptions = {};
 
-// Navigation router
+/**
+ * Handles Single Page Application routing by dynamically rendering components.
+ * @param {string} pageId - The ID of the page/view to display (e.g., 'feed', 'combos', 'builder').
+ * @param {Object} [options={}] - Optional context parameters passed to the page view.
+ */
 export function navigate(pageId, options = {}) {
   currentPage = pageId;
   pageOptions = options;
@@ -34,8 +39,13 @@ export function navigate(pageId, options = {}) {
   `;
 
   // Short timeout to create smooth transition feel
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
+      // Pre-fetch all data from Supabase to fill store memory cache
+      if (store.loadAllData) {
+        await store.loadAllData();
+      }
+
       switch (currentPage) {
         case 'feed':
           renderFeedPage(navigate);
@@ -69,7 +79,11 @@ export function navigate(pageId, options = {}) {
   }, 150);
 }
 
-// Global UI Notifications helper
+/**
+ * Displays a global sliding toast notification at the bottom right.
+ * @param {string} message - Text notification description content.
+ * @param {number} [duration=3000] - Lifespan duration in milliseconds before hiding.
+ */
 window.showToast = function(message, duration = 3000) {
   const toast = document.getElementById('toast-notification');
   if (!toast) return;
@@ -82,7 +96,9 @@ window.showToast = function(message, duration = 3000) {
   }, duration);
 };
 
-// Global Modals configuration
+/**
+ * Configures the global modal overlays and attaches close handlers.
+ */
 function setupGlobalModals() {
   const container = document.getElementById('modal-container');
   const closeBtn = document.getElementById('modal-close');

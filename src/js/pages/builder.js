@@ -2,6 +2,11 @@
 import store from '../store.js';
 import { parseComboToHtml } from '../utils/combo-parser.js';
 
+/**
+ * Renders the visual combo builder workspace containing the interactive virtual lab pad controls,
+ * real-time notation compilation preview, and details submission forms.
+ * @param {function} navigateCallback - SPA router callback.
+ */
 export function renderBuilderPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
@@ -385,7 +390,7 @@ export function renderBuilderPage(navigateCallback) {
   });
 
   // Publish Button click
-  document.getElementById('btn-publish-combo').addEventListener('click', () => {
+  document.getElementById('btn-publish-combo').addEventListener('click', async () => {
     const notationVal = manualInput.value.trim();
     if (!notationVal) {
       window.showToast('Please enter a combo sequence notation before publishing.');
@@ -410,7 +415,7 @@ export function renderBuilderPage(navigateCallback) {
       videoUrl: document.getElementById('combo-video').value.trim()
     };
 
-    const result = store.saveCombo(comboData);
+    const result = await store.saveCombo(comboData);
     if (result.success) {
       window.showToast('Combo published to Dojo & Feed successfully!');
       // Navigate to Dojo combos tab

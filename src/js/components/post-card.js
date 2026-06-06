@@ -1,6 +1,13 @@
 /* Social Post Card Component */
 import store from '../store.js';
+import { escapeHtml } from '../utils/security.js';
 
+/**
+ * Creates and renders a timeline social post card node supporting voting, replying, and youtube media embeds.
+ * @param {Object} post - The post metadata object.
+ * @param {function} navigateCallback - SPA router callback.
+ * @returns {HTMLHtmlElement} Configured post article element node.
+ */
 export function renderPostCard(post, navigateCallback) {
   const currentUser = store.getCurrentUser();
   const isUpvoted = currentUser && post.upvotedBy && post.upvotedBy.includes(currentUser.id);
@@ -42,10 +49,10 @@ export function renderPostCard(post, navigateCallback) {
         ${post.comments.map(c => `
           <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-              <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${c.username}</span>
-              <span style="font-size:0.75rem; color:var(--text-muted);">${c.date}</span>
+              <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
             </div>
-            <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${c.text}</p>
+            <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
           </div>
         `).join('')}
       </div>
@@ -65,11 +72,11 @@ export function renderPostCard(post, navigateCallback) {
     <div class="flex items-center justify-between" style="margin-bottom: 12px;">
       <div class="flex items-center gap-3">
         <div class="avatar" style="border-color: ${post.avatarColor || '#00f0ff'}">
-          ${post.username.substring(0,2).toUpperCase()}
+          ${escapeHtml(post.username.substring(0,2).toUpperCase())}
         </div>
         <div>
           <h4 style="margin: 0; line-height: 1.2;">
-            ${post.username}
+            ${escapeHtml(post.username)}
             ${gameBadge}
           </h4>
           <span style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</span>
@@ -109,12 +116,12 @@ export function renderPostCard(post, navigateCallback) {
 
   // Attach functionality
   const upvoteBtn = card.querySelector('.btn-upvote');
-  upvoteBtn.addEventListener('click', () => {
+  upvoteBtn.addEventListener('click', async () => {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
     }
-    const result = store.upvotePost(post.id);
+    const result = await store.upvotePost(post.id);
     if (result.success) {
       const counter = card.querySelector('.upvote-count');
       counter.innerText = `${result.upvotes} 🔥`;
@@ -135,7 +142,7 @@ export function renderPostCard(post, navigateCallback) {
   const replyBtn = card.querySelector('.btn-submit-comment');
   const commentInput = card.querySelector('.comment-input');
   
-  const submitComment = () => {
+  const submitComment = async () => {
     const text = commentInput.value.trim();
     if (!text) return;
     
@@ -144,7 +151,7 @@ export function renderPostCard(post, navigateCallback) {
       return;
     }
 
-    const result = store.addPostComment(post.id, text);
+    const result = await store.addPostComment(post.id, text);
     if (result.success) {
       commentInput.value = '';
       
@@ -158,10 +165,10 @@ export function renderPostCard(post, navigateCallback) {
           ${result.comments.map(c => `
             <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
               <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${c.username}</span>
-                <span style="font-size:0.75rem; color:var(--text-muted);">${c.date}</span>
+                <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
               </div>
-              <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${c.text}</p>
+              <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
             </div>
           `).join('')}
         </div>
@@ -179,8 +186,9 @@ export function renderPostCard(post, navigateCallback) {
 
 // Inline markdown/text formatting for posts (highlights combos/tags)
 function formatPostText(text) {
+  const escaped = escapeHtml(text);
   // Bold combos or text in asterisks
-  let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--color-secondary); font-family: var(--font-heading);">$1</strong>');
+  let formatted = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--color-secondary); font-family: var(--font-heading);">$1</strong>');
   
   // Highlight hashtag topics
   formatted = formatted.replace(/(#[a-zA-Z0-9_]+)/g, '<span style="color: var(--color-primary); font-weight: 600;">$1</span>');
