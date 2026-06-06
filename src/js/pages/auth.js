@@ -1,5 +1,6 @@
 /* User Registration & Login Modal Handlers */
 import store from '../store.js';
+import { validatePasswordStrength } from '../utils/security.js';
 
 /**
  * Renders and launches the authentication login or registration form inside the global modal overlay.
@@ -150,6 +151,12 @@ export function openAuthModal(type = 'login', navigateCallback) {
 
       if (!usernameVal || !emailVal || !passwordVal) {
         window.showToast('Please fill out all credentials.');
+        return;
+      }
+
+      const passwordCheck = validatePasswordStrength(passwordVal);
+      if (!passwordCheck.isValid) {
+        window.showToast(passwordCheck.message, 5000);
         return;
       }
 

@@ -1,6 +1,6 @@
 /* Visual Combo Builder Page Controller */
 import store from '../store.js';
-import { parseComboToHtml } from '../utils/combo-parser.js';
+import { parseComboToHtml, DIRECTION_ARROWS, MOTIONS } from '../utils/combo-parser.js';
 
 /**
  * Renders the visual combo builder workspace containing the interactive virtual lab pad controls,
@@ -37,6 +37,9 @@ export function renderBuilderPage(navigateCallback) {
         </h4>
         <div id="builder-live-preview" style="min-height: 70px; display: flex; align-items: center;">
           <span class="text-muted" style="font-size: 0.9rem;">Start clicking the virtual pad below to build your combo...</span>
+        </div>
+        <div id="builder-buffer-preview" style="margin-top: 8px; font-size: 0.85rem; min-height: 20px;">
+          <!-- Buffer helper injected here -->
         </div>
         <div class="flex justify-between items-center" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">
           <span>Character: <strong id="preview-char-label" style="color:var(--text-primary);">${selectedCharacter}</strong> (${games[selectedGame].name})</span>
@@ -266,8 +269,45 @@ export function renderBuilderPage(navigateCallback) {
         currentStepBuffer = ''; // reset buffer for next step
         
         updateNotationPreview();
+        updateBufferPreview();
       });
     });
+  };
+
+  const updateBufferPreview = () => {
+    const bufferMount = document.getElementById('builder-buffer-preview');
+    if (!bufferMount) return;
+
+    if (!currentStepBuffer) {
+      bufferMount.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal;">Joystick buffer is empty. Click a direction or motion on the pad above to begin a step.</span>`;
+      return;
+    }
+
+    let display = '';
+    let temp = currentStepBuffer;
+
+    // Check motion
+    for (const [num, label] of Object.entries(MOTIONS)) {
+      if (temp.startsWith(num)) {
+        display += `<span class="combo-motion" style="margin-right: 4px; font-size: 0.75rem; padding: 2px 6px;">${label}</span>`;
+        temp = temp.substring(num.length);
+        break;
+      }
+    }
+
+    // Check directions
+    for (let char of temp) {
+      const arrow = DIRECTION_ARROWS[char] || char;
+      display += `<span class="combo-dir" style="display: inline-block; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${arrow}</span>`;
+    }
+
+    bufferMount.innerHTML = `
+      <div class="flex items-center gap-2" style="background: rgba(255, 170, 0, 0.05); border: 1px dashed rgba(255, 170, 0, 0.3); padding: 8px 12px; border-radius: 6px; width: fit-content;">
+        <span style="color: var(--color-accent); font-size: 0.75rem; font-family: var(--font-heading); text-transform: uppercase;">Buffered:</span>
+        <strong style="font-size: 1rem; display: flex; align-items: center;">${display || 'Neutral'}</strong>
+        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-left: 6px;">(Select an Attack Button below to add this step)</span>
+      </div>
+    `;
   };
 
   // Live preview refresh
@@ -294,6 +334,7 @@ export function renderBuilderPage(navigateCallback) {
   // Initialize Select values
   drawCharacters();
   drawAttackButtons();
+  updateBufferPreview();
 
   // Attach select change listeners
   const gameSelect = document.getElementById('builder-game-select');
@@ -304,6 +345,7 @@ export function renderBuilderPage(navigateCallback) {
     drawCharacters();
     drawAttackButtons();
     updateNotationPreview();
+    updateBufferPreview();
   });
 
   const charSelect = document.getElementById('builder-char-select');
@@ -324,7 +366,7 @@ export function renderBuilderPage(navigateCallback) {
       } else {
         currentStepBuffer += dirVal;
       }
-      window.showToast(`Buffered direction ${dirVal}`);
+      updateBufferPreview();
     });
   });
 
@@ -337,7 +379,7 @@ export function renderBuilderPage(navigateCallback) {
       } else {
         currentStepBuffer = motionVal;
       }
-      window.showToast(`Buffered motion ${motionVal}`);
+      updateBufferPreview();
     });
   });
 
@@ -349,8 +391,8 @@ export function renderBuilderPage(navigateCallback) {
       notationSequence.push(currentStepBuffer);
       currentStepBuffer = '';
     }
-    window.showToast('Link added.');
     updateNotationPreview();
+    updateBufferPreview();
   });
 
   document.getElementById('btn-delete-last').addEventListener('click', () => {
@@ -360,12 +402,14 @@ export function renderBuilderPage(navigateCallback) {
       notationSequence.pop();
     }
     updateNotationPreview();
+    updateBufferPreview();
   });
 
   document.getElementById('btn-clear-all').addEventListener('click', () => {
     notationSequence = [];
     currentStepBuffer = '';
     updateNotationPreview();
+    updateBufferPreview();
     window.showToast('Combo cleared.');
   });
 

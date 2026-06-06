@@ -427,3 +427,208 @@
   font-size: 2rem;
   border-width: 3px;
 }
+
+/* Custom Profile Settings Styles */
+.profile-modal-section-title {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  margin-top: 18px;
+  margin-bottom: 12px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+
+.game-select-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Customized selection chip */
+.selection-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.selection-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+/* Active states for selection chips based on game */
+.selection-chip.active[data-game="sf6"] {
+  background: rgba(255, 170, 0, 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
+}
+
+.selection-chip.active[data-game="t8"] {
+  background: rgba(255, 0, 91, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(255, 0, 91, 0.2);
+}
+
+.selection-chip.active[data-game="ggst"] {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.selection-chip.active[data-game="ssbu"] {
+  background: rgba(180, 77, 255, 0.1);
+  border-color: #c384ff;
+  color: #c384ff;
+  box-shadow: 0 0 10px rgba(180, 77, 255, 0.2);
+}
+
+/* Character chip container */
+.char-selection-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+/* Other Game Cards */
+.edit-game-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.edit-game-card:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--border-color-hover);
+}
+
+/* Game Card Active States */
+.edit-game-card.active.game-sf6 {
+  background: rgba(255, 170, 0, 0.03);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.25);
+}
+
+.edit-game-card.active.game-t8 {
+  background: rgba(255, 0, 91, 0.03);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px rgba(255, 0, 91, 0.25);
+}
+
+.edit-game-card.active.game-ggst {
+  background: rgba(0, 240, 255, 0.03);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+}
+
+.edit-game-card.active.game-ssbu {
+  background: rgba(180, 77, 255, 0.03);
+  border-color: #c384ff;
+  box-shadow: 0 0 15px rgba(180, 77, 255, 0.25);
+}
+
+/* Character chip grid */
+.char-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+/* Character chip standard style */
+.char-chip {
+  padding: 8px 6px;
+  font-size: 0.75rem;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.char-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+/* Character chip active states */
+.char-chip.active[data-game="sf6"] {
+  background: rgba(255, 170, 0, 0.15);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.25);
+}
+
+.char-chip.active[data-game="t8"] {
+  background: rgba(255, 0, 91, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(255, 0, 91, 0.25);
+}
+
+.char-chip.active[data-game="ggst"] {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+}
+
+.char-chip.active[data-game="ssbu"] {
+  background: rgba(180, 77, 255, 0.15);
+  border-color: #c384ff;
+  color: #c384ff;
+  box-shadow: 0 0 10px rgba(180, 77, 255, 0.25);
+}
+
+/* Active Status Indicators */
+.edit-game-card .status-indicator {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-family: var(--font-heading);
+  transition: color var(--transition-fast);
+}
+
+.edit-game-card.active.game-sf6 .status-indicator {
+  color: var(--color-accent) !important;
+}
+
+.edit-game-card.active.game-t8 .status-indicator {
+  color: var(--color-primary) !important;
+}
+
+.edit-game-card.active.game-ggst .status-indicator {
+  color: var(--color-secondary) !important;
+}
+
+.edit-game-card.active.game-ssbu .status-indicator {
+  color: #c384ff !important;
+}
+
+

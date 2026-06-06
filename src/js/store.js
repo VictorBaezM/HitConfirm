@@ -167,7 +167,10 @@ function mapUserFromDb(row) {
     mainGame: row.main_game,
     mainChar: row.main_char,
     rank: row.rank,
-    savedCombos: row.saved_combos || []
+    savedCombos: row.saved_combos || [],
+    playedGames: row.played_games || [],
+    gameCharacters: row.game_characters || {},
+    following: row.following || []
   };
 }
 
@@ -180,7 +183,10 @@ function mapUserToDb(user) {
     main_game: user.mainGame,
     main_char: user.mainChar,
     rank: user.rank,
-    saved_combos: user.savedCombos || []
+    saved_combos: user.savedCombos || [],
+    played_games: user.playedGames || [],
+    game_characters: user.gameCharacters || {},
+    following: user.following || []
   };
 }
 
@@ -648,13 +654,17 @@ class Store {
       upvotes -= 1;
     }
 
-    const { error } = await supabase.from('combos').update({
+    const { data, error } = await supabase.from('combos').update({
       upvotes,
       upvoted_by: upvotedBy
-    }).eq('id', comboId);
+    }).eq('id', comboId).select();
 
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to react to this combo. (Check Row Level Security policies).' };
     }
 
     combo.upvotedBy = upvotedBy;
@@ -685,9 +695,13 @@ class Store {
 
     const comments = [...combo.comments, comment];
 
-    const { error } = await supabase.from('combos').update({ comments }).eq('id', comboId);
+    const { data, error } = await supabase.from('combos').update({ comments }).eq('id', comboId).select();
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to comment on this combo. (Check Row Level Security policies).' };
     }
 
     combo.comments = comments;
@@ -715,17 +729,59 @@ class Store {
       saved = false;
     }
 
-    const { error } = await supabase.from('users').update({
+    const { data, error } = await supabase.from('users').update({
       saved_combos: savedCombos
-    }).eq('id', user.id);
+    }).eq('id', user.id).select();
 
     if (error) {
       return { success: false, error: error.message };
     }
 
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to modify bookmarks.' };
+    }
+
     user.savedCombos = savedCombos;
     this.setCurrentUser(user); // update local active session
     return { success: true, saved };
+  }
+
+  /**
+   * Toggles the follow status of a target user.
+   * @param {string} targetUserId - Target player's user ID.
+   * @returns {Promise<Object>} Object containing success status and current followed state.
+   */
+  async toggleFollowUser(targetUserId) {
+    const user = this.getCurrentUser();
+    if (!user) return { success: false, error: 'Log in to follow players!' };
+
+    const following = [...(user.following || [])];
+    const index = following.indexOf(targetUserId);
+    let followed = false;
+
+    if (index === -1) {
+      following.push(targetUserId);
+      followed = true;
+    } else {
+      following.splice(index, 1);
+      followed = false;
+    }
+
+    const { data, error } = await supabase.from('users').update({
+      following: following
+    }).eq('id', user.id).select();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to follow players.' };
+    }
+
+    user.following = following;
+    this.setCurrentUser(user); // Update local cache
+    return { success: true, followed };
   }
 
   /**
@@ -792,13 +848,17 @@ class Store {
       upvotes -= 1;
     }
 
-    const { error } = await supabase.from('posts').update({
+    const { data, error } = await supabase.from('posts').update({
       upvotes,
       upvoted_by: upvotedBy
-    }).eq('id', postId);
+    }).eq('id', postId).select();
 
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to react to this post. (Check Row Level Security policies).' };
     }
 
     post.upvotedBy = upvotedBy;
@@ -828,9 +888,13 @@ class Store {
 
     const comments = [...post.comments, comment];
 
-    const { error } = await supabase.from('posts').update({ comments }).eq('id', postId);
+    const { data, error } = await supabase.from('posts').update({ comments }).eq('id', postId).select();
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to comment on this post. (Check Row Level Security policies).' };
     }
 
     post.comments = comments;
@@ -906,13 +970,17 @@ class Store {
       upvotes -= 1;
     }
 
-    const { error } = await supabase.from('strategies').update({
+    const { data, error } = await supabase.from('strategies').update({
       upvotes,
       upvoted_by: upvotedBy
-    }).eq('id', strategyId);
+    }).eq('id', strategyId).select();
 
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Database update failed. You may not have permission to react to this strategy. (Check Row Level Security policies).' };
     }
 
     strategy.upvotedBy = upvotedBy;

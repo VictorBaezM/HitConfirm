@@ -259,6 +259,8 @@ export function renderStrategyPage(navigateCallback) {
         const origList = store.getStrategies();
         activeGuide = origList.find(g => g.id === activeGuide.id);
         drawGuidesList(selectedGame === 'all' ? origList : origList.filter(g => g.game === selectedGame));
+      } else {
+        window.showToast(result.error || 'Failed to update reaction.');
       }
     });
   };

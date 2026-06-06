@@ -150,6 +150,8 @@ export function renderComboCard(combo, navigateCallback) {
       } else {
         upvoteBtn.classList.remove('active');
       }
+    } else {
+      window.showToast(result.error || 'Failed to update reaction.');
     }
   });
 
@@ -171,6 +173,8 @@ export function renderComboCard(combo, navigateCallback) {
         saveBtn.querySelector('i').className = 'fa-regular fa-bookmark';
         window.showToast('Combo removed from your Dojo.');
       }
+    } else {
+      window.showToast(result.error || 'Failed to update bookmark.');
     }
   });
 
@@ -258,6 +262,8 @@ export function renderComboCard(combo, navigateCallback) {
       commentCountLabel.innerText = result.comments.length;
       const commentsContainer = card.querySelector('.combo-comments-container');
       commentsContainer.innerHTML = renderCommentsList(result.comments);
+    } else {
+      window.showToast(result.error || 'Failed to post comment.');
     }
   };
 

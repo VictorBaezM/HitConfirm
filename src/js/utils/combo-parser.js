@@ -2,7 +2,7 @@
 import { escapeHtml } from './security.js';
 
 // Directional mappings (Numpad notation)
-const DIRECTION_ARROWS = {
+export const DIRECTION_ARROWS = {
   '1': '↙',
   '2': '↓',
   '3': '↘',
@@ -23,7 +23,7 @@ const DIRECTION_ARROWS = {
   'u': '↑'
 };
 
-const MOTIONS = {
+export const MOTIONS = {
   '236': 'QCF',
   '214': 'QCB',
   '623': 'DP',

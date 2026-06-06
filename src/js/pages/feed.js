@@ -24,6 +24,12 @@ export function renderFeedPage(navigateCallback) {
       <!-- Create Post Panel -->
       <div id="post-creator-box"></div>
 
+      <!-- Feed Tab Toggle -->
+      <div class="tabs" style="margin-bottom: 16px;">
+        <div class="tab active" id="feed-tab-all">All Activity</div>
+        <div class="tab" id="feed-tab-following">Following Feed</div>
+      </div>
+
       <!-- Game Chips Selection -->
       <div class="game-selector-bar" id="feed-game-chips">
         <div class="game-chip active" data-game="all">All Games</div>
@@ -74,11 +80,41 @@ export function renderFeedPage(navigateCallback) {
 
   // Draw Timeline List
   let activeGameFilter = 'all';
+  let activeFeedTab = 'all'; // 'all' or 'following'
+
   const refreshTimeline = () => {
     const listMount = document.getElementById('timeline-list');
     if (!listMount) return;
 
-    const posts = store.getPosts();
+    let posts = store.getPosts();
+    
+    // 1. Filter by feed tab
+    if (activeFeedTab === 'following') {
+      if (!currentUser) {
+        listMount.innerHTML = `
+          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary); border-color: rgba(255, 0, 91, 0.15);">
+            <i class="fa-solid fa-lock" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <h3>Log in to see your following feed</h3>
+            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players and keep up with their lab clips and notes!</p>
+          </div>
+        `;
+        return;
+      }
+      const followingList = currentUser.following || [];
+      if (followingList.length === 0) {
+        listMount.innerHTML = `
+          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+            <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <h3>Your following feed is empty</h3>
+            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players in the community to customize your activity feed.</p>
+          </div>
+        `;
+        return;
+      }
+      posts = posts.filter(p => followingList.includes(p.userId));
+    }
+
+    // 2. Filter by game chip
     const filtered = activeGameFilter === 'all' 
       ? posts 
       : posts.filter(p => p.game === activeGameFilter);
@@ -101,6 +137,24 @@ export function renderFeedPage(navigateCallback) {
   };
 
   refreshTimeline();
+
+  // Attach Feed Tab listeners
+  const tabAll = document.getElementById('feed-tab-all');
+  const tabFollowing = document.getElementById('feed-tab-following');
+  
+  tabAll.addEventListener('click', () => {
+    tabAll.classList.add('active');
+    tabFollowing.classList.remove('active');
+    activeFeedTab = 'all';
+    refreshTimeline();
+  });
+  
+  tabFollowing.addEventListener('click', () => {
+    tabFollowing.classList.add('active');
+    tabAll.classList.remove('active');
+    activeFeedTab = 'following';
+    refreshTimeline();
+  });
 
   // Draw Hot Combos Widget
   const refreshHotCombos = () => {

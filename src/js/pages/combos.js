@@ -36,6 +36,12 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         </button>
       </div>
 
+      <!-- Dojo Tab Toggle -->
+      <div class="tabs" style="margin-bottom: 16px;">
+        <div class="tab active" id="dojo-tab-all">Browse Dojo</div>
+        <div class="tab" id="dojo-tab-following">Following Dojo</div>
+      </div>
+
       <!-- Filters Panel -->
       <div class="card" style="padding: 16px; margin-bottom: 24px;">
         <div style="display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center;">
@@ -101,14 +107,42 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     if (gameSel) gameSel.value = initialFilters.game;
   }
 
+  let activeDojoTab = 'all'; // 'all' or 'following'
+
   // Draw list function
   const drawList = () => {
     const listMount = document.getElementById('dojo-combos-list');
     if (!listMount) return;
 
-    const combos = store.getCombos();
+    let combos = store.getCombos();
     
-    // Perform Filtering
+    // 1. Filter by Following tab
+    if (activeDojoTab === 'following') {
+      if (!currentUser) {
+        listMount.innerHTML = `
+          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary); border-color: rgba(0, 240, 255, 0.15);">
+            <i class="fa-solid fa-lock" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <h3>Log in to see combos from followed users</h3>
+            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other lab masters and see their optimized combos here!</p>
+          </div>
+        `;
+        return;
+      }
+      const followingList = currentUser.following || [];
+      if (followingList.length === 0) {
+        listMount.innerHTML = `
+          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+            <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <h3>Your Following Dojo is empty</h3>
+            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players in the community to customize your Dojo.</p>
+          </div>
+        `;
+        return;
+      }
+      combos = combos.filter(c => followingList.includes(c.userId));
+    }
+    
+    // 2. Perform Filtering
     const filtered = combos.filter(c => {
       // Game Filter
       if (activeGame !== 'all' && c.game !== activeGame) return false;
@@ -195,6 +229,24 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
   drawList();
   drawTopLabMasters();
+
+  // Attach Dojo Tab listeners
+  const tabAll = document.getElementById('dojo-tab-all');
+  const tabFollowing = document.getElementById('dojo-tab-following');
+  
+  tabAll.addEventListener('click', () => {
+    tabAll.classList.add('active');
+    tabFollowing.classList.remove('active');
+    activeDojoTab = 'all';
+    drawList();
+  });
+  
+  tabFollowing.addEventListener('click', () => {
+    tabFollowing.classList.add('active');
+    tabAll.classList.remove('active');
+    activeDojoTab = 'following';
+    drawList();
+  });
 
   // Attach filter event handlers
   const searchInput = document.getElementById('dojo-search-char');

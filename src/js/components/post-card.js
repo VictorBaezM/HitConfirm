@@ -130,6 +130,8 @@ export function renderPostCard(post, navigateCallback) {
       } else {
         upvoteBtn.classList.remove('active');
       }
+    } else {
+      window.showToast(result.error || 'Failed to update reaction.');
     }
   });
 
@@ -173,6 +175,8 @@ export function renderPostCard(post, navigateCallback) {
           `).join('')}
         </div>
       `;
+    } else {
+      window.showToast(result.error || 'Failed to post reply.');
     }
   };
 

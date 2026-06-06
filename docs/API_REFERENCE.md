@@ -18,6 +18,18 @@ This document provides a comprehensive Javadocs-standard API documentation regis
   // returns &lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;
   ```
 
+### `validatePasswordStrength(password)`
+* **Description:** Validates a password against security complexity requirements (minimum 8 characters, uppercase, lowercase, digit, and special symbol).
+* **Parameters:**
+  * `password` (`string`): Raw password input value.
+* **Returns:** `Object` - Validation status object containing `isValid` (`boolean`) and feedback `message` (`string`).
+* **Example:**
+  ```javascript
+  import { validatePasswordStrength } from './security.js';
+  const res = validatePasswordStrength('weak');
+  // returns { isValid: false, message: 'Password must be at least 8 characters long.' }
+  ```
+
 ### `parseComboStep(stepStr)`
 * **Description:** Parses a single combo step string (e.g. `236HS` or `d/f+2`) and wraps its directional/action sub-tokens in visual HTML elements.
 * **Parameters:**
@@ -221,6 +233,12 @@ This document provides a comprehensive Javadocs-standard API documentation regis
 * **Parameters:**
   * `comboId` (`string`): Combo card ID.
 * **Returns:** `Promise<Object>` - Result success flag and bookmark state.
+
+### `Store.toggleFollowUser(targetUserId)`
+* **Description:** Toggles the follow status of another user for the current logged-in user, persisting the follow state in the database.
+* **Parameters:**
+  * `targetUserId` (`string`): The user ID of the player to follow/unfollow.
+* **Returns:** `Promise<Object>` - Object containing `success` (`boolean`) and `followed` (`boolean`) indicating the active follow status.
 
 ### `Store.getPosts()`
 * **Description:** Returns cached timeline social posts.
