@@ -7,8 +7,9 @@ import { renderPostCard } from '../components/post-card.js';
  * Renders the player dashboard profile page containing custom avatar highlights,
  * status details, personal published combos, saved training bookmarks, and posts history.
  * @param {function} navigateCallback - SPA router callback.
+ * @param {Object} [options={}] - Route option parameters (e.g. { userId: '...' }).
  */
-export function renderProfilePage(navigateCallback) {
+export function renderProfilePage(navigateCallback, options = {}) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
@@ -18,8 +19,17 @@ export function renderProfilePage(navigateCallback) {
   const currentUser = store.getCurrentUser();
   const games = store.getGames();
 
-  // If user is not logged in, show lock/auth prompt screen
-  if (!currentUser) {
+  // Determine which user profile to render
+  let targetUser = null;
+  if (options.userId) {
+    targetUser = store.getUsers().find(u => u.id === options.userId);
+  }
+
+  const isPublicView = targetUser && (!currentUser || currentUser.id !== targetUser.id);
+  const viewedUser = isPublicView ? targetUser : currentUser;
+
+  // If no profile to display (logged out and trying to view own profile)
+  if (!viewedUser) {
     mount.innerHTML = `
       <div style="grid-column: span 2; display: flex; justify-content: center; align-items: center; padding: 64px 16px;">
         <div class="card" style="max-width: 480px; width: 100%; text-align: center; border-color: rgba(0, 240, 255, 0.2); box-shadow: var(--glow-secondary);">
@@ -48,93 +58,8 @@ export function renderProfilePage(navigateCallback) {
   // Logged-in profile dashboard
   let activeTab = 'my-combos'; // my-combos, saved-combos, my-posts
 
-  const drawDashboard = () => {
-    const mainGameName = games[currentUser.mainGame]?.name || currentUser.mainGame;
-    
-    mount.innerHTML = `
-      <!-- User profile submissions (Left Pane) -->
-      <div id="profile-left-pane">
-        <!-- Submissions Navigation Tabs -->
-        <div class="tabs">
-          <div class="tab ${activeTab === 'my-combos' ? 'active' : ''}" data-tab="my-combos">My Combos</div>
-          <div class="tab ${activeTab === 'saved-combos' ? 'active' : ''}" data-tab="saved-combos">Saved Combos</div>
-          <div class="tab ${activeTab === 'my-posts' ? 'active' : ''}" data-tab="my-posts">My Posts</div>
-        </div>
-
-        <!-- Dynamic Content List -->
-        <div id="profile-submissions-list"></div>
-      </div>
-
-      <!-- User Info & Lab Details Sidebar (Right Pane) -->
-      <div id="profile-sidebar" class="flex flex-col gap-6">
-        <!-- Card details -->
-        <div class="card" style="text-align: center; position: relative;">
-          <div class="avatar avatar-large" style="border-color: ${currentUser.avatarColor}; margin: 0 auto 16px auto;">
-            ${currentUser.username.substring(0, 2).toUpperCase()}
-          </div>
-          
-          <h2 style="font-size: 1.5rem; margin-bottom: 4px;">${currentUser.username}</h2>
-          <div style="font-family: var(--font-heading); font-weight: 700; color: var(--color-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 16px;">
-            ${currentUser.rank || 'Beginner'}
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; margin-bottom: 16px;">
-            <div class="flex justify-between">
-              <span style="color: var(--text-secondary);">Main Game:</span>
-              <strong style="color: var(--text-primary);">${mainGameName}</strong>
-            </div>
-            <div class="flex justify-between">
-              <span style="color: var(--text-secondary);">Main Character:</span>
-              <strong style="color: var(--text-primary);">${currentUser.mainChar}</strong>
-            </div>
-          </div>
-
-          <button class="btn btn-secondary btn-sm w-full" id="btn-edit-profile-mains">
-            <i class="fa-solid fa-user-gear"></i> Edit Main Pick
-          </button>
-        </div>
-
-        <!-- Stats widget -->
-        <div class="card" style="padding: 20px;">
-          <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-            Dojo Achievement Status
-          </h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
-            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
-              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-primary);">${countUserCombos()}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">Created Combos</div>
-            </div>
-            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
-              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-secondary);">${currentUser.savedCombos?.length || 0}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">Saved Combos</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Draw Tab content
-    drawTabList();
-
-    // Attach Tab listeners
-    const tabs = mount.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        activeTab = tab.getAttribute('data-tab');
-        drawTabList();
-      });
-    });
-
-    // Attach Edit button listener
-    document.getElementById('btn-edit-profile-mains').addEventListener('click', () => {
-      openEditMainsModal();
-    });
-  };
-
-  const countUserCombos = () => {
-    return store.getCombos().filter(c => c.userId === currentUser.id).length;
+  const countUserCombos = (userId) => {
+    return store.getCombos().filter(c => c.userId === userId).length;
   };
 
   const drawTabList = () => {
@@ -143,12 +68,12 @@ export function renderProfilePage(navigateCallback) {
 
     listMount.innerHTML = '';
 
-    if (activeTab === 'my-combos') {
-      const combos = store.getCombos().filter(c => c.userId === currentUser.id);
+    if (isPublicView || activeTab === 'my-combos') {
+      const combos = store.getCombos().filter(c => c.userId === viewedUser.id);
       if (combos.length === 0) {
         listMount.innerHTML = `
           <div class="card" style="text-align: center; padding: 36px; color: var(--text-secondary);">
-            <p>You haven't posted any combos yet. Go to the Combo Builder to publish one!</p>
+            <p>${viewedUser.username} hasn't posted any combos yet.</p>
           </div>
         `;
         return;
@@ -157,7 +82,7 @@ export function renderProfilePage(navigateCallback) {
         listMount.appendChild(renderComboCard(combo, navigateCallback));
       });
     } else if (activeTab === 'saved-combos') {
-      const savedIds = currentUser.savedCombos || [];
+      const savedIds = viewedUser.savedCombos || [];
       const combos = store.getCombos().filter(c => savedIds.includes(c.id));
       if (combos.length === 0) {
         listMount.innerHTML = `
@@ -171,7 +96,7 @@ export function renderProfilePage(navigateCallback) {
         listMount.appendChild(renderComboCard(combo, navigateCallback));
       });
     } else if (activeTab === 'my-posts') {
-      const posts = store.getPosts().filter(p => p.userId === currentUser.id);
+      const posts = store.getPosts().filter(p => p.userId === viewedUser.id);
       if (posts.length === 0) {
         listMount.innerHTML = `
           <div class="card" style="text-align: center; padding: 36px; color: var(--text-secondary);">
@@ -182,6 +107,126 @@ export function renderProfilePage(navigateCallback) {
       }
       posts.forEach(post => {
         listMount.appendChild(renderPostCard(post, navigateCallback));
+      });
+    }
+  };
+
+  const drawDashboard = () => {
+    const mainGameName = games[viewedUser.mainGame]?.name || viewedUser.mainGame;
+    
+    // Hide action tabs and edit pick buttons for public view
+    const leftPaneHtml = isPublicView
+      ? `
+        <div class="tabs">
+          <div class="tab active" style="cursor: default;">Published Combos</div>
+        </div>
+        <div id="profile-submissions-list"></div>
+      `
+      : `
+        <div class="tabs">
+          <div class="tab ${activeTab === 'my-combos' ? 'active' : ''}" data-tab="my-combos">My Combos</div>
+          <div class="tab ${activeTab === 'saved-combos' ? 'active' : ''}" data-tab="saved-combos">Saved Combos</div>
+          <div class="tab ${activeTab === 'my-posts' ? 'active' : ''}" data-tab="my-posts">My Posts</div>
+        </div>
+        <div id="profile-submissions-list"></div>
+      `;
+
+    const editButtonHtml = isPublicView
+      ? ''
+      : `
+        <button class="btn btn-secondary btn-sm w-full" id="btn-edit-profile-mains" style="margin-top: 12px;">
+          <i class="fa-solid fa-user-gear"></i> Edit Main Pick
+        </button>
+      `;
+
+    const statsWidgetHtml = isPublicView
+      ? `
+        <div class="card" style="padding: 20px;">
+          <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+            Dojo Achievement Status
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr; text-align: center;">
+            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
+              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-primary);">${countUserCombos(viewedUser.id)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">Created Combos</div>
+            </div>
+          </div>
+        </div>
+      `
+      : `
+        <div class="card" style="padding: 20px;">
+          <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+            Dojo Achievement Status
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
+            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
+              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-primary);">${countUserCombos(viewedUser.id)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">Created Combos</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
+              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-secondary);">${viewedUser.savedCombos?.length || 0}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">Saved Combos</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+    mount.innerHTML = `
+      <!-- User profile submissions (Left Pane) -->
+      <div id="profile-left-pane">
+        ${leftPaneHtml}
+      </div>
+
+      <!-- User Info & Lab Details Sidebar (Right Pane) -->
+      <div id="profile-sidebar" class="flex flex-col gap-6">
+        <!-- Card details -->
+        <div class="card" style="text-align: center; position: relative;">
+          <div class="avatar avatar-large" style="border-color: ${viewedUser.avatarColor}; margin: 0 auto 16px auto;">
+            ${viewedUser.username.substring(0, 2).toUpperCase()}
+          </div>
+          
+          <h2 style="font-size: 1.5rem; margin-bottom: 4px;">${viewedUser.username}</h2>
+          <div style="font-family: var(--font-heading); font-weight: 700; color: var(--color-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 16px;">
+            ${viewedUser.rank || 'Beginner'}
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem;">
+            <div class="flex justify-between">
+              <span style="color: var(--text-secondary);">Main Game:</span>
+              <strong style="color: var(--text-primary);">${mainGameName}</strong>
+            </div>
+            <div class="flex justify-between">
+              <span style="color: var(--text-secondary);">Main Character:</span>
+              <strong style="color: var(--text-primary);">${viewedUser.mainChar}</strong>
+            </div>
+          </div>
+
+          ${editButtonHtml}
+        </div>
+
+        <!-- Stats widget -->
+        ${statsWidgetHtml}
+      </div>
+    `;
+
+    // Draw Tab content
+    drawTabList();
+
+    // Attach Tab listeners only if it's the owner's profile
+    if (!isPublicView) {
+      const tabs = mount.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          activeTab = tab.getAttribute('data-tab');
+          drawTabList();
+        });
+      });
+
+      // Attach Edit button listener
+      document.getElementById('btn-edit-profile-mains').addEventListener('click', () => {
+        openEditMainsModal();
       });
     }
   };

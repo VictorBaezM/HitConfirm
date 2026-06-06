@@ -88,19 +88,8 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
           <i class="fa-solid fa-trophy" style="color: var(--color-accent);"></i> Top Lab Masters
         </h3>
-        <div class="flex flex-col gap-3">
-          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
-            <span style="font-weight: 700; color: var(--color-secondary);">1. SolManiac</span>
-            <span style="color: var(--text-muted);">18 combos</span>
-          </div>
-          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
-            <span style="font-weight: 700; color: var(--color-secondary);">2. DaigoFan99</span>
-            <span style="color: var(--text-muted);">14 combos</span>
-          </div>
-          <div class="flex justify-between items-center" style="font-size: 0.85rem;">
-            <span style="font-weight: 700; color: var(--color-secondary);">3. ElectricWindGod</span>
-            <span style="color: var(--text-muted);">11 combos</span>
-          </div>
+        <div id="top-lab-masters-mount" class="flex flex-col gap-3">
+          <!-- Dynamically populated -->
         </div>
       </div>
     </div>
@@ -154,7 +143,58 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     });
   };
 
+  // Draw top lab masters
+  const drawTopLabMasters = () => {
+    const mastersMount = document.getElementById('top-lab-masters-mount');
+    if (!mastersMount) return;
+
+    const combosList = store.getCombos();
+    const usersList = store.getUsers();
+
+    const comboCounts = {};
+    combosList.forEach(c => {
+      if (c.userId) {
+        comboCounts[c.userId] = (comboCounts[c.userId] || 0) + 1;
+      }
+    });
+
+    const rankedUsers = usersList
+      .map(u => ({
+        ...u,
+        comboCount: comboCounts[u.id] || 0
+      }))
+      .sort((a, b) => b.comboCount - a.comboCount || a.username.localeCompare(b.username))
+      .slice(0, 3);
+
+    mastersMount.innerHTML = '';
+    
+    if (rankedUsers.length === 0) {
+      mastersMount.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin: 0;">No active users found.</p>`;
+      return;
+    }
+
+    rankedUsers.forEach((user, index) => {
+      const row = document.createElement('div');
+      row.className = 'flex justify-between items-center';
+      row.style.fontSize = '0.85rem';
+      
+      row.innerHTML = `
+        <span class="master-link" style="font-weight: 700; color: var(--color-secondary); cursor: pointer; text-decoration: underline;">
+          ${index + 1}. ${user.username}
+        </span>
+        <span style="color: var(--text-muted);">${user.comboCount} combo${user.comboCount === 1 ? '' : 's'}</span>
+      `;
+
+      row.querySelector('.master-link').addEventListener('click', () => {
+        navigateCallback('profile', { userId: user.id });
+      });
+
+      mastersMount.appendChild(row);
+    });
+  };
+
   drawList();
+  drawTopLabMasters();
 
   // Attach filter event handlers
   const searchInput = document.getElementById('dojo-search-char');

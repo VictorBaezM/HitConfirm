@@ -72,7 +72,7 @@ export function renderComboCard(combo, navigateCallback) {
 
     <h3 style="margin-bottom: 8px; font-size: 1.25rem;">${escapeHtml(combo.title)}</h3>
     <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
-      Shared by <strong style="color: var(--text-primary);">${escapeHtml(combo.username)}</strong>
+      Shared by <strong class="combo-author-link" style="color: var(--color-secondary); cursor: pointer; text-decoration: underline;">${escapeHtml(combo.username)}</strong>
     </div>
 
     <!-- Visual Combo Rendering -->
@@ -265,6 +265,14 @@ export function renderComboCard(combo, navigateCallback) {
   commentInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') submitComboComment();
   });
+
+  // Attach author click listener
+  const authorLink = card.querySelector('.combo-author-link');
+  if (authorLink) {
+    authorLink.addEventListener('click', () => {
+      navigateCallback('profile', { userId: combo.userId });
+    });
+  }
 
   return card;
 }

@@ -355,10 +355,12 @@ This document provides a comprehensive Javadocs-standard API documentation regis
   * `navigateCallback` (`function`): Router callback.
 * **Returns:** `void`
 
-### `renderProfilePage(navigateCallback)`
-* **Description:** Renders the personal Dojo dashboard.
+### `renderProfilePage(navigateCallback, options)`
+* **Description:** Renders the player dashboard profile page. Displays a public read-only guest layout if `options.userId` specifies a user ID other than the currently logged-in user.
 * **Parameters:**
   * `navigateCallback` (`function`): Router callback.
+  * `options` (`Object`): Context/routing parameters.
+    * `options.userId` (`string`): Target user profile ID to display.
 * **Returns:** `void`
 
 ### `renderStrategyPage(navigateCallback)`

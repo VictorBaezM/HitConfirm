@@ -60,7 +60,7 @@ export function navigate(pageId, options = {}) {
           renderStrategyPage(navigate);
           break;
         case 'profile':
-          renderProfilePage(navigate);
+          renderProfilePage(navigate, pageOptions);
           break;
         default:
           renderFeedPage(navigate);

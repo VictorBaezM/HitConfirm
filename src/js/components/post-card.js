@@ -71,12 +71,12 @@ export function renderPostCard(post, navigateCallback) {
   card.innerHTML = `
     <div class="flex items-center justify-between" style="margin-bottom: 12px;">
       <div class="flex items-center gap-3">
-        <div class="avatar" style="border-color: ${post.avatarColor || '#00f0ff'}">
+        <div class="avatar post-author-link" style="border-color: ${post.avatarColor || '#00f0ff'}; cursor: pointer;">
           ${escapeHtml(post.username.substring(0,2).toUpperCase())}
         </div>
         <div>
           <h4 style="margin: 0; line-height: 1.2;">
-            ${escapeHtml(post.username)}
+            <span class="post-author-link" style="cursor: pointer; color: var(--color-secondary); text-decoration: underline;">${escapeHtml(post.username)}</span>
             ${gameBadge}
           </h4>
           <span style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</span>
@@ -179,6 +179,14 @@ export function renderPostCard(post, navigateCallback) {
   replyBtn.addEventListener('click', submitComment);
   commentInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') submitComment();
+  });
+
+  // Attach author click listener
+  const authorLinks = card.querySelectorAll('.post-author-link');
+  authorLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      navigateCallback('profile', { userId: post.userId });
+    });
   });
 
   return card;
