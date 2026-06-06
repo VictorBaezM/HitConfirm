@@ -476,31 +476,25 @@ class Store {
       return { success: false, error: 'Sign up succeeded, but user data not returned.' };
     }
 
-    const newUser = {
-      id: authUser.id, // UUID from Supabase Auth
-      username,
-      avatarColor: randomColor,
-      mainGame,
-      mainChar,
-      rank: 'Beginner',
-      savedCombos: []
-    };
-
     // If auto-logged in (email confirmation disabled)
     if (data.session) {
-      // Try to create the profile row directly on the client side
-      const { error: insertError } = await supabase.from('users').insert(mapUserToDb(newUser));
-      
-      if (insertError) {
-        // Unique violation (23505) is ignored since it means the DB trigger already created it
-        if (insertError.code !== '23505') {
-          return { success: false, error: insertError.message };
-        }
-      }
+      // Small delay to allow the DB trigger to complete inserting user record in public.users
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      this.usersCache.push(newUser);
-      this.setCurrentUser(newUser);
-      return { success: true, user: newUser };
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!profileError && profile) {
+        const clientUser = mapUserFromDb(profile);
+        this.usersCache.push(clientUser);
+        this.setCurrentUser(clientUser);
+        return { success: true, user: clientUser };
+      } else if (profileError) {
+        return { success: false, error: 'Failed to retrieve profile created by trigger: ' + profileError.message };
+      }
     }
 
     // If session is null (email confirmation is enabled, user must verify email)
