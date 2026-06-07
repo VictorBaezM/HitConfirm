@@ -3,6 +3,8 @@ import store from '../store.js';
 import { renderPostCard } from '../components/post-card.js';
 import { renderComboCard } from '../components/combo-card.js';
 import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
+import { extractYouTubeVideoId, fetchVideoTitle, validateVideoTitle, GAME_VIDEO_KEYWORDS } from '../utils/video-validator.js';
+import { escapeHtml } from '../utils/security.js';
 
 /**
  * Renders the main dashboard timeline feed, chip selectors, hottest combos, and Dojo challenge widget.
@@ -340,10 +342,10 @@ function renderCreatorBox(navigateCallback) {
         <textarea class="form-textarea post-input" placeholder="What are you learning in the lab today? Use **bold** for combos or #hashtags..." style="min-height: 80px; font-size: 0.9rem;"></textarea>
       </div>
 
-      <div class="flex gap-3" style="flex-wrap: wrap; margin-bottom: 12px;">
+      <div class="flex gap-3" style="flex-wrap: wrap; margin-bottom: 8px;">
         <!-- Game Dropdown tag -->
         <div style="flex: 1; min-width: 140px;">
-          <select class="form-select post-game-select" style="padding: 8px 12px; font-size: 0.85rem;">
+          <select class="form-select post-game-select" style="padding: 8px 12px; font-size: 0.85rem;" id="post-game-select">
             <option value="">Tag Game (Optional)</option>
             ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
           </select>
@@ -352,23 +354,181 @@ function renderCreatorBox(navigateCallback) {
         <!-- Video Input Link -->
         <div style="flex: 2; min-width: 200px; display: flex; align-items: center; position: relative;">
           <i class="fa-brands fa-youtube" style="position: absolute; left: 12px; color: #ff0000; font-size: 1.1rem;"></i>
-          <input type="text" class="form-input post-video-input" placeholder="YouTube Video URL (Optional)" style="padding: 8px 12px 8px 36px; font-size: 0.85rem;" />
+          <input type="text" class="form-input post-video-input" id="post-video-input"
+            placeholder="YouTube Video URL (Optional)"
+            style="padding: 8px 12px 8px 36px; font-size: 0.85rem;" />
         </div>
       </div>
 
+      <!-- Video format hint (always visible when a game is selected) -->
+      <div id="video-format-hint" style="display: none; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.12);">
+        <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
+        <span id="video-format-hint-text"></span>
+      </div>
+
+      <!-- oEmbed validation banner (shown after URL is entered) -->
+      <div id="video-validation-banner" style="display: none; font-size: 0.82rem; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;"></div>
+
+      <!-- Confirmation checkbox (shown when video + game are both present) -->
+      <div id="video-confirm-row" style="display: none; margin-bottom: 12px;">
+        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+          <input type="checkbox" id="video-confirm-checkbox" style="accent-color: var(--color-primary); width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer;">
+          <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
+        </label>
+      </div>
+
       <div class="flex justify-between items-center" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-        <span style="font-size: 0.8rem; color: var(--text-muted);">Posting as <strong>${currentUser.username}</strong></span>
-        <button class="btn btn-primary btn-sm btn-submit-post">Publish Post</button>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Posting as <strong>${escapeHtml(currentUser.username)}</strong></span>
+        <button class="btn btn-primary btn-sm btn-submit-post" id="btn-submit-post">Publish Post</button>
       </div>
     </div>
   `;
 
-  // Publish action
-  const submitBtn = mount.querySelector('.btn-submit-post');
+  // Element references
+  const submitBtn  = mount.querySelector('#btn-submit-post');
   const postContent = mount.querySelector('.post-input');
-  const gameSelect = mount.querySelector('.post-game-select');
-  const videoInput = mount.querySelector('.post-video-input');
+  const gameSelect  = mount.querySelector('#post-game-select');
+  const videoInput  = mount.querySelector('#post-video-input');
+  const formatHint  = mount.querySelector('#video-format-hint');
+  const formatHintText = mount.querySelector('#video-format-hint-text');
+  const validationBanner = mount.querySelector('#video-validation-banner');
+  const confirmRow  = mount.querySelector('#video-confirm-row');
+  const confirmCheckbox = mount.querySelector('#video-confirm-checkbox');
+  const confirmLabel = mount.querySelector('#video-confirm-label');
 
+  /** Updates the format hint text whenever the selected game changes. */
+  const updateFormatHint = () => {
+    const gameId = gameSelect.value;
+    if (!gameId) {
+      formatHint.style.display = 'none';
+      return;
+    }
+    const gameData = GAME_VIDEO_KEYWORDS[gameId];
+    if (!gameData) return;
+    const exampleChar = gameData.characterKeywords[0];
+    formatHintText.textContent =
+      `Video title must mention the game (e.g. "${gameData.label}") ` +
+      `and the character (e.g. "${exampleChar.charAt(0).toUpperCase() + exampleChar.slice(1)}"). ` +
+      `Example: "${gameData.label} – ${exampleChar.charAt(0).toUpperCase() + exampleChar.slice(1)} BnB Combo Guide"`;
+    formatHint.style.display = 'block';
+  };
+
+  /**
+   * Renders the oEmbed validation result into the banner element.
+   * Uses escapeHtml on the video title before any DOM insertion to prevent XSS.
+   *
+   * @param {{ isValid: boolean, hasGameKeyword: boolean, hasCharKeyword: boolean, label: string } | null} result
+   * @param {string} safeTitle - HTML-escaped video title string.
+   */
+  const renderValidationBanner = (result, safeTitle) => {
+    if (!result) {
+      // oEmbed failed — show neutral info banner, do not block
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(245,158,11,0.06)';
+      validationBanner.style.border = '1px solid rgba(245,158,11,0.2)';
+      validationBanner.style.color = 'var(--text-secondary)';
+      validationBanner.innerHTML =
+        '<i class="fa-solid fa-triangle-exclamation" style="color: var(--color-accent); margin-right: 6px;"></i>' +
+        'Could not verify video title (network issue). The confirmation checkbox is required to continue.';
+      showConfirmRow(gameSelect.value);
+      return;
+    }
+
+    if (result.isValid) {
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(34,197,94,0.06)';
+      validationBanner.style.border = '1px solid rgba(34,197,94,0.2)';
+      validationBanner.style.color = 'var(--color-success)';
+      validationBanner.innerHTML =
+        `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>` +
+        `Video "${safeTitle}" looks relevant to <strong>${escapeHtml(result.label)}</strong>. ` +
+        `Confirmation checkbox still required before publishing.`;
+      showConfirmRow(gameSelect.value);
+      return;
+    }
+
+    // Mismatch — build specific missing-keyword feedback
+    const missing = [];
+    if (!result.hasGameKeyword) missing.push(`the game name ("${escapeHtml(result.label)}")`);
+    if (!result.hasCharKeyword) missing.push('the character name');
+    validationBanner.style.display = 'block';
+    validationBanner.style.background = 'rgba(239,68,68,0.06)';
+    validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
+    validationBanner.style.color = 'var(--color-danger)';
+    validationBanner.innerHTML =
+      `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>` +
+      `Video title "${safeTitle}" is missing ${missing.join(' and ')}. ` +
+      `Please use a video whose title clearly mentions both. You may still post, ` +
+      `but must confirm relevance below.`;
+    showConfirmRow(gameSelect.value);
+  };
+
+  /**
+   * Shows the confirmation checkbox row with the correct game label.
+   * @param {string} gameId - The currently selected game ID.
+   */
+  const showConfirmRow = (gameId) => {
+    const gameData = GAME_VIDEO_KEYWORDS[gameId];
+    const gameName = gameData ? gameData.label : 'the tagged game';
+    confirmLabel.textContent =
+      `I confirm this video is a ${gameName} combo or clip featuring the character I tagged.`;
+    confirmRow.style.display = 'block';
+    confirmCheckbox.checked = false;
+  };
+
+  /** Hides validation UI when the video URL or game is cleared. */
+  const resetValidationUI = () => {
+    validationBanner.style.display = 'none';
+    validationBanner.innerHTML = '';
+    confirmRow.style.display = 'none';
+    confirmCheckbox.checked = false;
+  };
+
+  // Wire: game select changes → update format hint, re-validate if URL present
+  gameSelect.addEventListener('change', () => {
+    updateFormatHint();
+    if (!videoInput.value.trim()) {
+      resetValidationUI();
+    } else {
+      videoInput.dispatchEvent(new Event('blur'));
+    }
+  });
+
+  // Wire: URL input loses focus → run oEmbed check
+  videoInput.addEventListener('blur', async () => {
+    const rawUrl = videoInput.value.trim();
+    const gameId = gameSelect.value;
+
+    if (!rawUrl) { resetValidationUI(); return; }
+    if (!gameId)  { resetValidationUI(); return; }
+
+    const videoId = extractYouTubeVideoId(rawUrl);
+    if (!videoId) {
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(239,68,68,0.06)';
+      validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
+      validationBanner.style.color = 'var(--color-danger)';
+      validationBanner.innerHTML =
+        '<i class="fa-solid fa-link-slash" style="margin-right: 6px;"></i>' +
+        'That does not look like a valid YouTube URL. Please use a full youtube.com or youtu.be link.';
+      confirmRow.style.display = 'none';
+      return;
+    }
+
+    validationBanner.style.display = 'block';
+    validationBanner.style.background = 'rgba(59,130,246,0.05)';
+    validationBanner.style.border = '1px solid rgba(59,130,246,0.12)';
+    validationBanner.style.color = 'var(--text-muted)';
+    validationBanner.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px;"></i>Checking video title...';
+
+    const rawTitle = await fetchVideoTitle(videoId);
+    const safeTitle = escapeHtml(rawTitle || '');
+    const result = rawTitle ? validateVideoTitle(rawTitle, gameId) : null;
+    renderValidationBanner(result, safeTitle);
+  });
+
+  // Publish action
   submitBtn.addEventListener('click', async () => {
     const text = postContent.value.trim();
     if (!text) {
@@ -376,10 +536,21 @@ function renderCreatorBox(navigateCallback) {
       return;
     }
 
+    const rawUrl = videoInput.value.trim();
+    const gameId = gameSelect.value;
+
+    // If video + game are both provided, the confirmation checkbox is mandatory
+    if (rawUrl && gameId && !confirmCheckbox.checked) {
+      window.showToast('Please confirm that the video is relevant to the tagged game.');
+      confirmRow.style.display = 'block';
+      confirmCheckbox.focus();
+      return;
+    }
+
     const postData = {
       content: text,
-      game: gameSelect.value || '',
-      videoUrl: videoInput.value.trim() || ''
+      game: gameId || '',
+      videoUrl: rawUrl || ''
     };
 
     const result = await store.savePost(postData);
@@ -387,8 +558,10 @@ function renderCreatorBox(navigateCallback) {
       postContent.value = '';
       gameSelect.value = '';
       videoInput.value = '';
+      resetValidationUI();
+      formatHint.style.display = 'none';
       window.showToast('Post published successfully!');
-      renderFeedPage(navigateCallback); // Redraw timeline
+      renderFeedPage(navigateCallback);
     } else {
       window.showToast(result.error || 'Failed to post.');
     }

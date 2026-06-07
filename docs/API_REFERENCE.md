@@ -6,6 +6,75 @@ This document provides a comprehensive Javadocs-standard API documentation regis
 
 ## 1. Utilities
 
+---
+
+### `video-validator.js` — Video Relevance Validation Module
+
+Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword matching to enforce content relevance on video-tagged posts.
+
+---
+
+#### `GAME_VIDEO_KEYWORDS`
+* **Description:** A constant configuration object mapping each supported game ID to its human-readable label and two keyword arrays (`gameKeywords`, `characterKeywords`). Used by `validateVideoTitle` to determine if a video title is relevant to the selected game. Supported game IDs: `sf6`, `t8`, `ggst`, `ssbu`.
+* **Type:** `Object.<string, { label: string, gameKeywords: string[], characterKeywords: string[] }>`
+* **Example:**
+  ```javascript
+  import { GAME_VIDEO_KEYWORDS } from './video-validator.js';
+  console.log(GAME_VIDEO_KEYWORDS.sf6.label); // 'Street Fighter 6'
+  ```
+
+---
+
+#### `extractYouTubeVideoId(url)`
+* **Description:** Extracts the 11-character YouTube video ID from a full URL string. Validates that the URL belongs to an allowlisted YouTube domain before extracting (`youtube.com`, `youtu.be`). Supports standard watch URLs, shortened `youtu.be` links, and embed URLs. Returns `null` for any non-YouTube, malformed, or missing URL — this prevents SSRF by never forwarding unvalidated URLs to the fetch layer.
+* **Parameters:**
+  * `url` (`string`): Raw URL string from the user input field.
+* **Returns:** `string | null` — The 11-character video ID string, or `null` if the URL is invalid or not a recognized YouTube format.
+* **Example:**
+  ```javascript
+  import { extractYouTubeVideoId } from './video-validator.js';
+  extractYouTubeVideoId('https://youtu.be/dQw4w9WgXcQ'); // 'dQw4w9WgXcQ'
+  extractYouTubeVideoId('https://evil.com/?v=abc');       // null
+  ```
+
+---
+
+#### `fetchVideoTitle(videoId)`
+* **Description:** Fetches the video title from YouTube's free oEmbed API endpoint using a pre-validated video ID. The video ID is regex-validated before use in the URL to prevent injection. Returns `null` on any network failure, non-200 response, or JSON parse error — callers must handle `null` as a graceful degradation case (never blocking submission).
+* **Parameters:**
+  * `videoId` (`string`): A validated 11-character YouTube video ID (alphanumeric, `-`, `_` only).
+* **Returns:** `Promise<string | null>` — The video title string from the oEmbed response, or `null` on any error.
+* **Example:**
+  ```javascript
+  import { fetchVideoTitle } from './video-validator.js';
+  const title = await fetchVideoTitle('dQw4w9WgXcQ');
+  // 'Rick Astley - Never Gonna Give You Up (Official Music Video)'
+  ```
+
+---
+
+#### `validateVideoTitle(title, gameId)`
+* **Description:** Validates whether a video title meets HitConfirm's content relevance policy: the title must contain at least one keyword from `gameKeywords` AND at least one keyword from `characterKeywords` for the specified game. All comparisons are case-insensitive. Returns a structured result object — never throws. Unknown `gameId` values pass through as `isValid: true` to avoid breaking future game additions.
+* **Parameters:**
+  * `title` (`string`): The raw video title string returned from the oEmbed API.
+  * `gameId` (`string`): The game ID selected by the user (e.g. `'sf6'`, `'t8'`, `'ggst'`, `'ssbu'`).
+* **Returns:** `Object` — A result object with the following shape:
+  * `isValid` (`boolean`): `true` if both game and character keywords were found.
+  * `hasGameKeyword` (`boolean`): `true` if a game name keyword was matched.
+  * `hasCharKeyword` (`boolean`): `true` if a character name keyword was matched.
+  * `label` (`string`): The human-readable game name for use in UI messages.
+* **Example:**
+  ```javascript
+  import { validateVideoTitle } from './video-validator.js';
+  validateVideoTitle('SF6 Ryu BnB Combo Guide', 'sf6');
+  // { isValid: true, hasGameKeyword: true, hasCharKeyword: true, label: 'Street Fighter 6' }
+
+  validateVideoTitle('Funny Cat Compilation', 'sf6');
+  // { isValid: false, hasGameKeyword: false, hasCharKeyword: false, label: 'Street Fighter 6' }
+  ```
+
+---
+
 ### `escapeHtml(unsafe)`
 * **Description:** Escapes HTML special characters to prevent Cross-Site Scripting (XSS) attacks.
 * **Parameters:**
