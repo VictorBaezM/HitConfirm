@@ -69,9 +69,15 @@ export function renderNavbar(activePage, navigateCallback) {
 
   mount.innerHTML = `
     <nav class="navbar">
-      <div class="nav-brand" style="cursor: pointer;" id="nav-logo">
-        <i class="fa-solid fa-bolt" style="color: var(--color-primary); filter: drop-shadow(var(--glow-primary));"></i>
-        <span>HIT</span>CONFIRM
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="nav-brand" style="cursor: pointer;" id="nav-logo">
+          <i class="fa-solid fa-bolt" style="color: var(--color-primary); filter: drop-shadow(var(--glow-primary));"></i>
+          <span>HIT</span>CONFIRM
+        </div>
+        <div id="repo-latest-update" class="repo-update-badge">
+          <span class="pulse-dot"></span>
+          <span class="update-text">Checking updates...</span>
+        </div>
       </div>
       <ul class="nav-links">
         ${linksHtml}
@@ -116,4 +122,39 @@ export function renderNavbar(activePage, navigateCallback) {
       window.openAuthModal('register', navigateCallback);
     });
   }
+
+  // Fetch latest commit dynamically from GitHub
+  const fetchLatestCommit = async () => {
+    try {
+      const res = await fetch('https://api.github.com/repos/VictorBaezM/HitConfirm/commits?per_page=1');
+      if (!res.ok) throw new Error('API limits or network error');
+      const commits = await res.json();
+      if (commits && commits.length > 0) {
+        const lastCommit = commits[0];
+        const sha = lastCommit.sha.substring(0, 7);
+        const msg = lastCommit.commit.message.split('\n')[0];
+        const badge = mount.querySelector('#repo-latest-update');
+        if (badge) {
+          badge.title = `Commit ${sha}: ${lastCommit.commit.message}\nBy ${lastCommit.commit.author.name}`;
+          badge.querySelector('.update-text').innerText = `${sha} - ${msg}`;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch latest updates:", err);
+      // Fallback version display
+      const badge = mount.querySelector('#repo-latest-update');
+      if (badge) {
+        badge.title = "Offline mode or GitHub rate limits reached";
+        badge.querySelector('.update-text').innerText = 'v1.1.0 - Live';
+        const pulseDot = badge.querySelector('.pulse-dot');
+        if (pulseDot) {
+          pulseDot.style.backgroundColor = 'var(--color-primary)';
+          pulseDot.style.boxShadow = '0 0 8px var(--color-primary)';
+        }
+      }
+    }
+  };
+
+  // Run asynchronously without blocking main thread
+  setTimeout(fetchLatestCommit, 100);
 }

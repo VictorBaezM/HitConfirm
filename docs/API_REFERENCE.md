@@ -88,6 +88,16 @@ This document provides a comprehensive Javadocs-standard API documentation regis
   setupGlobalModals();
   ```
 
+### `fetchLatestCommit()`
+* **Description:** Asynchronously queries the GitHub commits API for the latest commit of the HitConfirm repository, displays the commit SHA and message in the navbar, and provides a fallback view if rate-limited or offline.
+* **Parameters:** None.
+* **Returns:** `Promise<void>`
+* **Example:**
+  ```javascript
+  // Called internally within renderNavbar
+  setTimeout(fetchLatestCommit, 100);
+  ```
+
 ---
 
 ## 3. Database Caching & Mutations (`Store` Class)

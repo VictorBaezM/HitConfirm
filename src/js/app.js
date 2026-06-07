@@ -126,5 +126,15 @@ function setupGlobalModals() {
 // Bootstrap Application
 document.addEventListener('DOMContentLoaded', () => {
   setupGlobalModals();
+
+  // Bind footer navigation links
+  document.querySelectorAll('.footer-nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = link.getAttribute('data-page');
+      navigate(page);
+    });
+  });
+
   navigate('feed');
 });
