@@ -1,6 +1,7 @@
 /* Visual Combo Builder Page Controller */
 import store from '../store.js';
 import { parseComboToHtml, DIRECTION_ARROWS, MOTIONS } from '../utils/combo-parser.js';
+import { escapeHtml } from '../utils/security.js';
 
 /**
  * Renders the visual combo builder workspace containing the interactive virtual lab pad controls,
@@ -207,7 +208,7 @@ export function renderBuilderPage(navigateCallback) {
     
     const game = store.getGame(selectedGame);
     const chars = game ? game.characters : [];
-    charSelect.innerHTML = chars.map(c => `<option value="${c}">${c}</option>`).join('');
+    charSelect.innerHTML = chars.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     
     if (selectValue && chars.includes(selectValue)) {
       selectedCharacter = selectValue;
@@ -372,6 +373,11 @@ export function renderBuilderPage(navigateCallback) {
   const btnAddChar = document.getElementById('btn-add-builder-char');
   if (btnAddChar) {
     btnAddChar.addEventListener('click', async () => {
+      // Check if user is logged in
+      if (!store.getCurrentUser()) {
+        window.showToast('Please log in or register an account to add new DLC characters.');
+        return;
+      }
       const game = store.getGame(selectedGame);
       const gameName = game ? game.name : selectedGame;
       const charName = window.prompt(`Enter the name of the missing DLC character for ${gameName}:`);

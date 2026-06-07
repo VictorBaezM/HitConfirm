@@ -452,7 +452,8 @@ class Store {
    */
   async addGameCharacter(gameId, charName) {
     if (!gameId || !charName) return false;
-    const cleanName = charName.trim();
+    // Strip HTML tags to prevent boundary XSS injections
+    const cleanName = charName.replace(/<[^>]*>/g, '').trim();
     if (!cleanName) return false;
 
     // Make sure games are loaded

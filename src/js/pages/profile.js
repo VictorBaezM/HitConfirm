@@ -2,6 +2,7 @@
 import store from '../store.js';
 import { renderComboCard } from '../components/combo-card.js';
 import { renderPostCard } from '../components/post-card.js';
+import { escapeHtml } from '../utils/security.js';
 
 /**
  * Renders the player dashboard profile page containing custom avatar highlights,
@@ -203,7 +204,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
               const gameObj = games[gId];
               if (!gameObj) return '';
               const charsPlayed = gameCharsMap[gId] || [];
-              const charsStr = charsPlayed.length > 0 ? charsPlayed.join(', ') : 'No character mains';
+              const charsStr = charsPlayed.length > 0 ? charsPlayed.map(escapeHtml).join(', ') : 'No character mains';
               return `
                 <div style="background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
                   <div class="flex items-center justify-between" style="margin-bottom: 4px;">
@@ -391,8 +392,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
             const isChecked = currentActive.includes(c);
             const activeChipClass = isChecked ? 'active' : '';
             return `
-              <div class="char-chip ${activeChipClass}" data-game="${gameId}" data-char="${c}">
-                ${c}
+              <div class="char-chip ${activeChipClass}" data-game="${gameId}" data-char="${escapeHtml(c)}">
+                ${escapeHtml(c)}
               </div>
             `;
           }).join('') + `
@@ -430,8 +431,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
         const isSelected = currentSelectedPrimaryChar === c;
         const activeClass = isSelected ? 'active' : '';
         return `
-          <div class="char-chip ${activeClass}" data-game="${currentSelectedPrimaryGame}" data-char="${c}">
-            ${c}
+          <div class="char-chip ${activeClass}" data-game="${currentSelectedPrimaryGame}" data-char="${escapeHtml(c)}">
+            ${escapeHtml(c)}
           </div>
         `;
       }).join('') + `
@@ -494,8 +495,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
               const isChecked = activeChars.includes(c);
               const activeChipClass = isChecked ? 'active' : '';
               return `
-                <div class="char-chip ${activeChipClass}" data-game="${g.id}" data-char="${c}">
-                  ${c}
+                <div class="char-chip ${activeChipClass}" data-game="${g.id}" data-char="${escapeHtml(c)}">
+                  ${escapeHtml(c)}
                 </div>
               `;
             }).join('')}
