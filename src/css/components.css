@@ -659,6 +659,12 @@
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
 }
 
+@media (max-width: 768px) {
+  .repo-update-badge {
+    display: none !important;
+  }
+}
+
 .pulse-dot {
   display: inline-block;
   width: 6px;
@@ -685,112 +691,28 @@
   }
 }
 
-/* Footer Styles */
+/* Simplified Footer Styles */
 .app-footer {
   background: rgba(6, 7, 9, 0.9);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--border-color);
-  padding: 40px 24px 24px 24px;
-  margin-top: 48px;
+  padding: 32px 24px 24px 24px;
+  margin-top: 64px;
   color: var(--text-secondary);
   font-family: var(--font-body);
   flex-shrink: 0;
 }
 
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .footer-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
-}
-
-.footer-col h4 {
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  letter-spacing: 0.05em;
-}
-
-.footer-col p {
-  font-size: 0.85rem;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 8px;
-}
-
-.footer-links a {
-  font-size: 0.85rem;
+.footer-links-simple a {
   color: var(--text-secondary);
   transition: color var(--transition-fast);
+  text-decoration: none;
 }
 
-.footer-links a:hover {
+.footer-links-simple a:hover {
   color: var(--color-secondary);
 }
 
-.footer-socials {
-  display: flex;
-  gap: 12px;
-}
-
-.footer-socials a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.footer-socials a:hover {
-  color: var(--color-primary);
-  border-color: rgba(255, 0, 91, 0.3);
-  background: rgba(255, 0, 91, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 0 10px rgba(255, 0, 91, 0.2);
-}
-
-.footer-bottom {
-  max-width: var(--content-max-width);
-  margin: 32px auto 0 auto;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .footer-bottom {
-    flex-direction: row;
-  }
-}
 
 
 

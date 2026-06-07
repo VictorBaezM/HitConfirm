@@ -125,6 +125,38 @@ export function renderNavbar(activePage, navigateCallback) {
 
   // Fetch latest commit dynamically from GitHub
   const fetchLatestCommit = async () => {
+    const badge = document.getElementById('repo-latest-update');
+    if (!badge) return;
+
+    const applyUpdateInfo = (badgeEl, sha, msg, author, fullMsg) => {
+      badgeEl.title = `Commit ${sha}: ${fullMsg}\nBy ${author}`;
+      const textEl = badgeEl.querySelector('.update-text');
+      if (textEl) textEl.innerText = `${sha} - ${msg}`;
+    };
+
+    const applyFallback = (badgeEl) => {
+      badgeEl.title = "Offline mode or GitHub rate limits reached";
+      const textEl = badgeEl.querySelector('.update-text');
+      if (textEl) textEl.innerText = 'v1.1.0 - Live';
+      const pulseDot = badgeEl.querySelector('.pulse-dot');
+      if (pulseDot) {
+        pulseDot.style.backgroundColor = 'var(--color-primary)';
+        pulseDot.style.boxShadow = '0 0 8px var(--color-primary)';
+      }
+    };
+
+    // Check session cache first to prevent redundant API queries and rate limiting
+    const cachedUpdate = sessionStorage.getItem('hc_latest_update');
+    if (cachedUpdate) {
+      try {
+        const data = JSON.parse(cachedUpdate);
+        applyUpdateInfo(badge, data.sha, data.msg, data.author, data.fullMsg);
+        return;
+      } catch (e) {
+        // Ignore JSON error and fetch fresh data
+      }
+    }
+
     try {
       const res = await fetch('https://api.github.com/repos/VictorBaezM/HitConfirm/commits?per_page=1');
       if (!res.ok) throw new Error('API limits or network error');
@@ -133,25 +165,19 @@ export function renderNavbar(activePage, navigateCallback) {
         const lastCommit = commits[0];
         const sha = lastCommit.sha.substring(0, 7);
         const msg = lastCommit.commit.message.split('\n')[0];
-        const badge = mount.querySelector('#repo-latest-update');
-        if (badge) {
-          badge.title = `Commit ${sha}: ${lastCommit.commit.message}\nBy ${lastCommit.commit.author.name}`;
-          badge.querySelector('.update-text').innerText = `${sha} - ${msg}`;
-        }
+        const author = lastCommit.commit.author.name;
+        const fullMsg = lastCommit.commit.message;
+
+        applyUpdateInfo(badge, sha, msg, author, fullMsg);
+
+        // Cache the result in session storage
+        sessionStorage.setItem('hc_latest_update', JSON.stringify({
+          sha, msg, author, fullMsg
+        }));
       }
     } catch (err) {
       console.warn("Could not fetch latest updates:", err);
-      // Fallback version display
-      const badge = mount.querySelector('#repo-latest-update');
-      if (badge) {
-        badge.title = "Offline mode or GitHub rate limits reached";
-        badge.querySelector('.update-text').innerText = 'v1.1.0 - Live';
-        const pulseDot = badge.querySelector('.pulse-dot');
-        if (pulseDot) {
-          pulseDot.style.backgroundColor = 'var(--color-primary)';
-          pulseDot.style.boxShadow = '0 0 8px var(--color-primary)';
-        }
-      }
+      applyFallback(badge);
     }
   };
 
