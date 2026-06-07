@@ -713,6 +713,77 @@
   color: var(--color-secondary);
 }
 
+/* FGC Game Resource Buttons */
+.game-resource-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+}
+
+.game-resource-btn-sf6 {
+  background: rgba(255, 170, 0, 0.06);
+  border-color: rgba(255, 170, 0, 0.18);
+  color: var(--color-accent);
+}
+.game-resource-btn-sf6:hover {
+  background: rgba(255, 170, 0, 0.15);
+  border-color: var(--color-accent);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.game-resource-btn-t8 {
+  background: rgba(255, 0, 91, 0.06);
+  border-color: rgba(255, 0, 91, 0.18);
+  color: var(--color-primary);
+}
+.game-resource-btn-t8:hover {
+  background: rgba(255, 0, 91, 0.15);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 0, 91, 0.3);
+  transform: translateY(-1px);
+}
+
+.game-resource-btn-ggst {
+  background: rgba(0, 240, 255, 0.06);
+  border-color: rgba(0, 240, 255, 0.18);
+  color: var(--color-secondary);
+}
+.game-resource-btn-ggst:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--color-secondary);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.game-resource-btn-ssbu {
+  background: rgba(180, 77, 255, 0.06);
+  border-color: rgba(180, 77, 255, 0.18);
+  color: #c384ff;
+}
+.game-resource-btn-ssbu:hover {
+  background: rgba(180, 77, 255, 0.15);
+  border-color: #c384ff;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(180, 77, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+
 
 
 
