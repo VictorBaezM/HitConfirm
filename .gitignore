@@ -13,5 +13,15 @@
 scopedStorage
 sdcard
 
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Testing
+test-results/
+playwright-report/
+playwright/.local-browsers/
+.last-run.json
+
 # Deployment and scripts
 deploy.py
