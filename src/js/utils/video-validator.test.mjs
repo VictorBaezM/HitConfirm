@@ -13,7 +13,7 @@
  * (No build step required — uses native ES modules)
  */
 
-import { extractYouTubeVideoId, validateVideoTitle, GAME_VIDEO_KEYWORDS } from './video-validator.js';
+import { extractYouTubeVideoId, validateVideoTitle, GAME_VIDEO_KEYWORDS, extractTwitchInfo, getCharacterKeywords } from './video-validator.js';
 
 // ─── Minimal test harness (no external dependencies) ─────────────────────────
 
@@ -165,6 +165,106 @@ assert(
     Array.isArray(g.gameKeywords) && g.gameKeywords.length > 0 &&
     Array.isArray(g.characterKeywords) && g.characterKeywords.length > 0
   ),
+  true
+);
+
+// ─── extractTwitchInfo ────────────────────────────────────────────────────────
+
+console.log('\n📦 extractTwitchInfo');
+
+assert(
+  'Twitch VOD URL extracts canonical Twitch URL',
+  extractTwitchInfo('https://www.twitch.tv/videos/12345678'),
+  'https://www.twitch.tv/videos/12345678'
+);
+assert(
+  'Twitch Clip URL with clips.twitch.tv extracts canonical Clip URL',
+  extractTwitchInfo('https://clips.twitch.tv/AlphanumericSlugHere-abc_123'),
+  'https://clips.twitch.tv/AlphanumericSlugHere-abc_123'
+);
+assert(
+  'Twitch Clip URL with /clip/ extracts canonical Clip URL',
+  extractTwitchInfo('https://www.twitch.tv/clip/AlphanumericSlugHere'),
+  'https://clips.twitch.tv/AlphanumericSlugHere'
+);
+assert(
+  'Twitch mobile URL extracts correctly',
+  extractTwitchInfo('https://m.twitch.tv/videos/87654321'),
+  'https://www.twitch.tv/videos/87654321'
+);
+assert(
+  'Non-allowlisted host returns null',
+  extractTwitchInfo('https://evil.twitch.tv/videos/12345678'),
+  null
+);
+assert(
+  'Malformed URL returns null',
+  extractTwitchInfo('not-a-url'),
+  null
+);
+assert(
+  'Null input returns null',
+  extractTwitchInfo(null),
+  null
+);
+
+// ─── getCharacterKeywords ─────────────────────────────────────────────────────
+
+console.log('\n📦 getCharacterKeywords');
+
+assert(
+  'Ryu returns simple set containing ryu',
+  Array.from(getCharacterKeywords('Ryu')).sort(),
+  ['ryu']
+);
+assert(
+  'Chun-Li generates space-replaced, collapsed and tokenized variants',
+  Array.from(getCharacterKeywords('Chun-Li')).sort(),
+  ['chun', 'chun li', 'chun-li', 'chunli']
+);
+assert(
+  'M. Bison generates space-replaced, collapsed, tokenized, and filters short initials',
+  Array.from(getCharacterKeywords('M. Bison')).sort(),
+  ['bison', 'm bison', 'm. bison', 'mbison']
+);
+assert(
+  'Pyra/Mythra splits slash and generates keywords for both',
+  Array.from(getCharacterKeywords('Pyra/Mythra')).sort(),
+  ['mythra', 'pyra']
+);
+assert(
+  'Mr. Game & Watch handles stop words and symbol stripping',
+  Array.from(getCharacterKeywords('Mr. Game & Watch')).sort(),
+  ['game', 'mr game watch', 'mr. game watch', 'mrgamewatch', 'watch']
+);
+assert(
+  'Short full name Ed is preserved as full name, even though length < 3',
+  Array.from(getCharacterKeywords('Ed')).sort(),
+  ['ed']
+);
+
+// ─── validateVideoTitle with character-specific validation ────────────────────
+
+console.log('\n📦 validateVideoTitle — character-specific');
+
+assert(
+  'SF6 with matching character Ryu → isValid true',
+  validateVideoTitle('SF6 Ryu BnB Combos', 'sf6', 'Ryu').isValid,
+  true
+);
+assert(
+  'SF6 with mismatched character Ken → isValid false, hasCharKeyword false',
+  (() => { const r = validateVideoTitle('SF6 Ryu BnB Combos', 'sf6', 'Ken'); return { isValid: r.isValid, hasCharKeyword: r.hasCharKeyword }; })(),
+  { isValid: false, hasCharKeyword: false }
+);
+assert(
+  'SF6 matching character Chun-Li variations (collapsed) → isValid true',
+  validateVideoTitle('SF6 Chunli Combos', 'sf6', 'Chun-Li').isValid,
+  true
+);
+assert(
+  'SF6 matching character Chun-Li variations (spaced) → isValid true',
+  validateVideoTitle('SF6 Chun Li Combos', 'sf6', 'Chun-Li').isValid,
   true
 );
 

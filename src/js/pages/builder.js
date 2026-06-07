@@ -3,6 +3,14 @@ import store from '../store.js';
 import { parseComboToHtml, DIRECTION_ARROWS, MOTIONS } from '../utils/combo-parser.js';
 import { escapeHtml } from '../utils/security.js';
 import { hideGameSidebar } from '../components/game-sidebar.js';
+import {
+  extractYouTubeVideoId,
+  extractTwitchInfo,
+  fetchVideoTitle,
+  fetchTwitchVideoTitle,
+  validateVideoTitle,
+  GAME_VIDEO_KEYWORDS
+} from '../utils/video-validator.js';
 
 /**
  * Renders the visual combo builder workspace containing the interactive virtual lab pad controls,
@@ -20,8 +28,8 @@ export function renderBuilderPage(navigateCallback) {
   const games = store.getGames();
   
   // Local state for builder
-  let selectedGame = 'sf6';
-  let selectedCharacter = games.sf6.characters[0];
+  let selectedGame = '';
+  let selectedCharacter = '';
   let notationSequence = []; // Array of combo actions/steps, e.g. ["236HP", "5LP", "623HP"]
   let currentStepBuffer = ''; // Buffer for the step currently being built, e.g. "236" then "236HP"
 
@@ -45,7 +53,7 @@ export function renderBuilderPage(navigateCallback) {
           <!-- Buffer helper injected here -->
         </div>
         <div class="flex justify-between items-center" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">
-          <span>Character: <strong id="preview-char-label" style="color:var(--text-primary);">${selectedCharacter}</strong> (${games[selectedGame].name})</span>
+          <span>Character: <strong id="preview-char-label" style="color:var(--text-primary);">${selectedCharacter || 'None'}</strong> (${games[selectedGame] ? games[selectedGame].name : 'No Game'})</span>
           <button class="btn btn-secondary btn-sm" id="btn-clear-all" style="padding: 4px 10px; font-size: 0.75rem;">Clear Combo</button>
         </div>
       </div>
@@ -57,6 +65,7 @@ export function renderBuilderPage(navigateCallback) {
           <div style="flex: 1; min-width: 200px;">
             <label class="form-label">Game</label>
             <select id="builder-game-select" class="form-select">
+              <option value="">Select Game</option>
               ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
             </select>
           </div>
@@ -177,7 +186,27 @@ export function renderBuilderPage(navigateCallback) {
 
         <div class="form-group">
           <label class="form-label">Demonstration Video Link (YouTube/Twitch - Optional)</label>
-          <input type="text" id="combo-video" class="form-input" placeholder="https://www.youtube.com/watch?v=..." />
+          <div style="position: relative; display: flex; align-items: center; margin-bottom: 10px;">
+            <i id="combo-video-icon" class="fa-solid fa-video" style="position: absolute; left: 12px; color: var(--text-muted); font-size: 1.1rem;"></i>
+            <input type="text" id="combo-video" class="form-input" placeholder="https://www.youtube.com/watch?v=..." style="padding-left: 36px;" />
+          </div>
+          
+          <!-- Format hint -->
+          <div id="video-format-hint" style="display: none; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.12);">
+            <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
+            <span id="video-format-hint-text"></span>
+          </div>
+
+          <!-- Validation banner -->
+          <div id="video-validation-banner" style="display: none; font-size: 0.82rem; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;"></div>
+
+          <!-- Confirmation checkbox row -->
+          <div id="video-confirm-row" style="display: none; margin-bottom: 12px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+              <input type="checkbox" id="video-confirm-checkbox" style="accent-color: var(--color-primary); width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer;">
+              <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
+            </label>
+          </div>
         </div>
 
         <div style="text-align: right; margin-top: 24px;">
@@ -210,18 +239,27 @@ export function renderBuilderPage(navigateCallback) {
     
     const game = store.getGame(selectedGame);
     const chars = game ? game.characters : [];
-    charSelect.innerHTML = chars.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    
+    if (chars.length > 0) {
+      charSelect.innerHTML = chars.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    } else {
+      charSelect.innerHTML = '<option value="">Select Character</option>';
+    }
     
     if (selectValue && chars.includes(selectValue)) {
       selectedCharacter = selectValue;
       charSelect.value = selectValue;
     } else {
       selectedCharacter = chars[0] || '';
-      if (chars.length > 0) charSelect.value = selectedCharacter;
+      if (chars.length > 0) {
+        charSelect.value = selectedCharacter;
+      } else {
+        charSelect.value = '';
+      }
     }
     
     const previewChar = document.getElementById('preview-char-label');
-    if (previewChar) previewChar.innerText = selectedCharacter;
+    if (previewChar) previewChar.innerText = selectedCharacter || 'None';
   };
 
   // Draw game specific attack button pad
@@ -230,6 +268,10 @@ export function renderBuilderPage(navigateCallback) {
     if (!pad) return;
 
     const game = games[selectedGame];
+    if (!game) {
+      pad.innerHTML = '<span class="text-muted" style="font-size: 0.8rem;">Select a game to load buttons.</span>';
+      return;
+    }
     let buttons = [];
 
     if (game.notationType === 'gg') {
@@ -347,10 +389,182 @@ export function renderBuilderPage(navigateCallback) {
     }
   };
 
+  const updateBuilderFormatHint = () => {
+    const formatHint = document.getElementById('video-format-hint');
+    const formatHintText = document.getElementById('video-format-hint-text');
+    const gameSel = document.getElementById('builder-game-select');
+    const charSel = document.getElementById('builder-char-select');
+    if (!formatHint || !formatHintText || !gameSel || !charSel) return;
+
+    const gameId = gameSel.value;
+    const charName = charSel.value;
+
+    if (!gameId || !charName) {
+      formatHint.style.display = 'none';
+      return;
+    }
+
+    const gameData = GAME_VIDEO_KEYWORDS[gameId];
+    if (!gameData) {
+      formatHint.style.display = 'none';
+      return;
+    }
+
+    formatHintText.textContent =
+      `Video title must mention the game (e.g. "${gameData.label}") ` +
+      `and the character (e.g. "${charName}"). ` +
+      `Example: "${gameData.label} - ${charName} BnB Combo Guide"`;
+    formatHint.style.display = 'block';
+  };
+
+  const resetBuilderValidationUI = () => {
+    const validationBanner = document.getElementById('video-validation-banner');
+    const confirmRow = document.getElementById('video-confirm-row');
+    const confirmCheckbox = document.getElementById('video-confirm-checkbox');
+    if (validationBanner) {
+      validationBanner.style.display = 'none';
+      validationBanner.innerHTML = '';
+    }
+    if (confirmRow) {
+      confirmRow.style.display = 'none';
+    }
+    if (confirmCheckbox) {
+      confirmCheckbox.checked = false;
+    }
+  };
+
+  const showBuilderConfirmRow = (gameId) => {
+    const confirmRow = document.getElementById('video-confirm-row');
+    const confirmLabel = document.getElementById('video-confirm-label');
+    const confirmCheckbox = document.getElementById('video-confirm-checkbox');
+    if (!confirmRow || !confirmLabel || !confirmCheckbox) return;
+
+    const gameData = GAME_VIDEO_KEYWORDS[gameId];
+    const gameName = gameData ? gameData.label : 'the tagged game';
+    const charName = selectedCharacter || 'the tagged character';
+    confirmLabel.textContent =
+      `I confirm this video is a ${gameName} combo or clip featuring ${charName}.`;
+    confirmRow.style.display = 'block';
+    confirmCheckbox.checked = false;
+  };
+
+  const renderBuilderValidationBanner = (result, safeTitle) => {
+    const validationBanner = document.getElementById('video-validation-banner');
+    if (!validationBanner) return;
+
+    if (!result) {
+      // oEmbed failed — show neutral info banner, do not block
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(245,158,11,0.06)';
+      validationBanner.style.border = '1px solid rgba(245,158,11,0.2)';
+      validationBanner.style.color = 'var(--text-secondary)';
+      validationBanner.innerHTML =
+        '<i class="fa-solid fa-triangle-exclamation" style="color: var(--color-accent); margin-right: 6px;"></i>' +
+        'Could not verify video title (network issue). The confirmation checkbox is required to continue.';
+      showBuilderConfirmRow(selectedGame);
+      return;
+    }
+
+    if (result.isValid) {
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(34,197,94,0.06)';
+      validationBanner.style.border = '1px solid rgba(34,197,94,0.2)';
+      validationBanner.style.color = 'var(--color-success)';
+      validationBanner.innerHTML =
+        `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>` +
+        `Video "${safeTitle}" looks relevant to <strong>${escapeHtml(result.label)}</strong>. ` +
+        `Confirmation checkbox still required before publishing.`;
+      showBuilderConfirmRow(selectedGame);
+      return;
+    }
+
+    // Mismatch — build specific missing-keyword feedback
+    const missing = [];
+    if (!result.hasGameKeyword) missing.push(`the game name ("${escapeHtml(result.label)}")`);
+    if (!result.hasCharKeyword) missing.push('the character name');
+    validationBanner.style.display = 'block';
+    validationBanner.style.background = 'rgba(239,68,68,0.06)';
+    validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
+    validationBanner.style.color = 'var(--color-danger)';
+    validationBanner.innerHTML =
+      `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>` +
+      `Video title "${safeTitle}" is missing ${missing.join(' and ')}. ` +
+      `Please use a video whose title clearly mentions both. You may still post, ` +
+      `but must confirm relevance below.`;
+    showBuilderConfirmRow(selectedGame);
+  };
+
+  const setupVideoValidationEvents = () => {
+    const videoInput = document.getElementById('combo-video');
+    const videoIcon = document.getElementById('combo-video-icon');
+    const validationBanner = document.getElementById('video-validation-banner');
+    const confirmRow = document.getElementById('video-confirm-row');
+    if (!videoInput || !videoIcon || !validationBanner) return;
+
+    // Platform icon real-time update on input event
+    videoInput.addEventListener('input', () => {
+      const val = videoInput.value.trim();
+      if (extractYouTubeVideoId(val)) {
+        videoIcon.className = 'fa-brands fa-youtube';
+        videoIcon.style.color = '#ff0000';
+      } else if (extractTwitchInfo(val)) {
+        videoIcon.className = 'fa-brands fa-twitch';
+        videoIcon.style.color = '#9146ff';
+      } else {
+        videoIcon.className = 'fa-solid fa-video';
+        videoIcon.style.color = 'var(--text-muted)';
+      }
+    });
+
+    // oEmbed title validation on blur event
+    videoInput.addEventListener('blur', async () => {
+      const rawUrl = videoInput.value.trim();
+      if (!rawUrl) {
+        resetBuilderValidationUI();
+        return;
+      }
+
+      const youtubeId = extractYouTubeVideoId(rawUrl);
+      const twitchUrl = extractTwitchInfo(rawUrl);
+
+      if (!youtubeId && !twitchUrl) {
+        validationBanner.style.display = 'block';
+        validationBanner.style.background = 'rgba(239,68,68,0.06)';
+        validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
+        validationBanner.style.color = 'var(--color-danger)';
+        validationBanner.innerHTML =
+          '<i class="fa-solid fa-link-slash" style="margin-right: 6px;"></i>' +
+          'That does not look like a valid YouTube or Twitch URL. Please use a full YouTube or Twitch link.';
+        if (confirmRow) confirmRow.style.display = 'none';
+        return;
+      }
+
+      validationBanner.style.display = 'block';
+      validationBanner.style.background = 'rgba(59,130,246,0.05)';
+      validationBanner.style.border = '1px solid rgba(59,130,246,0.12)';
+      validationBanner.style.color = 'var(--text-muted)';
+      validationBanner.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px;"></i>Checking video title...';
+
+      let rawTitle = null;
+      if (youtubeId) {
+        rawTitle = await fetchVideoTitle(youtubeId);
+      } else if (twitchUrl) {
+        rawTitle = await fetchTwitchVideoTitle(twitchUrl);
+      }
+
+      const safeTitle = escapeHtml(rawTitle || '');
+      const result = rawTitle ? validateVideoTitle(rawTitle, selectedGame, selectedCharacter) : null;
+      renderBuilderValidationBanner(result, safeTitle);
+    });
+  };
+
   // Initialize Select values
   drawCharacters();
   drawAttackButtons();
   updateBufferPreview();
+  updateBuilderFormatHint();
+  setupVideoValidationEvents();
 
   // Attach select change listeners
   const gameSelect = document.getElementById('builder-game-select');
@@ -362,6 +576,13 @@ export function renderBuilderPage(navigateCallback) {
     drawAttackButtons();
     updateNotationPreview();
     updateBufferPreview();
+    updateBuilderFormatHint();
+    const videoInput = document.getElementById('combo-video');
+    if (videoInput && videoInput.value.trim()) {
+      videoInput.dispatchEvent(new Event('blur'));
+    } else {
+      resetBuilderValidationUI();
+    }
   });
 
   const charSelect = document.getElementById('builder-char-select');
@@ -369,6 +590,13 @@ export function renderBuilderPage(navigateCallback) {
     selectedCharacter = e.target.value;
     const previewChar = document.getElementById('preview-char-label');
     if (previewChar) previewChar.innerText = selectedCharacter;
+    updateBuilderFormatHint();
+    const videoInput = document.getElementById('combo-video');
+    if (videoInput && videoInput.value.trim()) {
+      videoInput.dispatchEvent(new Event('blur'));
+    } else {
+      resetBuilderValidationUI();
+    }
   });
 
   // Attach add character listener
@@ -378,6 +606,10 @@ export function renderBuilderPage(navigateCallback) {
       // Check if user is logged in
       if (!store.getCurrentUser()) {
         window.showToast('Please log in or register an account to add new DLC characters.');
+        return;
+      }
+      if (!selectedGame) {
+        window.showToast('Please select a game first.');
         return;
       }
       const game = store.getGame(selectedGame);
@@ -396,6 +628,13 @@ export function renderBuilderPage(navigateCallback) {
       if (success) {
         window.showToast(`${cleanName} successfully added!`);
         drawCharacters(cleanName);
+        updateBuilderFormatHint();
+        const videoInput = document.getElementById('combo-video');
+        if (videoInput && videoInput.value.trim()) {
+          videoInput.dispatchEvent(new Event('blur'));
+        } else {
+          resetBuilderValidationUI();
+        }
       } else {
         window.showToast('Failed to add character to database.');
       }
@@ -482,6 +721,14 @@ export function renderBuilderPage(navigateCallback) {
 
   // Publish Button click
   document.getElementById('btn-publish-combo').addEventListener('click', async () => {
+    if (!selectedGame) {
+      window.showToast('Please select a game before publishing.');
+      return;
+    }
+    if (!selectedCharacter) {
+      window.showToast('Please select a character before publishing.');
+      return;
+    }
     const notationVal = manualInput.value.trim();
     if (!notationVal) {
       window.showToast('Please enter a combo sequence notation before publishing.');
@@ -494,6 +741,27 @@ export function renderBuilderPage(navigateCallback) {
       return;
     }
 
+    const videoUrlVal = document.getElementById('combo-video').value.trim();
+    if (videoUrlVal && !document.getElementById('video-confirm-checkbox').checked) {
+      window.showToast('Please confirm that the video is relevant to the tagged game.');
+      const confirmRow = document.getElementById('video-confirm-row');
+      if (confirmRow) confirmRow.style.display = 'block';
+      const confirmCheckbox = document.getElementById('video-confirm-checkbox');
+      if (confirmCheckbox) confirmCheckbox.focus();
+      return;
+    }
+
+    // Explicit acknowledgement browser confirm dialog on publish if video is provided
+    if (videoUrlVal) {
+      const gameData = GAME_VIDEO_KEYWORDS[selectedGame];
+      const gameName = gameData ? gameData.label : selectedGame;
+      const charName = selectedCharacter || 'the tagged character';
+      const confirmed = window.confirm(
+        `Do you acknowledge and confirm that this post represents ${gameName} and features ${charName}?`
+      );
+      if (!confirmed) return;
+    }
+
     const comboData = {
       game: selectedGame,
       character: selectedCharacter,
@@ -503,7 +771,7 @@ export function renderBuilderPage(navigateCallback) {
       meter: document.getElementById('combo-meter').value.trim() || 'None',
       difficulty: document.getElementById('combo-difficulty').value,
       description: document.getElementById('combo-description').value.trim(),
-      videoUrl: document.getElementById('combo-video').value.trim()
+      videoUrl: videoUrlVal
     };
 
     const result = await store.saveCombo(comboData);

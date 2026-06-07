@@ -53,11 +53,12 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
 
 ---
 
-#### `validateVideoTitle(title, gameId)`
-* **Description:** Validates whether a video title meets HitConfirm's content relevance policy: the title must contain at least one keyword from `gameKeywords` AND at least one keyword from `characterKeywords` for the specified game. All comparisons are case-insensitive. Returns a structured result object — never throws. Unknown `gameId` values pass through as `isValid: true` to avoid breaking future game additions.
+#### `validateVideoTitle(title, gameId, selectedChar)`
+* **Description:** Validates whether a video title meets HitConfirm's content relevance policy: the title must contain at least one keyword from `gameKeywords` AND at least one keyword from character keywords (derived from the optional `selectedChar` parameter if provided, or from the default `characterKeywords` array for the specified game). All comparisons are case-insensitive. Returns a structured result object — never throws. Unknown `gameId` values pass through as `isValid: true` to avoid breaking future game additions.
 * **Parameters:**
   * `title` (`string`): The raw video title string returned from the oEmbed API.
   * `gameId` (`string`): The game ID selected by the user (e.g. `'sf6'`, `'t8'`, `'ggst'`, `'ssbu'`).
+  * `selectedChar` (`string`, optional): The character name to validate against. If provided, specific keywords are derived from this name.
 * **Returns:** `Object` — A result object with the following shape:
   * `isValid` (`boolean`): `true` if both game and character keywords were found.
   * `hasGameKeyword` (`boolean`): `true` if a game name keyword was matched.
@@ -66,11 +67,51 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
 * **Example:**
   ```javascript
   import { validateVideoTitle } from './video-validator.js';
-  validateVideoTitle('SF6 Ryu BnB Combo Guide', 'sf6');
+  validateVideoTitle('SF6 Ryu BnB Combo Guide', 'sf6', 'Ryu');
   // { isValid: true, hasGameKeyword: true, hasCharKeyword: true, label: 'Street Fighter 6' }
 
-  validateVideoTitle('Funny Cat Compilation', 'sf6');
+  validateVideoTitle('Funny Cat Compilation', 'sf6', 'Ryu');
   // { isValid: false, hasGameKeyword: false, hasCharKeyword: false, label: 'Street Fighter 6' }
+  ```
+
+---
+
+#### `extractTwitchInfo(url)`
+* **Description:** Validates if a URL points to Twitch and belongs to an allowlisted Twitch domain (`twitch.tv`, `www.twitch.tv`, `m.twitch.tv`, `clips.twitch.tv`). If it matches, it extracts the VOD ID or Clip slug and constructs a canonical Twitch URL. Returns `null` if the host is not allowlisted, the URL is malformed, or no VOD ID or Clip slug could be parsed.
+* **Parameters:**
+  * `url` (`string`): The Twitch URL to parse.
+* **Returns:** `string | null` — The canonical Twitch VOD or Clip URL, or `null` if invalid.
+* **Example:**
+  ```javascript
+  import { extractTwitchInfo } from './video-validator.js';
+  extractTwitchInfo('https://www.twitch.tv/videos/12345678'); // 'https://www.twitch.tv/videos/12345678'
+  extractTwitchInfo('https://m.twitch.tv/videos/12345678'); // 'https://www.twitch.tv/videos/12345678'
+  ```
+
+---
+
+#### `fetchTwitchVideoTitle(canonicalUrl)`
+* **Description:** Fetches the video title from Twitch's oEmbed endpoint. Returns `null` on any network failure, non-200 response, or JSON parse error.
+* **Parameters:**
+  * `canonicalUrl` (`string`): The canonical Twitch VOD or Clip URL.
+* **Returns:** `Promise<string | null>` — The Twitch video title string, or `null` on error.
+* **Example:**
+  ```javascript
+  import { fetchTwitchVideoTitle } from './video-validator.js';
+  const title = await fetchTwitchVideoTitle('https://www.twitch.tv/videos/12345678');
+  ```
+
+---
+
+#### `getCharacterKeywords(charName)`
+* **Description:** Derives a set of lowercase keywords for character-specific validation. Filters out common stop words and handles multi-word/special character names (generating space-replaced, collapsed, and tokenized variants). Avoids generating overly broad matching terms like short initials (e.g. "M" from "M. Bison"), but preserves short full names (e.g. "Ed").
+* **Parameters:**
+  * `charName` (`string`): The character's full name.
+* **Returns:** `Set<string>` — A Set of derived lowercase keywords.
+* **Example:**
+  ```javascript
+  import { getCharacterKeywords } from './video-validator.js';
+  getCharacterKeywords('Chun-Li'); // Set { 'chun-li', 'chun li', 'chunli', 'chun' }
   ```
 
 ---

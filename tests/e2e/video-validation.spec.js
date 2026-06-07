@@ -150,6 +150,7 @@ async function goToFeed(page) {
  */
 async function fillVideoForm(page, youtubeUrl) {
   await page.selectOption('#post-game-select', 'sf6');
+  await page.selectOption('#post-char-select', 'Ryu');
   await page.fill('#post-video-input', youtubeUrl);
   // Blur triggers the oEmbed check
   await page.locator('#post-video-input').blur();
@@ -202,6 +203,7 @@ test('video title missing game and character shows red warning banner', async ({
 // ─── SCENARIO 3: Submit blocked without checkbox checked ──────────────────────
 
 test('publishing is blocked with a toast when checkbox is not checked', async ({ page }) => {
+  let dialogTriggered = false;
   await injectFakeUser(page);
   await mockOEmbed(page, 'Funny Cat Compilation');
 
@@ -222,6 +224,24 @@ test('publishing is blocked with a toast when checkbox is not checked', async ({
   const toast = page.locator('#toast-notification');
   await expect(toast).toBeVisible({ timeout: 5_000 });
   await expect(toast).toContainText('confirm');
+
+  // Handle the browser dialogue popup
+  page.on('dialog', async dialog => {
+    dialogTriggered = true;
+    expect(dialog.message()).toContain('Street Fighter 6');
+    expect(dialog.message()).toContain('Ryu');
+    await dialog.accept();
+  });
+
+  // Check the confirmation box
+  await page.check('#video-confirm-checkbox');
+
+  // Submit again
+  await page.click('#btn-submit-post');
+
+  // Toast should now show success
+  await expect(toast).toContainText('successfully');
+  expect(dialogTriggered).toBe(true);
 });
 
 // ─── SCENARIO 4: Format hint appears when a game is selected ─────────────────

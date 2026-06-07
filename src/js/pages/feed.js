@@ -351,6 +351,13 @@ function renderCreatorBox(navigateCallback) {
           </select>
         </div>
 
+        <!-- Character Dropdown tag -->
+        <div style="flex: 1; min-width: 140px; display: none;" id="post-char-select-container">
+          <select class="form-select post-char-select" style="padding: 8px 12px; font-size: 0.85rem;" id="post-char-select">
+            <option value="">Select Character</option>
+          </select>
+        </div>
+
         <!-- Video Input Link -->
         <div style="flex: 2; min-width: 200px; display: flex; align-items: center; position: relative;">
           <i class="fa-brands fa-youtube" style="position: absolute; left: 12px; color: #ff0000; font-size: 1.1rem;"></i>
@@ -395,6 +402,8 @@ function renderCreatorBox(navigateCallback) {
   const confirmRow  = mount.querySelector('#video-confirm-row');
   const confirmCheckbox = mount.querySelector('#video-confirm-checkbox');
   const confirmLabel = mount.querySelector('#video-confirm-label');
+  const charSelect  = mount.querySelector('#post-char-select');
+  const charSelectContainer = mount.querySelector('#post-char-select-container');
 
   /** Updates the format hint text whenever the selected game changes. */
   const updateFormatHint = () => {
@@ -405,11 +414,12 @@ function renderCreatorBox(navigateCallback) {
     }
     const gameData = GAME_VIDEO_KEYWORDS[gameId];
     if (!gameData) return;
-    const exampleChar = gameData.characterKeywords[0];
+    const selectedCharName = charSelect.value;
+    const exampleChar = selectedCharName || (gameData.characterKeywords[0].charAt(0).toUpperCase() + gameData.characterKeywords[0].slice(1));
     formatHintText.textContent =
       `Video title must mention the game (e.g. "${gameData.label}") ` +
-      `and the character (e.g. "${exampleChar.charAt(0).toUpperCase() + exampleChar.slice(1)}"). ` +
-      `Example: "${gameData.label} – ${exampleChar.charAt(0).toUpperCase() + exampleChar.slice(1)} BnB Combo Guide"`;
+      `and the character (e.g. "${exampleChar}"). ` +
+      `Example: "${gameData.label} – ${exampleChar} BnB Combo Guide"`;
     formatHint.style.display = 'block';
   };
 
@@ -470,8 +480,10 @@ function renderCreatorBox(navigateCallback) {
   const showConfirmRow = (gameId) => {
     const gameData = GAME_VIDEO_KEYWORDS[gameId];
     const gameName = gameData ? gameData.label : 'the tagged game';
+    const selectedCharName = charSelect.value;
+    const charName = selectedCharName || 'the tagged character';
     confirmLabel.textContent =
-      `I confirm this video is a ${gameName} combo or clip featuring the character I tagged.`;
+      `I confirm this video is a ${gameName} combo or clip featuring ${charName}.`;
     confirmRow.style.display = 'block';
     confirmCheckbox.checked = false;
   };
@@ -484,12 +496,36 @@ function renderCreatorBox(navigateCallback) {
     confirmCheckbox.checked = false;
   };
 
-  // Wire: game select changes → update format hint, re-validate if URL present
+  // Wire: game select changes → update format hint, populate char dropdown, re-validate if URL present
   gameSelect.addEventListener('change', () => {
+    const gameId = gameSelect.value;
+    if (gameId) {
+      const gameData = games[gameId];
+      if (gameData && gameData.characters) {
+        charSelect.innerHTML = `<option value="">Select Character</option>` +
+          gameData.characters.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+        charSelectContainer.style.display = 'block';
+      } else {
+        charSelectContainer.style.display = 'none';
+        charSelect.innerHTML = `<option value="">Select Character</option>`;
+      }
+    } else {
+      charSelectContainer.style.display = 'none';
+      charSelect.innerHTML = `<option value="">Select Character</option>`;
+    }
+
     updateFormatHint();
     if (!videoInput.value.trim()) {
       resetValidationUI();
     } else {
+      videoInput.dispatchEvent(new Event('blur'));
+    }
+  });
+
+  // Wire: character select changes → re-validate if URL present, update format hint
+  charSelect.addEventListener('change', () => {
+    updateFormatHint();
+    if (videoInput.value.trim()) {
       videoInput.dispatchEvent(new Event('blur'));
     }
   });
@@ -524,7 +560,8 @@ function renderCreatorBox(navigateCallback) {
 
     const rawTitle = await fetchVideoTitle(videoId);
     const safeTitle = escapeHtml(rawTitle || '');
-    const result = rawTitle ? validateVideoTitle(rawTitle, gameId) : null;
+    const selectedChar = charSelect.value;
+    const result = rawTitle ? validateVideoTitle(rawTitle, gameId, selectedChar) : null;
     renderValidationBanner(result, safeTitle);
   });
 
@@ -538,6 +575,14 @@ function renderCreatorBox(navigateCallback) {
 
     const rawUrl = videoInput.value.trim();
     const gameId = gameSelect.value;
+    const charId = charSelect.value;
+
+    // Enforce character select if game is selected
+    if (gameId && !charId) {
+      window.showToast('Please select a character tag for your post.');
+      charSelect.focus();
+      return;
+    }
 
     // If video + game are both provided, the confirmation checkbox is mandatory
     if (rawUrl && gameId && !confirmCheckbox.checked) {
@@ -547,8 +592,28 @@ function renderCreatorBox(navigateCallback) {
       return;
     }
 
+    // Explicit acknowledgement browser confirm dialog on publish if video is provided
+    if (rawUrl && gameId) {
+      const gameData = GAME_VIDEO_KEYWORDS[gameId];
+      const gameName = gameData ? gameData.label : gameId;
+      const charName = charId || 'the tagged character';
+      const confirmed = window.confirm(
+        `Do you acknowledge and confirm that this post represents ${gameName} and features ${charName}?`
+      );
+      if (!confirmed) return;
+    }
+
+    // Append hashtag for character automatically to post content
+    let finalContent = text;
+    if (charId) {
+      const hashtag = '#' + charId.replace(/[-.\s]/g, '');
+      if (!finalContent.toLowerCase().includes(hashtag.toLowerCase())) {
+        finalContent += `\n\n${hashtag}`;
+      }
+    }
+
     const postData = {
-      content: text,
+      content: finalContent,
       game: gameId || '',
       videoUrl: rawUrl || ''
     };
@@ -557,6 +622,8 @@ function renderCreatorBox(navigateCallback) {
     if (result.success) {
       postContent.value = '';
       gameSelect.value = '';
+      charSelect.value = '';
+      charSelectContainer.style.display = 'none';
       videoInput.value = '';
       resetValidationUI();
       formatHint.style.display = 'none';

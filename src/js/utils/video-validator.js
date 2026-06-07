@@ -146,8 +146,9 @@ export async function fetchVideoTitle(videoId) {
  * All string comparisons are case-insensitive.
  * Returns a structured result object, never throws.
  *
- * @param {string} title     - The raw video title returned from the oEmbed API.
- * @param {string} gameId    - The game ID selected by the user (e.g. 'sf6', 't8').
+ * @param {string} title        - The raw video title returned from the oEmbed API.
+ * @param {string} gameId       - The game ID selected by the user (e.g. 'sf6', 't8').
+ * @param {string} [selectedChar] - Optional character name. If provided, title is validated against specific character keywords.
  * @returns {{ isValid: boolean, hasGameKeyword: boolean, hasCharKeyword: boolean, label: string }}
  *   - isValid:        true if both game and character keywords were found.
  *   - hasGameKeyword: true if a game name keyword was found in the title.
@@ -157,7 +158,7 @@ export async function fetchVideoTitle(videoId) {
  * validateVideoTitle('SF6 Ryu BnB Combo Guide', 'sf6');
  * // returns { isValid: true, hasGameKeyword: true, hasCharKeyword: true, label: 'Street Fighter 6' }
  */
-export function validateVideoTitle(title, gameId) {
+export function validateVideoTitle(title, gameId, selectedChar) {
   const fallback = { isValid: false, hasGameKeyword: false, hasCharKeyword: false, label: gameId };
 
   if (!title || !gameId) return fallback;
@@ -168,7 +169,14 @@ export function validateVideoTitle(title, gameId) {
   const lowerTitle = title.toLowerCase();
 
   const hasGameKeyword = gameData.gameKeywords.some(kw => lowerTitle.includes(kw));
-  const hasCharKeyword = gameData.characterKeywords.some(kw => lowerTitle.includes(kw));
+
+  let hasCharKeyword = false;
+  if (selectedChar) {
+    const charKeywords = getCharacterKeywords(selectedChar);
+    hasCharKeyword = Array.from(charKeywords).some(kw => lowerTitle.includes(kw));
+  } else {
+    hasCharKeyword = gameData.characterKeywords.some(kw => lowerTitle.includes(kw));
+  }
 
   return {
     isValid: hasGameKeyword && hasCharKeyword,
@@ -176,4 +184,126 @@ export function validateVideoTitle(title, gameId) {
     hasCharKeyword,
     label: gameData.label
   };
+}
+
+/**
+ * Extracts Twitch VOD ID or Clip slug and returns the canonical Twitch URL.
+ * Supports twitch.tv, www.twitch.tv, m.twitch.tv, and clips.twitch.tv.
+ *
+ * @param {string} url - The Twitch video or clip URL.
+ * @returns {string|null} The canonical Twitch URL, or null if not matched.
+ */
+export function extractTwitchInfo(url) {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+
+  // Allowlist Twitch hosts
+  const ALLOWED_HOSTS = ['twitch.tv', 'www.twitch.tv', 'm.twitch.tv', 'clips.twitch.tv'];
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(trimmed);
+  } catch {
+    return null;
+  }
+
+  if (!ALLOWED_HOSTS.includes(parsedUrl.hostname)) return null;
+
+  const pathname = parsedUrl.pathname;
+
+  // Extract VOD numeric ID from /videos/\d+ paths
+  const vodMatch = pathname.match(/\/videos\/(\d+)/);
+  if (vodMatch) {
+    return `https://www.twitch.tv/videos/${vodMatch[1]}`;
+  }
+
+  // Extract Clip alphanumeric slug from clips.twitch.tv/<slug> or /clip/<slug> paths
+  if (parsedUrl.hostname === 'clips.twitch.tv') {
+    const clipMatch = pathname.match(/\/([a-zA-Z0-9_-]+)/);
+    if (clipMatch && clipMatch[1] && clipMatch[1] !== 'index.html') {
+      return `https://clips.twitch.tv/${clipMatch[1]}`;
+    }
+  } else {
+    const clipMatch = pathname.match(/\/clip\/([a-zA-Z0-9_-]+)/);
+    if (clipMatch && clipMatch[1]) {
+      return `https://clips.twitch.tv/${clipMatch[1]}`;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Fetches the video title from Twitch's oEmbed API using a canonical Twitch URL.
+ * Returns null on any network, CORS, 401/403, or parsing error.
+ *
+ * @param {string} canonicalUrl - Canonical Twitch URL.
+ * @returns {Promise<string|null>} The video title, or null.
+ */
+export async function fetchTwitchVideoTitle(canonicalUrl) {
+  if (!canonicalUrl) return null;
+  const oEmbedUrl = `https://api.twitch.tv/v5/oembed?url=${encodeURIComponent(canonicalUrl)}&format=json`;
+
+  try {
+    const response = await fetch(oEmbedUrl);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.title || null;
+  } catch {
+    return null; // Graceful degradation
+  }
+}
+
+/**
+ * Derives a set of lowercase keywords from a character name.
+ *
+ * @param {string} charName - Name of the character.
+ * @returns {Set<string>} Set of derived lowercase keywords.
+ */
+export function getCharacterKeywords(charName) {
+  if (!charName || typeof charName !== 'string') return new Set();
+
+  const keywords = new Set();
+  const stopWords = new Set(['the', 'and', 'or', 'of', 'for', 'with', 'at', 'by', 'a', 'an', 'to', 'in', 'on', 'is']);
+
+  // Case-insensitive base split by slash
+  const segments = charName.toLowerCase().split('/');
+
+  for (const seg of segments) {
+    if (!seg.trim()) continue;
+
+    // Strip symbols ?, #, ', &
+    const stripped = seg.replace(/[?#'&]/g, '');
+
+    // Add full name (the segment itself after stripping symbols)
+    const fullName = stripped.trim().replace(/\s+/g, ' ');
+    if (fullName) {
+      keywords.add(fullName);
+    }
+
+    // Handle hyphens and periods:
+    // Generate variant where hyphens/periods are replaced by space
+    const withSpaces = stripped.replace(/[-.]/g, ' ').trim().replace(/\s+/g, ' ');
+    if (withSpaces) {
+      keywords.add(withSpaces);
+    }
+
+    // Generate variant where hyphens/periods/spaces are removed (collapsed)
+    const collapsed = stripped.replace(/[-.\s]/g, '').trim();
+    if (collapsed) {
+      keywords.add(collapsed);
+    }
+
+    // Tokenize multi-word names and exclude stop words
+    const tokens = withSpaces.split(/\s+/);
+    for (const token of tokens) {
+      if (!token) continue;
+      if (stopWords.has(token)) continue;
+      // Keep parts with length >= 3
+      if (token.length >= 3) {
+        keywords.add(token);
+      }
+    }
+  }
+
+  return keywords;
 }
