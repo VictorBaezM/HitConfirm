@@ -1,6 +1,7 @@
 /* Combos Dojo Page Controller */
 import store from '../store.js';
 import { renderComboCard } from '../components/combo-card.js';
+import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the Training Dojo combos page containing text query search filters,
@@ -12,8 +13,9 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  // Single column page layout for focusing on combos
-  mount.className = 'has-right-sidebar'; // Keep the dashboard standard, but can use different sidebar widgets
+  // Show left sidebar and set 3-column layout
+  mount.className = 'has-game-sidebar';
+  showGameSidebar();
 
   const games = store.getGames();
   const currentUser = store.getCurrentUser();

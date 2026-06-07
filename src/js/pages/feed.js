@@ -2,6 +2,7 @@
 import store from '../store.js';
 import { renderPostCard } from '../components/post-card.js';
 import { renderComboCard } from '../components/combo-card.js';
+import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the main dashboard timeline feed, chip selectors, hottest combos, and Dojo challenge widget.
@@ -11,8 +12,9 @@ export function renderFeedPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  // Make main layout have the right sidebar for dashboard aesthetics
-  mount.className = 'has-right-sidebar';
+  // Show the left game sidebar and set layout class
+  mount.className = 'has-game-sidebar';
+  showGameSidebar();
 
   const currentUser = store.getCurrentUser();
   const games = store.getGames();
@@ -24,18 +26,10 @@ export function renderFeedPage(navigateCallback) {
       <!-- Create Post Panel -->
       <div id="post-creator-box"></div>
 
-      <!-- Feed Tab Toggle -->
-      <div class="tabs" style="margin-bottom: 16px;">
-        <div class="tab active" id="feed-tab-all">All Activity</div>
-        <div class="tab" id="feed-tab-following">Following Feed</div>
-      </div>
-
-      <!-- Game Chips Selection -->
-      <div class="game-selector-bar" id="feed-game-chips">
-        <div class="game-chip active" data-game="all">All Games</div>
-        ${Object.values(games).map(g => `
-          <div class="game-chip" data-game="${g.id}">${g.name}</div>
-        `).join('')}
+      <!-- Feed Pill Tabs -->
+      <div class="pill-tabs" style="margin-bottom: 16px;">
+        <div class="pill-tab active" id="feed-tab-all" data-tab="all">All Activity</div>
+        <div class="pill-tab" id="feed-tab-following" data-tab="following">Following</div>
       </div>
 
       <!-- Feed Timeline -->
@@ -222,7 +216,7 @@ export function renderFeedPage(navigateCallback) {
 
   refreshTimeline();
 
-  // Attach Feed Tab listeners
+  // Attach Feed Pill Tab listeners
   const tabAll = document.getElementById('feed-tab-all');
   const tabFollowing = document.getElementById('feed-tab-following');
   
@@ -245,7 +239,7 @@ export function renderFeedPage(navigateCallback) {
     const sideMount = document.getElementById('sidebar-hot-combos');
     if (!sideMount) return;
 
-    const combos = store.getCombos().slice(0, 2); // Show top 2 combos
+    const combos = store.getCombos().slice(0, 2);
     if (combos.length === 0) {
       sideMount.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted);">No combos shared yet.</p>`;
       return;
@@ -263,14 +257,13 @@ export function renderFeedPage(navigateCallback) {
       row.innerHTML = `
         <div class="flex items-center justify-between" style="margin-bottom: 4px; font-size: 0.75rem;">
           <span class="badge badge-${combo.game}" style="font-size:0.65rem; padding: 2px 6px;">${combo.game.toUpperCase()}</span>
-          <span style="font-weight: 700; color: var(--color-primary);">${combo.damage} DMG</span>
+          <span style="font-weight: 700; color: var(--color-accent);">${combo.damage} DMG</span>
         </div>
         <div style="font-weight: 700; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           ${combo.character}: ${combo.title}
         </div>
       `;
       row.addEventListener('click', () => {
-        // Navigate to combos page and filter by this combo's game
         navigateCallback('combos', { game: combo.game });
       });
       sideMount.appendChild(row);
@@ -283,16 +276,24 @@ export function renderFeedPage(navigateCallback) {
   document.getElementById('sidebar-go-dojo').addEventListener('click', () => navigateCallback('combos'));
   document.getElementById('sidebar-go-builder').addEventListener('click', () => navigateCallback('builder'));
 
-  // Attach Game Chip Listeners
-  const chips = document.querySelectorAll('#feed-game-chips .game-chip');
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeGameFilter = chip.getAttribute('data-game');
-      refreshTimeline();
+  // Initialize Left Game Sidebar
+  const initSidebar = (activeGame, activeDifficulties) => {
+    renderGameSidebar({
+      activeGame,
+      activeDifficulties,
+      onGameChange: (gameId) => {
+        activeGameFilter = gameId;
+        refreshTimeline();
+        initSidebar(gameId, activeDifficulties);
+      },
+      onDifficultyChange: (difficulties) => {
+        activeDifficulties = difficulties;
+        initSidebar(activeGameFilter, difficulties);
+      }
     });
-  });
+  };
+
+  initSidebar(activeGameFilter, []);
 }
 
 /**

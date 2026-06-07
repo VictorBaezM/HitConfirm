@@ -3,6 +3,7 @@ import store from '../store.js';
 import { renderComboCard } from '../components/combo-card.js';
 import { renderPostCard } from '../components/post-card.js';
 import { escapeHtml } from '../utils/security.js';
+import { hideGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the player dashboard profile page containing custom avatar highlights,
@@ -14,7 +15,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  // Dual column layout
+  // Dual column layout — hide game sidebar on profile page
+  hideGameSidebar();
   mount.className = 'has-right-sidebar';
 
   const currentUser = store.getCurrentUser();

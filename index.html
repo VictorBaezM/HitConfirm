@@ -18,11 +18,15 @@
   <link rel="stylesheet" href="src/css/main.css">
   <link rel="stylesheet" href="src/css/components.css">
   <link rel="stylesheet" href="src/css/combo-parser.css">
+  <link rel="stylesheet" href="src/css/sidebar.css">
 </head>
 <body>
   <div id="app-container">
     <!-- Navbar (Rendered dynamically in js) -->
     <header id="navbar-mount"></header>
+
+    <!-- Left Game Sidebar (Rendered dynamically by game-sidebar.js for Feed & Combos pages) -->
+    <div id="game-sidebar-mount" style="display:none;"></div>
 
     <!-- Main Content (Dynamic Page Views) -->
     <main id="content-mount" class="has-right-sidebar"></main>

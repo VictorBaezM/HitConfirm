@@ -2,6 +2,7 @@
 import store from '../store.js';
 import { parseComboToHtml, DIRECTION_ARROWS, MOTIONS } from '../utils/combo-parser.js';
 import { escapeHtml } from '../utils/security.js';
+import { hideGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the visual combo builder workspace containing the interactive virtual lab pad controls,
@@ -12,7 +13,8 @@ export function renderBuilderPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  // Single column focus layout
+  // Single column focus layout — hide game sidebar
+  hideGameSidebar();
   mount.className = 'has-right-sidebar';
 
   const games = store.getGames();

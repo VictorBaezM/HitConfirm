@@ -14,9 +14,9 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(255, 0, 91, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(139, 92, 246, 0.05) 0%, transparent 45%),
     radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 0%, var(--bg-darkest) 100%);
   background-attachment: fixed;
 }
@@ -81,10 +81,16 @@ main {
     grid-template-columns: var(--sidebar-width) 1fr;
   }
   main.has-right-sidebar {
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr var(--right-sidebar-width);
   }
   main.has-both-sidebars {
-    grid-template-columns: var(--sidebar-width) 1fr 300px;
+    grid-template-columns: var(--sidebar-width) 1fr var(--right-sidebar-width);
+  }
+  /* 3-column with left game sidebar — content is offset by sidebar via margin-left in sidebar.css */
+  main.has-game-sidebar {
+    margin-left: var(--left-sidebar-width);
+    grid-template-columns: 1fr var(--right-sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--left-sidebar-width));
   }
 }
 
@@ -98,11 +104,11 @@ main {
 
 /* Typography Utility */
 .text-glow-primary {
-  text-shadow: 0 0 10px rgba(255, 0, 91, 0.5);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
 
 .text-glow-secondary {
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
 }
 
 .gradient-text {
@@ -126,7 +132,7 @@ main {
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  box-shadow: 0 0 15px rgba(255, 0, 91, 0.2);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
 }
 
 @keyframes spin {

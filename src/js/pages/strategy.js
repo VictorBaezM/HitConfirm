@@ -1,6 +1,7 @@
 /* Strategy Guides & Matchup Hub Page Controller */
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
+import { hideGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the Strategy Hub page, containing directories of matchup strategy articles,
@@ -11,7 +12,9 @@ export function renderStrategyPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  mount.className = 'has-right-sidebar'; // Split layout for directory on left, read view on right
+  // Split layout — hide game sidebar on this page
+  hideGameSidebar();
+  mount.className = 'has-right-sidebar';
 
   const games = store.getGames();
   const currentUser = store.getCurrentUser();
