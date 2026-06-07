@@ -348,6 +348,80 @@ export function renderProfilePage(navigateCallback, options = {}) {
     let currentSelectedPrimaryGame = currentUser.mainGame;
     let currentSelectedPrimaryChar = currentUser.mainChar;
 
+    const handleAddDlc = async (gameId, gridElement, isPrimary) => {
+      const gameObj = games[gameId];
+      if (!gameObj) return;
+
+      const charName = window.prompt(`Enter the name of the missing DLC character for ${gameObj.name}:`);
+      if (charName === null) return; // User cancelled
+
+      const cleanName = charName.trim();
+      if (!cleanName) {
+        window.showToast('Character name cannot be empty.');
+        return;
+      }
+
+      window.showToast('Adding character to database...');
+      const success = await store.addGameCharacter(gameId, cleanName);
+      if (success) {
+        window.showToast(`${cleanName} successfully added!`);
+        // Refresh local cache reference
+        games[gameId] = store.getGame(gameId);
+
+        if (isPrimary) {
+          currentSelectedPrimaryChar = cleanName;
+          fillPrimaryChars();
+        } else {
+          // Re-render other game grid characters
+          const card = otherGamesContainer.querySelector(`.edit-game-card.game-${gameId}`);
+          const grid = card.querySelector(`#char-selection-${gameId}`);
+          
+          // Collect currently selected active chars
+          const currentActive = [];
+          grid.querySelectorAll('.char-chip.active').forEach(ch => {
+            currentActive.push(ch.getAttribute('data-char'));
+          });
+          // Auto-select the newly added character
+          if (!currentActive.includes(cleanName)) {
+            currentActive.push(cleanName);
+          }
+
+          // Render updated list
+          grid.innerHTML = games[gameId].characters.map(c => {
+            const isChecked = currentActive.includes(c);
+            const activeChipClass = isChecked ? 'active' : '';
+            return `
+              <div class="char-chip ${activeChipClass}" data-game="${gameId}" data-char="${c}">
+                ${c}
+              </div>
+            `;
+          }).join('') + `
+            <div class="char-chip-add" data-game="${gameId}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+              <i class="fa-solid fa-plus"></i> Add DLC
+            </div>
+          `;
+
+          // Re-bind listeners
+          grid.querySelectorAll('.char-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+              e.stopPropagation();
+              chip.classList.toggle('active');
+            });
+          });
+
+          const addBtn = grid.querySelector('.char-chip-add');
+          if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              handleAddDlc(gameId, grid, false);
+            });
+          }
+        }
+      } else {
+        window.showToast('Failed to add character.');
+      }
+    };
+
     const fillPrimaryChars = () => {
       const gameObj = games[currentSelectedPrimaryGame];
       if (!gameObj) return;
@@ -360,7 +434,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
             ${c}
           </div>
         `;
-      }).join('');
+      }).join('') + `
+        <div class="char-chip-add" data-game="${currentSelectedPrimaryGame}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+          <i class="fa-solid fa-plus"></i> Add DLC
+        </div>
+      `;
 
       // Attach click listeners to primary character chips
       primaryCharSelectGrid.querySelectorAll('.char-chip').forEach(chip => {
@@ -370,6 +448,14 @@ export function renderProfilePage(navigateCallback, options = {}) {
           currentSelectedPrimaryChar = chip.getAttribute('data-char');
         });
       });
+
+      // Attach click listener to primary Add DLC chip
+      const addBtn = primaryCharSelectGrid.querySelector('.char-chip-add');
+      if (addBtn) {
+        addBtn.addEventListener('click', () => {
+          handleAddDlc(currentSelectedPrimaryGame, primaryCharSelectGrid, true);
+        });
+      }
     };
 
     // Attach click listeners to primary game selection chips
@@ -413,6 +499,9 @@ export function renderProfilePage(navigateCallback, options = {}) {
                 </div>
               `;
             }).join('')}
+            <div class="char-chip-add" data-game="${g.id}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+              <i class="fa-solid fa-plus"></i> Add DLC
+            </div>
           </div>
         </div>
       `;
@@ -448,6 +537,16 @@ export function renderProfilePage(navigateCallback, options = {}) {
       chip.addEventListener('click', (e) => {
         e.stopPropagation(); // Prevent toggling the game card itself
         chip.classList.toggle('active');
+      });
+    });
+
+    // Toggle character add chips inside cards
+    otherGamesContainer.querySelectorAll('.char-chip-add').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent toggling the game card itself
+        const gameId = btn.getAttribute('data-game');
+        const grid = otherGamesContainer.querySelector(`#char-selection-${gameId}`);
+        handleAddDlc(gameId, grid, false);
       });
     });
  

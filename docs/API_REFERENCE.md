@@ -176,6 +176,13 @@ This document provides a comprehensive Javadocs-standard API documentation regis
   * `gameId` (`string`): The game unique identifier.
 * **Returns:** `Object` - Game metadata details.
 
+### `Store.addGameCharacter(gameId, charName)`
+* **Description:** Dynamically appends a new character to a game's roster in the database and local cache if it does not already exist.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier (e.g., `'sf6'`).
+  * `charName` (`string`): The name of the character to add.
+* **Returns:** `Promise<boolean>` - Operational success status.
+
 ### `Store.getUsers()`
 * **Description:** Returns cached player profile entities.
 * **Parameters:** None.

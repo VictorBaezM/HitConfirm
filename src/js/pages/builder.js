@@ -60,7 +60,12 @@ export function renderBuilderPage(navigateCallback) {
           <!-- Character Select -->
           <div style="flex: 1; min-width: 200px;">
             <label class="form-label">Character</label>
-            <select id="builder-char-select" class="form-select"></select>
+            <div style="display: flex; gap: 8px;">
+              <select id="builder-char-select" class="form-select" style="flex: 1;"></select>
+              <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px; display: flex; align-items: center; justify-content: center; min-width: 38px;" title="Add new DLC character">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -196,13 +201,21 @@ export function renderBuilderPage(navigateCallback) {
   `;
 
   // Draw characters dropdown
-  const drawCharacters = () => {
+  const drawCharacters = (selectValue = null) => {
     const charSelect = document.getElementById('builder-char-select');
     if (!charSelect) return;
     
-    const chars = games[selectedGame].characters;
+    const game = store.getGame(selectedGame);
+    const chars = game ? game.characters : [];
     charSelect.innerHTML = chars.map(c => `<option value="${c}">${c}</option>`).join('');
-    selectedCharacter = chars[0];
+    
+    if (selectValue && chars.includes(selectValue)) {
+      selectedCharacter = selectValue;
+      charSelect.value = selectValue;
+    } else {
+      selectedCharacter = chars[0] || '';
+      if (chars.length > 0) charSelect.value = selectedCharacter;
+    }
     
     const previewChar = document.getElementById('preview-char-label');
     if (previewChar) previewChar.innerText = selectedCharacter;
@@ -354,6 +367,32 @@ export function renderBuilderPage(navigateCallback) {
     const previewChar = document.getElementById('preview-char-label');
     if (previewChar) previewChar.innerText = selectedCharacter;
   });
+
+  // Attach add character listener
+  const btnAddChar = document.getElementById('btn-add-builder-char');
+  if (btnAddChar) {
+    btnAddChar.addEventListener('click', async () => {
+      const game = store.getGame(selectedGame);
+      const gameName = game ? game.name : selectedGame;
+      const charName = window.prompt(`Enter the name of the missing DLC character for ${gameName}:`);
+      if (charName === null) return; // User cancelled
+      
+      const cleanName = charName.trim();
+      if (!cleanName) {
+        window.showToast('Character name cannot be empty.');
+        return;
+      }
+      
+      window.showToast('Adding character to database...');
+      const success = await store.addGameCharacter(selectedGame, cleanName);
+      if (success) {
+        window.showToast(`${cleanName} successfully added!`);
+        drawCharacters(cleanName);
+      } else {
+        window.showToast('Failed to add character to database.');
+      }
+    });
+  }
 
   // Attach pad direction listeners (joystick buttons)
   const dirButtons = mount.querySelectorAll('.pad-dir');

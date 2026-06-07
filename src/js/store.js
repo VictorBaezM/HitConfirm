@@ -6,25 +6,25 @@ const DEFAULT_GAMES = {
   sf6: {
     id: 'sf6',
     name: 'Street Fighter 6',
-    characters: ['Ryu', 'Ken', 'Chun-Li', 'Luke', 'Guile', 'Juri', 'Cammy', 'Marisa', 'JP', 'Dee Jay'],
+    characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'],
     notationType: 'sf'
   },
   t8: {
     id: 't8',
     name: 'Tekken 8',
-    characters: ['Jin', 'Kazuya', 'Jun', 'Reina', 'Victor', 'Azucena', 'King', 'Lars', 'Hwoarang', 'Yoshimitsu'],
+    characters: ['Alisa', 'Asuka', 'Azucena', 'Claudio', 'Devil Jin', 'Dragunov', 'Eddy', 'Feng', 'Heihachi', 'Hwoarang', 'Jack-8', 'Jin', 'Jun', 'Kazuya', 'King', 'Kuma', 'Lars', 'Law', 'Lee', 'Leo', 'Leroy', 'Lidia', 'Lili', 'Nina', 'Panda', 'Paul', 'Raven', 'Reina', 'Shaheen', 'Steve', 'Victor', 'Xiaoyu', 'Yoshimitsu', 'Zafina'],
     notationType: 'tekken'
   },
   ggst: {
     id: 'ggst',
     name: 'Guilty Gear -Strive-',
-    characters: ['Sol Badguy', 'Ky Kiske', 'May', 'Axl Low', 'Chipp Zanuff', 'Ramlethal Valentine', 'Nagoriyuki', 'Giovanna', 'Happy Chaos', 'Elphelt'],
+    characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Zato-1'],
     notationType: 'gg'
   },
   ssbu: {
     id: 'ssbu',
     name: 'Super Smash Bros. Ultimate',
-    characters: ['Mario', 'Donkey Kong', 'Link', 'Samus', 'Yoshi', 'Kirby', 'Fox', 'Pikachu', 'Joker', 'Kazuya'],
+    characters: ['Mario', 'Donkey Kong', 'Link', 'Samus', 'Dark Samus', 'Yoshi', 'Kirby', 'Fox', 'Pikachu', 'Luigi', 'Ness', 'Captain Falcon', 'Jigglypuff', 'Peach', 'Daisy', 'Bowser', 'Ice Climancers', 'Sheik', 'Zelda', 'Dr. Mario', 'Pichu', 'Falco', 'Marth', 'Lucina', 'Young Link', 'Ganondorf', 'Mewtwo', 'Roy', 'Chrom', 'Mr. Game & Watch', 'Meta Knight', 'Pit', 'Dark Pit', 'Zero Suit Samus', 'Wario', 'Snake', 'Ike', 'Pokemon Trainer', 'Diddy Kong', 'Lucas', 'Sonic', 'King Dedede', 'Olimar', 'Lucario', 'R.O.B.', 'Toon Link', 'Wolf', 'Villager', 'Mega Man', 'Wii Fit Trainer', 'Rosalina & Luma', 'Little Mac', 'Greninja', 'Palutena', 'Pac-Man', 'Robin', 'Shulk', 'Bowser Jr.', 'Duck Hunt', 'Ryu', 'Ken', 'Cloud', 'Corrin', 'Bayonetta', 'Inkling', 'Ridley', 'Simon', 'Richter', 'King K. Rool', 'Isabelle', 'Incineroar', 'Piranha Plant', 'Joker', 'Hero', 'Banjo & Kazooie', 'Terry', 'Byleth', 'Min Min', 'Steve', 'Sephiroth', 'Pyra/Mythra', 'Kazuya', 'Sora', 'Mii Fighter'],
     notationType: 'smash'
   }
 };
@@ -306,6 +306,7 @@ class Store {
     this.posts = [];
     this.strategies = [];
     this.usersCache = [];
+    this.games = {};
     this.currentUser = JSON.parse(localStorage.getItem('hc_current_user')) || null;
   }
 
@@ -313,7 +314,7 @@ class Store {
    * Initializes the store system (legacy localstorage method, stubbed out for Supabase integration).
    */
   init() {
-    // Session is loaded in constructor.
+    this.games = {};
   }
 
   /**
@@ -338,6 +339,15 @@ class Store {
     const dbStrategies = DEFAULT_STRATEGIES.map(mapStrategyToDb);
     await supabase.from('strategies').insert(dbStrategies);
     
+    // Seed games
+    const gamesToSeed = Object.values(DEFAULT_GAMES).map(g => ({
+      id: g.id,
+      name: g.name,
+      characters: g.characters,
+      notation_type: g.notationType
+    }));
+    await supabase.from('games').insert(gamesToSeed);
+    
     console.log('Seeding complete.');
   }
 
@@ -351,14 +361,27 @@ class Store {
       const usersCount = await supabase.from('users').select('id', { count: 'exact', head: true });
       if (usersCount.count === 0) {
         await this.seedSupabase();
+      } else {
+        // Also check if games table needs seeding (case where users exist but games table is new/empty)
+        const gamesCount = await supabase.from('games').select('id', { count: 'exact', head: true });
+        if (gamesCount.count === 0) {
+          const gamesToSeed = Object.values(DEFAULT_GAMES).map(g => ({
+            id: g.id,
+            name: g.name,
+            characters: g.characters,
+            notation_type: g.notationType
+          }));
+          await supabase.from('games').insert(gamesToSeed);
+        }
       }
 
-      // 2. Fetch all tables in parallel
-      const [combosRes, postsRes, strategiesRes, usersRes] = await Promise.all([
+      // 2. Fetch all tables in parallel including games
+      const [combosRes, postsRes, strategiesRes, usersRes, gamesRes] = await Promise.all([
         supabase.from('combos').select('*').order('created_at', { ascending: false }),
         supabase.from('posts').select('*').order('created_at', { ascending: false }),
         supabase.from('strategies').select('*').order('created_at', { ascending: false }),
-        supabase.from('users').select('*')
+        supabase.from('users').select('*'),
+        supabase.from('games').select('*')
       ]);
 
       // 3. Map database rows to client objects
@@ -366,6 +389,20 @@ class Store {
       this.posts = (postsRes.data || []).map(mapPostFromDb);
       this.strategies = (strategiesRes.data || []).map(mapStrategyFromDb);
       this.usersCache = (usersRes.data || []).map(mapUserFromDb);
+
+      this.games = {};
+      if (gamesRes.data && gamesRes.data.length > 0) {
+        gamesRes.data.forEach(row => {
+          this.games[row.id] = {
+            id: row.id,
+            name: row.name,
+            characters: row.characters || [],
+            notationType: row.notation_type
+          };
+        });
+      } else {
+        this.games = DEFAULT_GAMES;
+      }
 
       // Keep local list sync for backward-compatible lookups
       localStorage.setItem('hc_users', JSON.stringify(this.usersCache));
@@ -392,7 +429,7 @@ class Store {
    * @returns {Object} Static games dictionary.
    */
   getGames() {
-    return DEFAULT_GAMES;
+    return Object.keys(this.games || {}).length > 0 ? this.games : DEFAULT_GAMES;
   }
 
   /**
@@ -401,7 +438,55 @@ class Store {
    * @returns {Object} Game metadata structure.
    */
   getGame(gameId) {
+    if (this.games && this.games[gameId]) {
+      return this.games[gameId];
+    }
     return DEFAULT_GAMES[gameId];
+  }
+
+  /**
+   * Dynamically appends a new character to a game's roster in the database and local cache if it doesn't already exist.
+   * @param {string} gameId - The game identifier (e.g., 'sf6').
+   * @param {string} charName - The name of the character to add.
+   * @returns {Promise<boolean>} Success status.
+   */
+  async addGameCharacter(gameId, charName) {
+    if (!gameId || !charName) return false;
+    const cleanName = charName.trim();
+    if (!cleanName) return false;
+
+    // Make sure games are loaded
+    if (!this.games || Object.keys(this.games).length === 0) {
+      this.games = { ...DEFAULT_GAMES };
+    }
+
+    const game = this.games[gameId];
+    if (!game) return false;
+
+    // Check if character already exists (case-insensitive check)
+    const exists = game.characters.some(c => c.toLowerCase() === cleanName.toLowerCase());
+    if (exists) return true;
+
+    // Append to local cache
+    game.characters.push(cleanName);
+    // Sort character roster for alphabetical order, keeping it clean
+    game.characters.sort();
+
+    try {
+      // Save to Supabase
+      const { error } = await supabase.from('games')
+        .update({ characters: game.characters })
+        .eq('id', gameId);
+      
+      if (error) {
+        console.error('Failed to save new character in Supabase:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to update game character roster:', err);
+      return false;
+    }
   }
 
   /**

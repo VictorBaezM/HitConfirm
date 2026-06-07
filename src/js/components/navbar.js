@@ -128,16 +128,28 @@ export function renderNavbar(activePage, navigateCallback) {
     const badge = document.getElementById('repo-latest-update');
     if (!badge) return;
 
-    const applyUpdateInfo = (badgeEl, sha, msg, author, fullMsg) => {
-      badgeEl.title = `Commit ${sha}: ${fullMsg}\nBy ${author}`;
+    const applyUpdateInfo = (badgeEl, sha, msg, author, fullMsg, dateStr) => {
+      let displayDate = 'Recent';
+      try {
+        const commitDate = new Date(dateStr);
+        displayDate = commitDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      } catch (e) {
+        displayDate = dateStr ? dateStr.split('T')[0] : 'Recent';
+      }
+
+      badgeEl.title = `Commit ${sha}: ${fullMsg}\nBy ${author}\nDate: ${dateStr}`;
       const textEl = badgeEl.querySelector('.update-text');
-      if (textEl) textEl.innerText = `${sha} - ${msg}`;
+      if (textEl) textEl.innerText = `Updated: ${displayDate}`;
     };
 
     const applyFallback = (badgeEl) => {
       badgeEl.title = "Offline mode or GitHub rate limits reached";
       const textEl = badgeEl.querySelector('.update-text');
-      if (textEl) textEl.innerText = 'v1.1.0 - Live';
+      if (textEl) textEl.innerText = 'Updated: Jun 7, 2026';
       const pulseDot = badgeEl.querySelector('.pulse-dot');
       if (pulseDot) {
         pulseDot.style.backgroundColor = 'var(--color-primary)';
@@ -150,7 +162,7 @@ export function renderNavbar(activePage, navigateCallback) {
     if (cachedUpdate) {
       try {
         const data = JSON.parse(cachedUpdate);
-        applyUpdateInfo(badge, data.sha, data.msg, data.author, data.fullMsg);
+        applyUpdateInfo(badge, data.sha, data.msg, data.author, data.fullMsg, data.dateStr);
         return;
       } catch (e) {
         // Ignore JSON error and fetch fresh data
@@ -167,12 +179,13 @@ export function renderNavbar(activePage, navigateCallback) {
         const msg = lastCommit.commit.message.split('\n')[0];
         const author = lastCommit.commit.author.name;
         const fullMsg = lastCommit.commit.message;
+        const dateStr = lastCommit.commit.committer.date;
 
-        applyUpdateInfo(badge, sha, msg, author, fullMsg);
+        applyUpdateInfo(badge, sha, msg, author, fullMsg, dateStr);
 
         // Cache the result in session storage
         sessionStorage.setItem('hc_latest_update', JSON.stringify({
-          sha, msg, author, fullMsg
+          sha, msg, author, fullMsg, dateStr
         }));
       }
     } catch (err) {
