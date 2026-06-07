@@ -72,6 +72,90 @@ export function renderFeedPage(navigateCallback) {
           Try in Combo Builder
         </button>
       </div>
+
+      <!-- FGC Game Resources & Patch Notes Widget -->
+      <div class="card" style="padding: 20px;" id="feed-news-resources-widget">
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+          <i class="fa-solid fa-newspaper" style="color: var(--color-primary);"></i> Game Resources & Patches
+        </h3>
+        <div class="flex flex-col gap-3">
+          <!-- SF6 -->
+          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
+            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Street Fighter 6</span>
+              <span class="badge badge-sf6" style="font-size: 0.6rem; padding: 1px 4px;">SF6</span>
+            </div>
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+              <a href="https://www.streetfighter.com/6/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-globe"></i> Site
+              </a>
+              <a href="https://www.streetfighter.com/6/en-us/character/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-users"></i> Roster
+              </a>
+              <a href="https://www.streetfighter.com/6/en-us/buckler/battle_change/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-file-lines"></i> Patches
+              </a>
+            </div>
+          </div>
+          
+          <!-- Tekken 8 -->
+          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
+            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Tekken 8</span>
+              <span class="badge badge-t8" style="font-size: 0.6rem; padding: 1px 4px;">T8</span>
+            </div>
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+              <a href="https://tekken.com/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-globe"></i> Site
+              </a>
+              <a href="https://bandainamcoent.com/games/tekken-8" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-users"></i> Roster
+              </a>
+              <a href="https://bandainamcoent.com/news?game=tekken-8" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-file-lines"></i> Patches
+              </a>
+            </div>
+          </div>
+
+          <!-- GGST -->
+          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
+            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Guilty Gear -Strive-</span>
+              <span class="badge badge-ggst" style="font-size: 0.6rem; padding: 1px 4px;">GGST</span>
+            </div>
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+              <a href="https://www.guiltygear.com/ggst/en/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-globe"></i> Site
+              </a>
+              <a href="https://www.guiltygear.com/ggst/en/character/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-users"></i> Roster
+              </a>
+              <a href="https://www.guiltygear.com/ggst/en/news/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-file-lines"></i> Patches
+              </a>
+            </div>
+          </div>
+
+          <!-- SSBU -->
+          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
+            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Smash Ultimate</span>
+              <span class="badge badge-ssbu" style="font-size: 0.6rem; padding: 1px 4px;">SSBU</span>
+            </div>
+            <div class="flex gap-2" style="flex-wrap: wrap;">
+              <a href="https://www.smashbros.com/en_US/" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-globe"></i> Site
+              </a>
+              <a href="https://www.smashbros.com/en_US/char/index.html" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-users"></i> Roster
+              </a>
+              <a href="https://en-americas-support.nintendo.com/app/answers/detail/a_id/42809" target="_blank" rel="noopener noreferrer" class="badge" style="font-size: 0.7rem; background: rgba(0,240,255,0.05); border-color: rgba(0,240,255,0.2); text-decoration: none; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-solid fa-file-lines"></i> Patches
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
