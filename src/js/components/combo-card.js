@@ -214,7 +214,7 @@ export function renderComboCard(combo, navigateCallback) {
   //  <span style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">${combo.comments?.length || 0}</span>`
   
   // Let's update card actions layout to include comments toggle.
-  const actionsContainer = card.querySelector('.flex.items-center.gap-3');
+  const actionsContainer = card.querySelector('.combo-footer-actions');
   const commentToggleBtn = document.createElement('button');
   commentToggleBtn.className = 'btn-icon btn-comment-toggle';
   commentToggleBtn.title = 'Comments';

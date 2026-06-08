@@ -1,0 +1,35 @@
+const { test, expect } = require('@playwright/test');
+
+test.describe('HitConfirm SPA Page Routing', () => {
+  test.beforeEach(async ({ page }) => {
+    // Collect console logs
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        console.error(`PAGE CONSOLE ERROR: ${msg.text()}`);
+      }
+    });
+  });
+
+  test('can navigate to all pages', async ({ page }) => {
+    // 1. Visit root page (Feed)
+    await page.goto('/');
+    await expect(page.locator('#timeline-list')).toBeVisible();
+
+    // 2. Click Dojo link
+    await page.click('.nav-link[data-page="combos"]');
+    await expect(page.locator('#dojo-game-filter')).toBeVisible();
+    await expect(page.locator('h1:has-text("Dojo")')).toBeVisible();
+
+    // 3. Click Builder link
+    await page.click('.nav-link[data-page="builder"]');
+    await expect(page.locator('#builder-game-select')).toBeVisible();
+
+    // 4. Click Guides link
+    await page.click('.nav-link[data-page="strategy"]');
+    await expect(page.locator('h1:has-text("STRATEGY HUB")')).toBeVisible();
+
+    // 5. Click My Dojo link (without login should show locker room page)
+    await page.click('.nav-link[data-page="profile"]');
+    await expect(page.locator('h2:has-text("Dojo Locker Room")')).toBeVisible();
+  });
+});
