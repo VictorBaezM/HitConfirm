@@ -35,7 +35,7 @@ export function renderComboCard(combo, navigateCallback) {
     }
 
     videoHtml = `
-      <div class="video-container hidden" style="margin-top: 16px;">
+      <div class="video-container combo-video-container hidden">
         <div class="video-wrapper">
           <iframe src="${embedUrl}" allowfullscreen></iframe>
         </div>
@@ -51,8 +51,7 @@ export function renderComboCard(combo, navigateCallback) {
   const gameBadge = `<span class="badge badge-${combo.game}">${gameName}</span>`;
 
   const card = document.createElement('div');
-  card.className = 'card card-hoverable';
-  card.style.marginBottom = '20px';
+  card.className = 'card card-hoverable mb-5 combo-card';
   card.id = `combo-${combo.id}`;
 
   const dateStr = new Date(combo.createdAt).toLocaleDateString(undefined, {
@@ -61,71 +60,71 @@ export function renderComboCard(combo, navigateCallback) {
   });
 
   card.innerHTML = `
-    <div class="flex items-center justify-between" style="margin-bottom: 12px;">
+    <div class="combo-card-header">
       <div class="flex items-center gap-2">
         ${gameBadge}
         ${difficultyBadge}
-        <span class="badge" style="background: rgba(255,255,255,0.05); border-color: var(--border-color);">${escapeHtml(combo.character)}</span>
+        <span class="badge combo-char-badge">${escapeHtml(combo.character)}</span>
       </div>
-      <div style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</div>
+      <div class="combo-date-text">${dateStr}</div>
     </div>
 
-    <h3 style="margin-bottom: 8px; font-size: 1.25rem;">${escapeHtml(combo.title)}</h3>
-    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
-      Shared by <strong class="combo-author-link" style="color: var(--color-secondary); cursor: pointer; text-decoration: underline;">${escapeHtml(combo.username)}</strong>
+    <h3 class="combo-title-heading">${escapeHtml(combo.title)}</h3>
+    <div class="combo-author-wrapper">
+      Shared by <strong class="combo-author-link">${escapeHtml(combo.username)}</strong>
     </div>
 
     <!-- Visual Combo Rendering -->
-    <div style="margin-bottom: 16px;">
+    <div class="combo-notation-wrapper">
       ${visualNotationHtml}
     </div>
 
     <!-- Stats grid -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">
-      <div style="text-align: center;">
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Damage</div>
-        <div style="font-weight: 700; color: var(--color-primary);">${escapeHtml(combo.damage)}</div>
+    <div class="combo-stats-grid-container">
+      <div class="combo-stat-cell">
+        <div class="combo-stat-label">Damage</div>
+        <div class="combo-stat-val-damage">${escapeHtml(combo.damage)}</div>
       </div>
-      <div style="text-align: center;">
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Meter Cost</div>
-        <div style="font-weight: 700; color: var(--color-secondary);">${escapeHtml(combo.meter)}</div>
+      <div class="combo-stat-cell">
+        <div class="combo-stat-label">Meter Cost</div>
+        <div class="combo-stat-val-meter">${escapeHtml(combo.meter)}</div>
       </div>
-      <div style="text-align: center;">
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-heading); text-transform: uppercase;">Difficulty</div>
-        <div style="font-weight: 700; color: var(--color-accent); text-transform: capitalize;">${escapeHtml(combo.difficulty)}</div>
+      <div class="combo-stat-cell">
+        <div class="combo-stat-label">Difficulty</div>
+        <div class="combo-stat-val-diff">${escapeHtml(combo.difficulty)}</div>
       </div>
     </div>
 
-    ${combo.description ? `<p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">${escapeHtml(combo.description)}</p>` : ''}
+    ${combo.description ? `<p class="combo-description-text">${escapeHtml(combo.description)}</p>` : ''}
 
     ${videoHtml}
 
-    <div class="flex items-center gap-3" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+    <div class="combo-footer-actions">
       <button class="btn-icon btn-upvote ${upvoteClass}" title="Upvote Combo">
         <i class="fa-solid fa-fire"></i>
       </button>
-      <span class="upvote-count" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">${combo.upvotes} 🔥</span>
+      <span class="upvote-count combo-upvote-text">${combo.upvotes} 🔥</span>
 
-      <button class="btn-icon btn-save ${saveClass}" title="Save to My Dojo" style="margin-left: 8px;">
+      <button class="btn-icon btn-save ${saveClass} combo-action-margin" title="Save to My Dojo">
         <i class="fa-regular fa-bookmark"></i>
       </button>
 
-      <button class="btn-icon btn-copy" title="Copy Combo Notation" style="margin-left: 8px;">
+      <button class="btn-icon btn-copy combo-action-margin" title="Copy Combo Notation">
         <i class="fa-regular fa-copy"></i>
       </button>
 
       ${combo.videoUrl ? `
-        <button class="btn btn-secondary btn-sm btn-video-toggle" style="margin-left: auto;">
+        <button class="btn btn-secondary btn-sm btn-video-toggle combo-video-toggle-btn">
           <i class="fa-solid fa-video"></i> Video
         </button>
       ` : ''}
     </div>
 
     <!-- Combo Comments Section (hidden by default) -->
-    <div class="combo-comments-section hidden" style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Comments</h4>
-      <div class="flex gap-2" style="margin-bottom: 12px;">
-        <input type="text" class="form-input combo-comment-input" placeholder="Ask a question about execution..." style="padding: 8px 12px; font-size: 0.85rem;" />
+    <div class="combo-comments-section hidden">
+      <h4 class="combo-comments-title">Comments</h4>
+      <div class="combo-comments-input-wrapper">
+        <input type="text" class="form-input combo-comment-input combo-comment-field" placeholder="Ask a question about execution..." />
         <button class="btn btn-primary btn-sm btn-submit-combo-comment">Post</button>
       </div>
       <div class="combo-comments-container">
@@ -285,18 +284,18 @@ export function renderComboCard(combo, navigateCallback) {
 
 function renderCommentsList(comments) {
   if (!comments || comments.length === 0) {
-    return `<p style="font-size:0.8rem; color:var(--text-muted); margin:0;">No execution comments yet.</p>`;
+    return `<p class="font-xs text-muted m-0">No execution comments yet.</p>`;
   }
 
   return `
-    <div class="combo-comments-list" style="display: flex; flex-direction: column; gap: 8px;">
+    <div class="combo-comments-list">
       ${comments.map(c => `
-        <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
-            <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
+        <div class="combo-comment-item">
+          <div class="combo-comment-header">
+            <span class="combo-comment-author">${escapeHtml(c.username)}</span>
+            <span class="combo-comment-date">${escapeHtml(c.date)}</span>
           </div>
-          <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
+          <p class="combo-comment-text">${escapeHtml(c.text)}</p>
         </div>
       `).join('')}
     </div>

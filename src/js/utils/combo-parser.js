@@ -122,7 +122,7 @@ function parseComboStep(stepStr) {
   // Special prefixes like 'c.' or 'f.' in Guilty Gear (close/far slash)
   if (remaining.startsWith('c.') || remaining.startsWith('f.')) {
     const prefix = remaining.substring(0, 2);
-    html += `<span style="color: var(--text-muted); font-size: 0.8rem;">${prefix}</span>`;
+    html += `<span class="text-muted builder-pad-empty-text">${prefix}</span>`;
     remaining = remaining.substring(2);
   }
 

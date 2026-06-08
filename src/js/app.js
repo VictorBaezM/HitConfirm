@@ -33,7 +33,7 @@ export function navigate(pageId, options = {}) {
 
   // Clear previous HTML and display loading state
   contentMount.innerHTML = `
-    <div class="spinner-container" style="grid-column: span 3;">
+    <div class="spinner-container grid-col-span-3">
       <div class="spinner"></div>
     </div>
   `;
@@ -68,10 +68,10 @@ export function navigate(pageId, options = {}) {
     } catch (err) {
       console.error('Routing Error:', err);
       contentMount.innerHTML = `
-        <div class="card" style="grid-column: span 3; text-align: center; border-color: var(--color-danger);">
-          <h3 style="color: var(--color-danger);">Navigation Failed</h3>
-          <p style="font-size:0.9rem; color: var(--text-secondary); margin-top:4px;">${err.message}</p>
-          <button class="btn btn-primary btn-sm" id="btn-recovery-home" style="margin-top:16px;">Go to Feed</button>
+        <div class="card grid-col-span-3 text-center border-danger">
+          <h3 class="text-danger">Navigation Failed</h3>
+          <p class="font-md text-secondary mt-1">${err.message}</p>
+          <button class="btn btn-primary btn-sm mt-4" id="btn-recovery-home">Go to Feed</button>
         </div>
       `;
       document.getElementById('btn-recovery-home')?.addEventListener('click', () => navigate('feed'));
@@ -88,7 +88,7 @@ window.showToast = function(message, duration = 3000) {
   const toast = document.getElementById('toast-notification');
   if (!toast) return;
 
-  toast.innerHTML = `<i class="fa-solid fa-bell" style="color: var(--color-secondary); margin-right: 8px;"></i> ${message}`;
+  toast.innerHTML = `<i class="fa-solid fa-bell text-secondary mr-2"></i> ${message}`;
   toast.style.transform = 'translateY(0)';
   
   setTimeout(() => {

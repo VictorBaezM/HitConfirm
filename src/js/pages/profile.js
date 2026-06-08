@@ -34,11 +34,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
   // If no profile to display (logged out and trying to view own profile)
   if (!viewedUser) {
     mount.innerHTML = `
-      <div style="grid-column: span 2; display: flex; justify-content: center; align-items: center; padding: 64px 16px;">
-        <div class="card" style="max-width: 480px; width: 100%; text-align: center; border-color: rgba(0, 240, 255, 0.2); box-shadow: var(--glow-secondary);">
-          <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--color-secondary); filter: drop-shadow(var(--glow-secondary)); margin-bottom: 18px;"></i>
-          <h2 style="font-size: 1.6rem; margin-bottom: 8px;">Dojo Locker Room</h2>
-          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 24px;">
+      <div class="profile-locker-wrapper">
+        <div class="card profile-locker-card">
+          <i class="fa-solid fa-lock profile-locker-icon"></i>
+          <h2 class="profile-locker-title">Dojo Locker Room</h2>
+          <p class="profile-locker-desc">
             Log in or sign up to personalize your Dojo, save optimal combos for training sessions, and join matchup discussions.
           </p>
           <div class="flex justify-center gap-3">
@@ -75,7 +75,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       const combos = store.getCombos().filter(c => c.userId === viewedUser.id);
       if (combos.length === 0) {
         listMount.innerHTML = `
-          <div class="card" style="text-align: center; padding: 36px; color: var(--text-secondary);">
+          <div class="card profile-empty-card">
             <p>${viewedUser.username} hasn't posted any combos yet.</p>
           </div>
         `;
@@ -89,7 +89,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       const combos = store.getCombos().filter(c => savedIds.includes(c.id));
       if (combos.length === 0) {
         listMount.innerHTML = `
-          <div class="card" style="text-align: center; padding: 36px; color: var(--text-secondary);">
+          <div class="card profile-empty-card">
             <p>Your saved list is empty. Explore other player's combo cards and bookmark them!</p>
           </div>
         `;
@@ -102,7 +102,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       const posts = store.getPosts().filter(p => p.userId === viewedUser.id);
       if (posts.length === 0) {
         listMount.innerHTML = `
-          <div class="card" style="text-align: center; padding: 36px; color: var(--text-secondary);">
+          <div class="card profile-empty-card">
             <p>You haven't shared any timeline updates yet.</p>
           </div>
         `;
@@ -120,7 +120,6 @@ export function renderProfilePage(navigateCallback, options = {}) {
     // Derive followers count
     const followersList = store.getUsers().filter(u => u.following && u.following.includes(viewedUser.id));
     const followersCount = followersList.length;
-
     // Follow button if public view
     let followButtonHtml = '';
     if (isPublicView) {
@@ -129,7 +128,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       const followIcon = isFollowing ? 'fa-solid fa-user-check' : 'fa-solid fa-user-plus';
       const followBtnClass = isFollowing ? 'btn-secondary' : 'btn-primary';
       followButtonHtml = `
-        <button class="btn ${followBtnClass} btn-sm w-full" id="btn-follow-user" style="margin-top: 12px;">
+        <button class="btn ${followBtnClass} btn-sm w-full mt-3" id="btn-follow-user">
           <i class="${followIcon}"></i> ${followText}
         </button>
       `;
@@ -139,7 +138,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
     const leftPaneHtml = isPublicView
       ? `
         <div class="tabs">
-          <div class="tab active" style="cursor: default;">Published Combos</div>
+          <div class="tab active profile-tab-static">Published Combos</div>
         </div>
         <div id="profile-submissions-list"></div>
       `
@@ -155,38 +154,38 @@ export function renderProfilePage(navigateCallback, options = {}) {
     const editButtonHtml = isPublicView
       ? ''
       : `
-        <button class="btn btn-secondary btn-sm w-full" id="btn-edit-profile-mains" style="margin-top: 12px;">
+        <button class="btn btn-secondary btn-sm w-full mt-3" id="btn-edit-profile-mains">
           <i class="fa-solid fa-user-gear"></i> Edit Settings
         </button>
       `;
 
     const statsWidgetHtml = isPublicView
       ? `
-        <div class="card" style="padding: 20px;">
-          <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <div class="card profile-stats-card">
+          <h3 class="profile-sidebar-heading">
             Dojo Achievement Status
           </h3>
-          <div style="display: grid; grid-template-columns: 1fr; text-align: center;">
-            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
-              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-primary);">${countUserCombos(viewedUser.id)}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">Created Combos</div>
+          <div class="profile-stats-grid-1col">
+            <div class="profile-stat-item">
+              <div class="profile-stat-number color-primary">${countUserCombos(viewedUser.id)}</div>
+              <div class="font-xs text-secondary">Created Combos</div>
             </div>
           </div>
         </div>
       `
       : `
-        <div class="card" style="padding: 20px;">
-          <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <div class="card profile-stats-card">
+          <h3 class="profile-sidebar-heading">
             Dojo Achievement Status
           </h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
-            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
-              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-primary);">${countUserCombos(viewedUser.id)}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">Created Combos</div>
+          <div class="profile-stats-grid-2col">
+            <div class="profile-stat-item">
+              <div class="profile-stat-number color-primary">${countUserCombos(viewedUser.id)}</div>
+              <div class="font-xs text-secondary">Created Combos</div>
             </div>
-            <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px;">
-              <div style="font-size: 1.3rem; font-weight:800; color: var(--color-secondary);">${viewedUser.savedCombos?.length || 0}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">Saved Combos</div>
+            <div class="profile-stat-item">
+              <div class="profile-stat-number color-secondary">${viewedUser.savedCombos?.length || 0}</div>
+              <div class="font-xs text-secondary">Saved Combos</div>
             </div>
           </div>
         </div>
@@ -199,8 +198,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
     
     if (playedGamesList.length > 0) {
       playedGamesHtml = `
-        <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; text-align: left;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-family: var(--font-heading); font-weight: 700;">GAMES PLAYED:</span>
+        <div class="profile-games-section">
+          <span class="profile-games-label">GAMES PLAYED:</span>
           <div class="flex flex-col gap-2">
             ${playedGamesList.map(gId => {
               const gameObj = games[gId];
@@ -208,11 +207,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
               const charsPlayed = gameCharsMap[gId] || [];
               const charsStr = charsPlayed.length > 0 ? charsPlayed.map(escapeHtml).join(', ') : 'No character mains';
               return `
-                <div style="background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
-                  <div class="flex items-center justify-between" style="margin-bottom: 4px;">
-                    <span class="badge badge-${gId}" style="font-size: 0.65rem;">${gameObj.name}</span>
+                <div class="profile-game-item-card">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="badge badge-${gId} font-xs">${gameObj.name}</span>
                   </div>
-                  <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600;">Mains: <span style="color: var(--text-primary);">${charsStr}</span></div>
+                  <div class="profile-game-mains-text">Mains: <span class="profile-game-mains-val">${charsStr}</span></div>
                 </div>
               `;
             }).join('')}
@@ -230,34 +229,33 @@ export function renderProfilePage(navigateCallback, options = {}) {
       <!-- User Info & Lab Details Sidebar (Right Pane) -->
       <div id="profile-sidebar" class="flex flex-col gap-6">
         <!-- Card details -->
-        <div class="card" style="text-align: center; position: relative;">
-          <div class="avatar avatar-large" style="border-color: ${viewedUser.avatarColor || '#00f0ff'}; margin: 0 auto 16px auto;">
+        <div class="card profile-info-card">
+          <div class="avatar avatar-large profile-avatar-large-margin" style="border-color: ${viewedUser.avatarColor || '#00f0ff'};">
             ${viewedUser.username.substring(0, 2).toUpperCase()}
           </div>
           
-          <h2 style="font-size: 1.5rem; margin-bottom: 4px;">${viewedUser.username}</h2>
+          <h2 class="profile-username">${viewedUser.username}</h2>
           
-          <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-secondary);">
+          <div class="profile-meta-row">
             <span><strong>${countUserCombos(viewedUser.id)}</strong> Combos</span>
             <span>•</span>
             <span><strong>${followersCount}</strong> Followers</span>
           </div>
 
-          <div style="font-family: var(--font-heading); font-weight: 700; color: var(--color-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 16px;">
+          <div class="profile-rank-badge">
             ${viewedUser.rank || 'Beginner'}
           </div>
  
-          <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 12px; background: rgba(0,0,0,0.15); border-radius: 6px; border: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem;">
+          <div class="profile-details-box">
             <div class="flex justify-between">
-              <span style="color: var(--text-secondary);">Main Game:</span>
-              <strong style="color: var(--text-primary);">${mainGameName}</strong>
+              <span class="text-secondary">Main Game:</span>
+              <strong class="text-primary">${mainGameName}</strong>
             </div>
             <div class="flex justify-between">
-              <span style="color: var(--text-secondary);">Main Character:</span>
-              <strong style="color: var(--text-primary);">${viewedUser.mainChar}</strong>
+              <span class="text-secondary">Main Character:</span>
+              <strong class="text-primary">${viewedUser.mainChar}</strong>
             </div>
           </div>
-
           ${playedGamesHtml}
           ${followButtonHtml}
           ${editButtonHtml}
@@ -334,11 +332,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
       </div>
 
       <div class="profile-modal-section-title">Other Games & Mains</div>
-      <div id="modal-other-games-container" style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 12px;">
+      <div id="modal-other-games-container" class="profile-modal-other-games">
         <!-- Filled dynamically -->
       </div>
  
-      <div class="flex justify-end gap-3" style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+      <div class="profile-modal-actions">
         <button class="btn btn-secondary" id="modal-edit-cancel">Cancel</button>
         <button class="btn btn-primary" id="modal-edit-save">Save Info</button>
       </div>
@@ -399,7 +397,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
               </div>
             `;
           }).join('') + `
-            <div class="char-chip-add" data-game="${gameId}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+            <div class="char-chip-add profile-char-chip-add" data-game="${gameId}">
               <i class="fa-solid fa-plus"></i> Add DLC
             </div>
           `;
@@ -438,7 +436,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
           </div>
         `;
       }).join('') + `
-        <div class="char-chip-add" data-game="${currentSelectedPrimaryGame}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+        <div class="char-chip-add profile-char-chip-add" data-game="${currentSelectedPrimaryGame}">
           <i class="fa-solid fa-plus"></i> Add DLC
         </div>
       `;
@@ -486,13 +484,13 @@ export function renderProfilePage(navigateCallback, options = {}) {
       
       return `
         <div class="edit-game-card ${activeCardClass} game-${g.id}" data-game="${g.id}">
-          <div class="flex items-center justify-between" style="pointer-events: none;">
-            <span class="badge badge-${g.id}" style="font-size: 0.72rem; font-family: var(--font-heading); font-weight: 700;">${g.name}</span>
-            <span class="status-indicator" style="font-size: 0.7rem; font-family: var(--font-heading); font-weight: 700;">
+          <div class="flex items-center justify-between pointer-events-none">
+            <span class="badge badge-${g.id} profile-edit-game-badge">${g.name}</span>
+            <span class="status-indicator profile-edit-game-status">
               ${playsThisGame ? '<i class="fa-solid fa-circle-check"></i> ACTIVE' : '<i class="fa-regular fa-circle"></i> INACTIVE'}
             </span>
           </div>
-          <div id="char-selection-${g.id}" class="char-selection-grid ${activeClass}" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;" onclick="event.stopPropagation();">
+          <div id="char-selection-${g.id}" class="char-selection-grid profile-edit-char-grid ${activeClass}" onclick="event.stopPropagation();">
             ${g.characters.map(c => {
               const isChecked = activeChars.includes(c);
               const activeChipClass = isChecked ? 'active' : '';
@@ -502,7 +500,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
                 </div>
               `;
             }).join('')}
-            <div class="char-chip-add" data-game="${g.id}" style="border: 1px dashed var(--color-primary); color: var(--color-primary); font-weight: 700; cursor: pointer; text-align: center;">
+            <div class="char-chip-add profile-char-chip-add" data-game="${g.id}">
               <i class="fa-solid fa-plus"></i> Add DLC
             </div>
           </div>

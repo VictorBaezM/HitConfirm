@@ -31,10 +31,10 @@ export function renderStrategyPage(navigateCallback) {
     mount.innerHTML = `
       <!-- Guides List & Matrix (Left Column) -->
       <div id="strategy-left-pane">
-        <div class="flex justify-between items-center" style="margin-bottom: 24px;">
+        <div class="flex justify-between items-center mb-6">
           <div>
-            <h1 class="gradient-text" style="font-size: 1.8rem;">STRATEGY HUB</h1>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Study frames, matchups, punish guides, and lab tutorials.</p>
+            <h1 class="gradient-text strategy-title">STRATEGY HUB</h1>
+            <p class="strategy-desc">Study frames, matchups, punish guides, and lab tutorials.</p>
           </div>
           <button class="btn btn-primary btn-sm" id="btn-create-guide">
             <i class="fa-solid fa-pen-to-square"></i> Post Guide
@@ -42,7 +42,7 @@ export function renderStrategyPage(navigateCallback) {
         </div>
 
         <!-- Selector Bar -->
-        <div class="game-selector-bar" id="strategy-game-chips" style="margin-bottom: 20px;">
+        <div class="game-selector-bar mb-5" id="strategy-game-chips">
           <div class="game-chip ${selectedGame === 'all' ? 'active' : ''}" data-game="all">All Games</div>
           ${Object.values(games).map(g => `
             <div class="game-chip ${selectedGame === g.id ? 'active' : ''}" data-game="${g.id}">${g.name}</div>
@@ -50,21 +50,21 @@ export function renderStrategyPage(navigateCallback) {
         </div>
 
         <!-- Frame Punish Cheat Sheet (Dynamic Matchup Matrix Widget) -->
-        <div class="card" style="padding: 16px; margin-bottom: 24px; border-color: rgba(0, 240, 255, 0.15);">
-          <h3 style="font-size: 1rem; margin-bottom: 8px; color: var(--color-secondary);">
+        <div class="card strategy-matrix-card">
+          <h3 class="strategy-matrix-title">
             <i class="fa-solid fa-table-list"></i> Matchup Punish Directory
           </h3>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Quick frame reference notes for key matchups.</div>
+          <div class="strategy-matrix-desc">Quick frame reference notes for key matchups.</div>
           
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+          <div class="strategy-matrix-table-wrapper">
+            <table class="strategy-matrix-table">
               <thead>
-                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-heading); font-weight: 700;">
-                  <th style="padding: 8px;">Game</th>
-                  <th style="padding: 8px;">Character</th>
-                  <th style="padding: 8px;">Move Name</th>
-                  <th style="padding: 8px;">On Block</th>
-                  <th style="padding: 8px; color: var(--color-primary);">Optimal Punish</th>
+                <tr class="strategy-matrix-thead-row">
+                  <th class="strategy-matrix-th">Game</th>
+                  <th class="strategy-matrix-th">Character</th>
+                  <th class="strategy-matrix-th">Move Name</th>
+                  <th class="strategy-matrix-th">On Block</th>
+                  <th class="strategy-matrix-th-optimal">Optimal Punish</th>
                 </tr>
               </thead>
               <tbody id="cheat-sheet-tbody">
@@ -75,7 +75,7 @@ export function renderStrategyPage(navigateCallback) {
         </div>
 
         <!-- Guides Catalog List -->
-        <h3 style="font-size: 1.2rem; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+        <h3 class="strategy-guides-heading">
           Guides Directory
         </h3>
         <div id="guides-list" class="flex flex-col gap-4">
@@ -85,7 +85,7 @@ export function renderStrategyPage(navigateCallback) {
 
       <!-- Guide Reader Panel / Sidebar Widget (Right Column) -->
       <div id="strategy-sidebar" class="flex flex-col gap-6">
-        <div id="guide-viewer" class="card" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; position: sticky; top: 90px;">
+        <div id="guide-viewer" class="card strategy-guide-viewer">
           <!-- Displays instructions or active guide details -->
         </div>
       </div>
@@ -135,17 +135,17 @@ export function renderStrategyPage(navigateCallback) {
     const filtered = selectedGame === 'all' ? data : data.filter(d => d.game === selectedGame);
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="padding: 12px; text-align: center; color: var(--text-muted);">No cheat sheet reference for this filter.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-muted">No cheat sheet reference for this filter.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = filtered.map(d => `
-      <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); hover: background-color: rgba(255,255,255,0.01);">
-        <td style="padding: 8px; font-weight:700; color: var(--color-secondary); text-transform:uppercase; font-size:0.75rem;">${d.game}</td>
-        <td style="padding: 8px; font-weight:700;">${d.char}</td>
-        <td style="padding: 8px; color: var(--text-secondary); font-family: var(--font-mono); font-size:0.8rem;">${d.move}</td>
-        <td style="padding: 8px; font-weight:700; color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
-        <td style="padding: 8px; color: var(--text-primary); font-family: var(--font-heading); font-weight:600;">${d.punish}</td>
+      <tr class="strategy-matrix-tr">
+        <td class="strategy-matrix-td-game">${d.game}</td>
+        <td class="strategy-matrix-td-char">${d.char}</td>
+        <td class="strategy-matrix-td-move">${d.move}</td>
+        <td class="strategy-matrix-td-block" style="color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
+        <td class="strategy-matrix-td-punish">${d.punish}</td>
       </tr>
     `).join('');
   };
@@ -156,7 +156,7 @@ export function renderStrategyPage(navigateCallback) {
 
     if (guides.length === 0) {
       listMount.innerHTML = `
-        <div class="card" style="text-align: center; padding: 24px; color: var(--text-secondary);">
+        <div class="card strategy-empty-card">
           <p>No guides shared yet. Be the first to share notes!</p>
         </div>
       `;
@@ -166,22 +166,20 @@ export function renderStrategyPage(navigateCallback) {
     listMount.innerHTML = '';
     guides.forEach(guide => {
       const item = document.createElement('div');
-      item.className = 'card card-hoverable';
-      item.style.padding = '16px';
-      item.style.cursor = 'pointer';
+      item.className = 'card card-hoverable strategy-guide-item';
       
-      const badge = `<span class="badge badge-${guide.game}" style="font-size: 0.65rem;">${guide.game.toUpperCase()}</span>`;
+      const badge = `<span class="badge badge-${guide.game} strategy-badge-micro">${guide.game.toUpperCase()}</span>`;
       
       item.innerHTML = `
-        <div class="flex justify-between items-center" style="margin-bottom: 6px;">
+        <div class="strategy-guide-item-header">
           <div class="flex items-center gap-2">
             ${badge}
-            <span class="badge" style="background: rgba(255,255,255,0.05); font-size: 0.65rem;">${escapeHtml(guide.character)}</span>
+            <span class="badge strategy-badge-char">${escapeHtml(guide.character)}</span>
           </div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">${guide.upvotes} 🔥</span>
+          <span class="strategy-guide-item-meta">${guide.upvotes} 🔥</span>
         </div>
-        <h4 style="font-size: 1.05rem; margin-bottom: 4px;">${escapeHtml(guide.title)}</h4>
-        <div style="font-size: 0.75rem; color: var(--text-secondary);">By ${escapeHtml(guide.author)}</div>
+        <h4 class="strategy-guide-item-title">${escapeHtml(guide.title)}</h4>
+        <div class="strategy-guide-item-author">By ${escapeHtml(guide.author)}</div>
       `;
 
       item.addEventListener('click', () => {
@@ -204,10 +202,10 @@ export function renderStrategyPage(navigateCallback) {
 
     if (!activeGuide) {
       viewer.innerHTML = `
-        <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
-          <i class="fa-solid fa-book-open-reader" style="font-size: 2rem; margin-bottom: 12px; color: var(--text-muted);"></i>
+        <div class="strategy-viewer-empty">
+          <i class="fa-solid fa-book-open-reader strategy-viewer-empty-icon"></i>
           <h4>Select a guide to read details</h4>
-          <p style="font-size: 0.8rem; margin-top: 4px;">Browse matchup techniques or create your own thread!</p>
+          <p class="strategy-viewer-empty-text">Browse matchup techniques or create your own thread!</p>
         </div>
       `;
       return;
@@ -218,28 +216,28 @@ export function renderStrategyPage(navigateCallback) {
     const voteBtnClass = upvoted ? 'active' : '';
 
     viewer.innerHTML = `
-      <div class="flex items-center gap-2" style="margin-bottom: 12px; font-size: 0.75rem;">
+      <div class="strategy-viewer-header">
         <span class="badge badge-${activeGuide.game}">${activeGuide.game.toUpperCase()}</span>
-        <span class="badge" style="background: rgba(255,255,255,0.05);">${escapeHtml(activeGuide.character)}</span>
+        <span class="badge strategy-viewer-badge-char">${escapeHtml(activeGuide.character)}</span>
       </div>
 
-      <h2 style="font-size: 1.4rem; line-height: 1.2; margin-bottom: 8px;">${escapeHtml(activeGuide.title)}</h2>
-      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px;">
+      <h2 class="strategy-viewer-title">${escapeHtml(activeGuide.title)}</h2>
+      <div class="strategy-viewer-author">
         Written by <strong>${escapeHtml(activeGuide.author)}</strong>
       </div>
 
-      <div class="strategy-content" style="font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 24px; white-space: pre-wrap;">
+      <div class="strategy-content strategy-viewer-content">
         ${formatGuideMarkdown(activeGuide.content)}
       </div>
 
-      <div class="flex items-center justify-between" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+      <div class="strategy-viewer-footer">
         <div class="flex items-center gap-3">
           <button class="btn-icon btn-upvote-guide ${voteBtnClass}" title="Upvote Guide">
             <i class="fa-solid fa-fire"></i>
           </button>
-          <span class="guide-upvote-count" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">${activeGuide.upvotes} 🔥</span>
+          <span class="guide-upvote-count strategy-viewer-upvote-count">${activeGuide.upvotes} 🔥</span>
         </div>
-        <span style="font-size: 0.75rem; color: var(--text-muted);">Shared with HitConfirm Dojo</span>
+        <span class="strategy-viewer-footer-tag">Shared with HitConfirm Dojo</span>
       </div>
     `;
 
@@ -280,14 +278,14 @@ export function renderStrategyPage(navigateCallback) {
         <input type="text" id="modal-guide-title" class="form-input" placeholder="e.g. Punishing Ryu Fireballs, Neutral Guide..." />
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <div class="form-group" style="margin-bottom:0;">
+      <div class="strategy-modal-grid-2col">
+        <div class="form-group strategy-modal-form-group-flat">
           <label class="form-label">Game</label>
           <select id="modal-guide-game" class="form-select">
             ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group strategy-modal-form-group-flat">
           <label class="form-label">Character Focus</label>
           <select id="modal-guide-char" class="form-select">
             <!-- Populated via script -->
@@ -297,10 +295,10 @@ export function renderStrategyPage(navigateCallback) {
 
       <div class="form-group">
         <label class="form-label">Guide Content (Strategy, Tips, Punishes)</label>
-        <textarea id="modal-guide-content" class="form-textarea" style="min-height: 200px;" placeholder="Outline your matchup strategies. Markdown supported (e.g. ### Headers, 1. Lists)"></textarea>
+        <textarea id="modal-guide-content" class="form-textarea strategy-modal-textarea" placeholder="Outline your matchup strategies. Markdown supported (e.g. ### Headers, 1. Lists)"></textarea>
       </div>
 
-      <div class="flex justify-end gap-3" style="margin-top: 24px;">
+      <div class="strategy-modal-actions">
         <button class="btn btn-secondary" id="modal-guide-cancel">Cancel</button>
         <button class="btn btn-primary" id="modal-guide-publish">Publish Guide</button>
       </div>
@@ -366,10 +364,10 @@ function formatGuideMarkdown(text) {
   const escaped = escapeHtml(text);
   // Simple custom Markdown rendering to HTML:
   let formatted = escaped
-    .replace(/### (.*?)\n/g, '<h4 style="font-family:var(--font-heading); color:var(--color-secondary); margin-top:16px; margin-bottom:8px;">$1</h4>')
-    .replace(/## (.*?)\n/g, '<h3 style="font-family:var(--font-heading); color:var(--color-secondary); margin-top:20px; margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:4px;">$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);">$1</strong>')
-    .replace(/- (.*?)\n/g, '<li style="margin-left:16px; font-size:0.85rem; color:var(--text-secondary);">$1</li>')
+    .replace(/### (.*?)\n/g, '<h4>$1</h4>')
+    .replace(/## (.*?)\n/g, '<h3>$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/- (.*?)\n/g, '<li>$1</li>')
     .replace(/\n\n/g, '<br/>');
 
   return formatted;

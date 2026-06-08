@@ -3,21 +3,17 @@ import store from '../store.js';
 
 /**
  * Renders the persistent left game-filter sidebar into #game-sidebar-mount.
- * Shows game list and difficulty filters. Calls onGameChange / onDifficultyChange
- * callbacks when the user makes a selection.
+ * Shows game list and calls onGameChange callback when a game is selected.
  *
  * @param {Object}   options
  * @param {string}   options.activeGame         - Currently selected game id ('all' | 'sf6' | 't8' | etc.)
- * @param {string[]} options.activeDifficulties - Array of currently checked difficulty strings
  * @param {function} options.onGameChange       - Callback(gameId: string) when a game is clicked
- * @param {function} options.onDifficultyChange - Callback(difficulties: string[]) when checkboxes change
  */
-export function renderGameSidebar({ activeGame = 'all', activeDifficulties = [], onGameChange, onDifficultyChange } = {}) {
+export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
   const mount = document.getElementById('game-sidebar-mount');
   if (!mount) return;
 
   const games = store.getGames(); // { sf6: {id, name}, t8: {id, name}, ... }
-  const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
 
   // Build game list HTML
   let gameItemsHtml = `
@@ -37,27 +33,10 @@ export function renderGameSidebar({ activeGame = 'all', activeDifficulties = [],
     `;
   });
 
-  // Build difficulty filter HTML
-  const difficultyHtml = difficulties.map(d => {
-    const checked = activeDifficulties.includes(d) ? 'checked' : '';
-    const id = `diff-check-${d.toLowerCase()}`;
-    return `
-      <label class="sidebar-filter-item" for="${id}">
-        <input type="checkbox" id="${id}" data-difficulty="${d}" ${checked}>
-        ${d}
-      </label>
-    `;
-  }).join('');
-
   mount.innerHTML = `
     <div class="sidebar-section">
       <div class="sidebar-section-label">Games</div>
       ${gameItemsHtml}
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Difficulty</div>
-      ${difficultyHtml}
     </div>
   `;
 
@@ -66,15 +45,6 @@ export function renderGameSidebar({ activeGame = 'all', activeDifficulties = [],
     item.addEventListener('click', () => {
       const gameId = item.getAttribute('data-game');
       if (onGameChange) onGameChange(gameId);
-    });
-  });
-
-  // Attach difficulty checkbox events
-  mount.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const selected = [...mount.querySelectorAll('input[type="checkbox"]:checked')]
-        .map(el => el.getAttribute('data-difficulty'));
-      if (onDifficultyChange) onDifficultyChange(selected);
     });
   });
 }

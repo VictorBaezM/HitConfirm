@@ -50,7 +50,7 @@ export function renderNavbar(activePage, navigateCallback) {
         <div class="avatar" style="border-color: ${currentUser.avatarColor}">
           ${currentUser.username.substring(0, 2).toUpperCase()}
         </div>
-        <span style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">
+        <span class="nav-user-label">
           ${currentUser.username}
         </span>
         <button id="logout-btn" class="btn btn-secondary btn-sm">
@@ -69,9 +69,9 @@ export function renderNavbar(activePage, navigateCallback) {
 
   mount.innerHTML = `
     <nav class="navbar">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div class="nav-brand" style="cursor: pointer;" id="nav-logo">
-          <i class="fa-solid fa-bolt" style="color: var(--color-primary); filter: drop-shadow(var(--glow-primary));"></i>
+      <div class="nav-flex-wrapper">
+        <div class="nav-brand nav-logo-brand" id="nav-logo">
+          <i class="fa-solid fa-bolt nav-logo-icon"></i>
           <span>HIT</span>CONFIRM
         </div>
         <div id="repo-latest-update" class="repo-update-badge">

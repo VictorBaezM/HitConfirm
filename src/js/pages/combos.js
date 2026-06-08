@@ -28,10 +28,10 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   mount.innerHTML = `
     <!-- Dojo Content (Left) -->
     <div id="dojo-left-pane">
-      <div class="flex justify-between items-center" style="margin-bottom: 24px;">
+      <div class="dojo-title-container">
         <div>
-          <h1 class="gradient-text" style="font-size: 1.8rem;">TRAINING DOJO</h1>
-          <p style="color: var(--text-secondary); font-size: 0.9rem;">Browse community optimization combos and inputs.</p>
+          <h1 class="gradient-text dojo-title-main">TRAINING DOJO</h1>
+          <p class="dojo-title-desc">Browse community optimization combos and inputs.</p>
         </div>
         <button class="btn btn-primary" id="dojo-create-combo-btn">
           <i class="fa-solid fa-plus"></i> Share Combo
@@ -39,24 +39,24 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       </div>
 
       <!-- Dojo Tab Toggle -->
-      <div class="tabs" style="margin-bottom: 16px;">
+      <div class="tabs dojo-tabs-wrapper">
         <div class="tab active" id="dojo-tab-all">Browse Dojo</div>
         <div class="tab" id="dojo-tab-following">Following Dojo</div>
       </div>
 
       <!-- Filters Panel -->
-      <div class="card" style="padding: 16px; margin-bottom: 24px;">
-        <div style="display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center;">
+      <div class="card dojo-filters-card">
+        <div class="dojo-filters-grid">
           <!-- Search box -->
-          <div style="position: relative;">
-            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-            <input type="text" id="dojo-search-char" class="form-input" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." style="padding-left: 38px; font-size: 0.9rem;" value="" />
+          <div class="dojo-search-relative">
+            <i class="fa-solid fa-magnifying-glass dojo-search-icon"></i>
+            <input type="text" id="dojo-search-char" class="form-input dojo-search-field" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." value="" />
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+          <div class="dojo-select-filters-grid">
             <!-- Game selector drop -->
             <div>
-              <select id="dojo-game-filter" class="form-select" style="font-size: 0.85rem; padding: 10px 14px;">
+              <select id="dojo-game-filter" class="form-select dojo-select-filter-box">
                 <option value="all">All Games</option>
                 ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
               </select>
@@ -64,7 +64,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
             <!-- Difficulty selector drop -->
             <div>
-              <select id="dojo-difficulty-filter" class="form-select" style="font-size: 0.85rem; padding: 10px 14px;">
+              <select id="dojo-difficulty-filter" class="form-select dojo-select-filter-box">
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -81,20 +81,20 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
     <!-- Dojo Sidebar (Right) -->
     <div id="dojo-sidebar" class="flex flex-col gap-6">
-      <div class="card" style="padding: 20px;">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-circle-question" style="color: var(--color-secondary);"></i> Reading Notations
+      <div class="card dojo-sidebar-card">
+        <h3 class="dojo-sidebar-heading">
+          <i class="fa-solid fa-circle-question dojo-sidebar-heading-qicon"></i> Reading Notations
         </h3>
-        <ul style="padding-left: 18px; font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px;">
+        <ul class="dojo-notations-list">
           <li><strong>Anime (GG):</strong> Numpad directions (e.g., 236 = QCF) and buttons: <strong>P</strong> (Punch), <strong>K</strong> (Kick), <strong>S</strong> (Slash), <strong>HS</strong> (Heavy), <strong>D</strong> (Dust).</li>
           <li><strong>SF6:</strong> Classic directions (2MK = cr.MK) and buttons: <strong>LP/LK</strong>, <strong>MP/MK</strong>, <strong>HP/HK</strong>.</li>
           <li><strong>Tekken:</strong> Buttons <strong>1</strong> (LP), <strong>2</strong> (RP), <strong>3</strong> (LK), <strong>4</strong> (RK) with arrow directions.</li>
         </ul>
       </div>
 
-      <div class="card" style="padding: 20px;">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-trophy" style="color: var(--color-accent);"></i> Top Lab Masters
+      <div class="card dojo-sidebar-card">
+        <h3 class="dojo-sidebar-heading">
+          <i class="fa-solid fa-trophy dojo-sidebar-heading-ticon"></i> Top Lab Masters
         </h3>
         <div id="top-lab-masters-mount" class="flex flex-col gap-3">
           <!-- Dynamically populated -->
@@ -122,10 +122,10 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     if (activeDojoTab === 'following') {
       if (!currentUser) {
         listMount.innerHTML = `
-          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary); border-color: rgba(0, 240, 255, 0.15);">
-            <i class="fa-solid fa-lock" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+          <div class="card dojo-locked-card">
+            <i class="fa-solid fa-lock icon-lg mb-3 color-secondary"></i>
             <h3>Log in to see combos from followed users</h3>
-            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other lab masters and see their optimized combos here!</p>
+            <p class="font-md mt-1">Follow other lab masters and see their optimized combos here!</p>
           </div>
         `;
         return;
@@ -133,10 +133,10 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       const followingList = currentUser.following || [];
       if (followingList.length === 0) {
         listMount.innerHTML = `
-          <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
-            <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+          <div class="card feed-empty-card">
+            <i class="fa-solid fa-user-plus icon-lg mb-3 color-secondary"></i>
             <h3>Your Following Dojo is empty</h3>
-            <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players in the community to customize your Dojo.</p>
+            <p class="font-md mt-1">Follow other players in the community to customize your Dojo.</p>
           </div>
         `;
         return;
@@ -164,10 +164,10 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
     if (filtered.length === 0) {
       listMount.innerHTML = `
-        <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
-          <i class="fa-solid fa-compass" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-primary);"></i>
+        <div class="card feed-empty-card">
+          <i class="fa-solid fa-compass icon-lg mb-3 color-primary"></i>
           <h3>No matching combos found</h3>
-          <p style="font-size: 0.9rem; margin-top: 4px;">Try modifying your search queries or game filter categories.</p>
+          <p class="font-md mt-1">Try modifying your search queries or game filter categories.</p>
         </div>
       `;
       return;
@@ -205,20 +205,19 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     mastersMount.innerHTML = '';
     
     if (rankedUsers.length === 0) {
-      mastersMount.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin: 0;">No active users found.</p>`;
+      mastersMount.innerHTML = `<p class="font-xs text-muted text-center m-0">No active users found.</p>`;
       return;
     }
 
     rankedUsers.forEach((user, index) => {
       const row = document.createElement('div');
-      row.className = 'flex justify-between items-center';
-      row.style.fontSize = '0.85rem';
+      row.className = 'flex justify-between items-center font-sm';
       
       row.innerHTML = `
-        <span class="master-link" style="font-weight: 700; color: var(--color-secondary); cursor: pointer; text-decoration: underline;">
+        <span class="master-link underline-link">
           ${index + 1}. ${user.username}
         </span>
-        <span style="color: var(--text-muted);">${user.comboCount} combo${user.comboCount === 1 ? '' : 's'}</span>
+        <span class="text-muted">${user.comboCount} combo${user.comboCount === 1 ? '' : 's'}</span>
       `;
 
       row.querySelector('.master-link').addEventListener('click', () => {

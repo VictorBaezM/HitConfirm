@@ -269,7 +269,7 @@ export function renderBuilderPage(navigateCallback) {
 
     const game = games[selectedGame];
     if (!game) {
-      pad.innerHTML = '<span class="text-muted" style="font-size: 0.8rem;">Select a game to load buttons.</span>';
+      pad.innerHTML = '<span class="text-muted builder-pad-empty-text">Select a game to load buttons.</span>';
       return;
     }
     let buttons = [];
@@ -308,7 +308,7 @@ export function renderBuilderPage(navigateCallback) {
     }
 
     pad.innerHTML = buttons.map(b => `
-      <button class="btn pad-attack-btn ${b.class}" data-btn="${b.code}" style="padding: 8px 12px; font-size: 0.8rem; text-transform: uppercase;">
+      <button class="btn pad-attack-btn builder-pad-attack-btn ${b.class}" data-btn="${b.code}">
         ${b.code} (${b.name.split(' ')[0]})
       </button>
     `).join('');
@@ -337,7 +337,7 @@ export function renderBuilderPage(navigateCallback) {
     if (!bufferMount) return;
 
     if (!currentStepBuffer) {
-      bufferMount.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; font-weight: normal;">Joystick buffer is empty. Click a direction or motion on the pad above to begin a step.</span>`;
+      bufferMount.innerHTML = `<span class="builder-buffer-empty-text">Joystick buffer is empty. Click a direction or motion on the pad above to begin a step.</span>`;
       return;
     }
 
@@ -347,7 +347,7 @@ export function renderBuilderPage(navigateCallback) {
     // Check motion
     for (const [num, label] of Object.entries(MOTIONS)) {
       if (temp.startsWith(num)) {
-        display += `<span class="combo-motion" style="margin-right: 4px; font-size: 0.75rem; padding: 2px 6px;">${label}</span>`;
+        display += `<span class="combo-motion builder-motion-tag">${label}</span>`;
         temp = temp.substring(num.length);
         break;
       }
@@ -356,14 +356,14 @@ export function renderBuilderPage(navigateCallback) {
     // Check directions
     for (let char of temp) {
       const arrow = DIRECTION_ARROWS[char] || char;
-      display += `<span class="combo-dir" style="display: inline-block; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${arrow}</span>`;
+      display += `<span class="combo-dir builder-dir-tag">${arrow}</span>`;
     }
 
     bufferMount.innerHTML = `
-      <div class="flex items-center gap-2" style="background: rgba(255, 170, 0, 0.05); border: 1px dashed rgba(255, 170, 0, 0.3); padding: 8px 12px; border-radius: 6px; width: fit-content;">
-        <span style="color: var(--color-accent); font-size: 0.75rem; font-family: var(--font-heading); text-transform: uppercase;">Buffered:</span>
-        <strong style="font-size: 1rem; display: flex; align-items: center;">${display || 'Neutral'}</strong>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-left: 6px;">(Select an Attack Button below to add this step)</span>
+      <div class="flex items-center gap-2 builder-buffer-status-row">
+        <span class="builder-buffer-status-label">Buffered:</span>
+        <strong class="builder-buffer-status-display">${display || 'Neutral'}</strong>
+        <span class="builder-buffer-status-hint">(Select an Attack Button below to add this step)</span>
       </div>
     `;
   };
@@ -378,7 +378,7 @@ export function renderBuilderPage(navigateCallback) {
     const notationString = notationSequence.join(' > ');
 
     if (!notationString) {
-      previewMount.innerHTML = `<span class="text-muted" style="font-size: 0.9rem;">Start clicking the virtual pad below to build your combo...</span>`;
+      previewMount.innerHTML = `<span class="text-muted font-md">Start clicking the virtual pad below to build your combo...</span>`;
       if (manualInput) manualInput.value = '';
       return;
     }
@@ -459,7 +459,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(245,158,11,0.2)';
       validationBanner.style.color = 'var(--text-secondary)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-triangle-exclamation" style="color: var(--color-accent); margin-right: 6px;"></i>' +
+        '<i class="fa-solid fa-triangle-exclamation color-accent icon-mr-1"></i>' +
         'Could not verify video title (network issue). The confirmation checkbox is required to continue.';
       showBuilderConfirmRow(selectedGame);
       return;
@@ -471,7 +471,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(34,197,94,0.2)';
       validationBanner.style.color = 'var(--color-success)';
       validationBanner.innerHTML =
-        `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>` +
+        `<i class="fa-solid fa-circle-check icon-mr-1"></i>` +
         `Video "${safeTitle}" looks relevant to <strong>${escapeHtml(result.label)}</strong>. ` +
         `Confirmation checkbox still required before publishing.`;
       showBuilderConfirmRow(selectedGame);
@@ -487,7 +487,7 @@ export function renderBuilderPage(navigateCallback) {
     validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
     validationBanner.style.color = 'var(--color-danger)';
     validationBanner.innerHTML =
-      `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>` +
+      `<i class="fa-solid fa-triangle-exclamation icon-mr-1"></i>` +
       `Video title "${safeTitle}" is missing ${missing.join(' and ')}. ` +
       `Please use a video whose title clearly mentions both. You may still post, ` +
       `but must confirm relevance below.`;
@@ -533,7 +533,7 @@ export function renderBuilderPage(navigateCallback) {
         validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
         validationBanner.style.color = 'var(--color-danger)';
         validationBanner.innerHTML =
-          '<i class="fa-solid fa-link-slash" style="margin-right: 6px;"></i>' +
+          '<i class="fa-solid fa-link-slash icon-mr-1"></i>' +
           'That does not look like a valid YouTube or Twitch URL. Please use a full YouTube or Twitch link.';
         if (confirmRow) confirmRow.style.display = 'none';
         return;
@@ -544,7 +544,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(59,130,246,0.12)';
       validationBanner.style.color = 'var(--text-muted)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px;"></i>Checking video title...';
+        '<i class="fa-solid fa-spinner fa-spin icon-mr-1"></i>Checking video title...';
 
       let rawTitle = null;
       if (youtubeId) {

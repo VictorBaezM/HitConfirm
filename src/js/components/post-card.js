@@ -27,7 +27,7 @@ export function renderPostCard(post, navigateCallback) {
     }
     
     videoHtml = `
-      <div class="video-wrapper" style="margin-top: 16px;">
+      <div class="video-wrapper post-video-wrapper">
         <iframe src="${embedUrl}" allowfullscreen></iframe>
       </div>
     `;
@@ -41,18 +41,17 @@ export function renderPostCard(post, navigateCallback) {
     minute: '2-digit'
   });
 
-  // Comments list html
   let commentsHtml = '';
   if (post.comments && post.comments.length > 0) {
     commentsHtml = `
-      <div class="post-comments-list" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+      <div class="post-comments-list">
         ${post.comments.map(c => `
-          <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-              <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
-              <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
+          <div class="post-comment-row">
+            <div class="post-comment-meta">
+              <span class="post-comment-user">${escapeHtml(c.username)}</span>
+              <span class="post-comment-time">${escapeHtml(c.date)}</span>
             </div>
-            <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
+            <p class="post-comment-text">${escapeHtml(c.text)}</p>
           </div>
         `).join('')}
       </div>
@@ -61,51 +60,50 @@ export function renderPostCard(post, navigateCallback) {
 
   // Generate card element container
   const card = document.createElement('article');
-  card.className = 'card card-hoverable';
-  card.style.marginBottom = '20px';
+  card.className = 'card card-hoverable mb-5 post-card';
   card.id = `post-${post.id}`;
 
   const games = store.getGames();
-  const gameBadge = post.game ? `<span class="badge badge-${post.game}" style="margin-left: 10px;">${games[post.game]?.name || post.game}</span>` : '';
+  const gameBadge = post.game ? `<span class="badge badge-${post.game} ml-2">${games[post.game]?.name || post.game}</span>` : '';
 
   card.innerHTML = `
-    <div class="flex items-center justify-between" style="margin-bottom: 12px;">
+    <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-3">
-        <div class="avatar post-author-link" style="border-color: ${post.avatarColor || '#00f0ff'}; cursor: pointer;">
+        <div class="avatar post-author-link cursor-pointer" style="border-color: ${post.avatarColor || '#00f0ff'};">
           ${escapeHtml(post.username.substring(0,2).toUpperCase())}
         </div>
         <div>
-          <h4 style="margin: 0; line-height: 1.2;">
-            <span class="post-author-link" style="cursor: pointer; color: var(--color-secondary); text-decoration: underline;">${escapeHtml(post.username)}</span>
+          <h4>
+            <span class="post-author-link underline-link">${escapeHtml(post.username)}</span>
             ${gameBadge}
           </h4>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</span>
+          <span class="font-xs text-muted">${dateStr}</span>
         </div>
       </div>
     </div>
     
-    <div class="post-content" style="white-space: pre-wrap; font-size: 0.95rem;">
+    <div class="post-content">
       ${formatPostText(post.content)}
     </div>
     
     ${videoHtml}
 
-    <div class="flex items-center gap-4" style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+    <div class="flex items-center gap-4 post-footer-actions">
       <button class="btn-icon btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">
         <i class="fa-solid fa-fire"></i>
       </button>
-      <span class="upvote-count" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">${post.upvotes} 🔥</span>
+      <span class="upvote-count font-heading font-bold font-md">${post.upvotes} 🔥</span>
       
-      <button class="btn-icon btn-comment" title="Toggle comments" style="margin-left: auto;">
+      <button class="btn-icon btn-comment ml-auto" title="Toggle comments">
         <i class="fa-regular fa-comment"></i>
       </button>
-      <span style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;">${post.comments?.length || 0}</span>
+      <span class="font-heading font-bold font-md">${post.comments?.length || 0}</span>
     </div>
 
     <!-- Toggleable Comments Panel -->
-    <div class="comments-panel hidden" style="margin-top: 16px;">
-      <div class="flex gap-2">
-        <input type="text" class="form-input comment-input" placeholder="Type your reply..." style="padding: 8px 12px; font-size: 0.85rem;" />
+    <div class="comments-panel hidden mt-4">
+      <div class="post-comment-editor-row mt-0">
+        <input type="text" class="form-input comment-input post-comment-box" placeholder="Type your reply..." />
         <button class="btn btn-primary btn-sm btn-submit-comment">Reply</button>
       </div>
       <div class="comments-container">
@@ -163,14 +161,14 @@ export function renderPostCard(post, navigateCallback) {
       countLabel.innerText = result.comments.length;
       
       container.innerHTML = `
-        <div class="post-comments-list" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+        <div class="post-comments-list">
           ${result.comments.map(c => `
-            <div style="background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <span style="font-family:var(--font-heading); font-weight:700; font-size:0.8rem; color:var(--color-secondary);">${escapeHtml(c.username)}</span>
-                <span style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.date)}</span>
+            <div class="post-comment-row">
+              <div class="post-comment-meta">
+                <span class="post-comment-user">${escapeHtml(c.username)}</span>
+                <span class="post-comment-time">${escapeHtml(c.date)}</span>
               </div>
-              <p style="font-size:0.85rem; color:var(--text-primary); margin:0;">${escapeHtml(c.text)}</p>
+              <p class="post-comment-text">${escapeHtml(c.text)}</p>
             </div>
           `).join('')}
         </div>
@@ -200,13 +198,13 @@ export function renderPostCard(post, navigateCallback) {
 function formatPostText(text) {
   const escaped = escapeHtml(text);
   // Bold combos or text in asterisks
-  let formatted = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--color-secondary); font-family: var(--font-heading);">$1</strong>');
+  let formatted = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="color-secondary font-heading">$1</strong>');
   
   // Highlight hashtag topics
-  formatted = formatted.replace(/(#[a-zA-Z0-9_]+)/g, '<span style="color: var(--color-primary); font-weight: 600;">$1</span>');
+  formatted = formatted.replace(/(#[a-zA-Z0-9_]+)/g, '<span class="color-primary font-semibold">$1</span>');
   
   // Highlight inline backticked combo sequences
-  formatted = formatted.replace(/`([^`]+)`/g, '<code style="font-family: var(--font-mono); color: var(--color-secondary); background: var(--bg-input); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">$1</code>');
+  formatted = formatted.replace(/`([^`]+)`/g, '<code class="post-code-inline">$1</code>');
   
   return formatted;
 }

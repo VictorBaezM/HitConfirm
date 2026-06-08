@@ -28,8 +28,8 @@ export function openAuthModal(type = 'login', navigateCallback) {
         <input type="password" id="auth-password" class="form-input" placeholder="Enter your password..." />
       </div>
       
-      <div class="flex justify-between items-center" style="margin-top: 24px;">
-        <a id="btn-toggle-auth-reg" href="#" style="font-size: 0.85rem; font-family: var(--font-heading); font-weight: 700;">Create an account</a>
+      <div class="flex justify-between items-center mt-6">
+        <a id="btn-toggle-auth-reg" href="#" class="auth-toggle-link">Create an account</a>
         <div class="flex gap-2">
           <button class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
           <button class="btn btn-primary btn-sm" id="btn-auth-submit">Sign In</button>
@@ -103,21 +103,21 @@ export function openAuthModal(type = 'login', navigateCallback) {
         <input type="password" id="auth-password" class="form-input" placeholder="Choose a secure password..." />
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <div class="form-group" style="margin-bottom:0;">
+      <div class="auth-modal-grid-2col">
+        <div class="form-group mb-0">
           <label class="form-label">Main Game</label>
           <select id="auth-game" class="form-select">
             ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group mb-0">
           <label class="form-label">Main Character</label>
           <select id="auth-char" class="form-select"></select>
         </div>
       </div>
 
-      <div class="flex justify-between items-center" style="margin-top: 24px;">
-        <a id="btn-toggle-auth-login" href="#" style="font-size: 0.85rem; font-family: var(--font-heading); font-weight: 700;">Already have account?</a>
+      <div class="flex justify-between items-center mt-6">
+        <a id="btn-toggle-auth-login" href="#" class="auth-toggle-link">Already have account?</a>
         <div class="flex gap-2">
           <button class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
           <button class="btn btn-primary btn-sm" id="btn-auth-submit">Register</button>
