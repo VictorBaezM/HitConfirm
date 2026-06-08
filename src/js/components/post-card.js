@@ -27,7 +27,7 @@ export function renderPostCard(post, navigateCallback) {
     }
     
     videoHtml = `
-      <div class="video-wrapper post-video-wrapper">
+      <div class="wiki-video-wrapper">
         <iframe src="${embedUrl}" allowfullscreen></iframe>
       </div>
     `;
@@ -44,14 +44,14 @@ export function renderPostCard(post, navigateCallback) {
   let commentsHtml = '';
   if (post.comments && post.comments.length > 0) {
     commentsHtml = `
-      <div class="post-comments-list">
+      <div class="wiki-comments-list">
         ${post.comments.map(c => `
-          <div class="post-comment-row">
-            <div class="post-comment-meta">
-              <span class="post-comment-user">${escapeHtml(c.username)}</span>
-              <span class="post-comment-time">${escapeHtml(c.date)}</span>
+          <div class="wiki-comment-row">
+            <div class="wiki-comment-meta">
+              <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
+              <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
             </div>
-            <p class="post-comment-text">${escapeHtml(c.text)}</p>
+            <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
           </div>
         `).join('')}
       </div>
@@ -60,53 +60,53 @@ export function renderPostCard(post, navigateCallback) {
 
   // Generate card element container
   const card = document.createElement('article');
-  card.className = 'card card-hoverable mb-5 post-card';
+  card.className = 'wiki-post-panel wiki-hoverable';
   card.id = `post-${post.id}`;
 
   const games = store.getGames();
-  const gameBadge = post.game ? `<span class="badge badge-${post.game} ml-2">${games[post.game]?.name || post.game}</span>` : '';
+  const gameBadge = post.game ? `<span class="wiki-badge wiki-badge-${post.game}">${games[post.game]?.name || post.game}</span>` : '';
 
   card.innerHTML = `
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-3">
-        <div class="avatar post-author-link cursor-pointer" style="border-color: ${post.avatarColor || '#00f0ff'};">
+    <div class="wiki-post-header">
+      <div class="wiki-post-author-row">
+        <div class="wiki-user-avatar wiki-author-link" style="border: 2px solid ${post.avatarColor || '#00f0ff'}; cursor: pointer;">
           ${escapeHtml(post.username.substring(0,2).toUpperCase())}
         </div>
-        <div>
+        <div class="wiki-author-details">
           <h4>
-            <span class="post-author-link underline-link">${escapeHtml(post.username)}</span>
+            <span class="wiki-author-link wiki-link">${escapeHtml(post.username)}</span>
             ${gameBadge}
           </h4>
-          <span class="font-xs text-muted">${dateStr}</span>
+          <span class="wiki-post-date">${dateStr}</span>
         </div>
       </div>
     </div>
     
-    <div class="post-content">
+    <div class="wiki-post-content">
       ${formatPostText(post.content)}
     </div>
     
     ${videoHtml}
 
-    <div class="flex items-center gap-4 post-footer-actions">
-      <button class="btn-icon btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">
+    <div class="wiki-post-actions">
+      <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">
         <i class="fa-solid fa-fire"></i>
       </button>
-      <span class="upvote-count font-heading font-bold font-md">${post.upvotes} 🔥</span>
+      <span class="wiki-upvote-text upvote-count">${post.upvotes} 🔥</span>
       
-      <button class="btn-icon btn-comment ml-auto" title="Toggle comments">
+      <button class="wiki-action-btn btn-comment" title="Toggle comments" style="margin-left: auto;">
         <i class="fa-regular fa-comment"></i>
       </button>
-      <span class="font-heading font-bold font-md">${post.comments?.length || 0}</span>
+      <span class="wiki-comment-counter">${post.comments?.length || 0}</span>
     </div>
 
     <!-- Toggleable Comments Panel -->
-    <div class="comments-panel hidden mt-4">
-      <div class="post-comment-editor-row mt-0">
-        <input type="text" class="form-input comment-input post-comment-box" placeholder="Type your reply..." />
-        <button class="btn btn-primary btn-sm btn-submit-comment">Reply</button>
+    <div class="wiki-comments-panel hidden">
+      <div class="wiki-comment-editor">
+        <input type="text" class="wiki-comment-input comment-input" placeholder="Type your reply..." />
+        <button class="wiki-btn wiki-btn-primary btn-submit-comment">Reply</button>
       </div>
-      <div class="comments-container">
+      <div class="wiki-comments-container">
         ${commentsHtml}
       </div>
     </div>
@@ -134,7 +134,7 @@ export function renderPostCard(post, navigateCallback) {
   });
 
   const commentBtn = card.querySelector('.btn-comment');
-  const panel = card.querySelector('.comments-panel');
+  const panel = card.querySelector('.wiki-comments-panel');
   commentBtn.addEventListener('click', () => {
     panel.classList.toggle('hidden');
   });
@@ -156,19 +156,19 @@ export function renderPostCard(post, navigateCallback) {
       commentInput.value = '';
       
       // Re-render list
-      const container = card.querySelector('.comments-container');
-      const countLabel = card.querySelector('.btn-comment + span');
+      const container = card.querySelector('.wiki-comments-container');
+      const countLabel = card.querySelector('.wiki-comment-counter');
       countLabel.innerText = result.comments.length;
       
       container.innerHTML = `
-        <div class="post-comments-list">
+        <div class="wiki-comments-list">
           ${result.comments.map(c => `
-            <div class="post-comment-row">
-              <div class="post-comment-meta">
-                <span class="post-comment-user">${escapeHtml(c.username)}</span>
-                <span class="post-comment-time">${escapeHtml(c.date)}</span>
+            <div class="wiki-comment-row">
+              <div class="wiki-comment-meta">
+                <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
+                <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
               </div>
-              <p class="post-comment-text">${escapeHtml(c.text)}</p>
+              <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
             </div>
           `).join('')}
         </div>
@@ -184,7 +184,7 @@ export function renderPostCard(post, navigateCallback) {
   });
 
   // Attach author click listener
-  const authorLinks = card.querySelectorAll('.post-author-link');
+  const authorLinks = card.querySelectorAll('.wiki-author-link');
   authorLinks.forEach(link => {
     link.addEventListener('click', () => {
       navigateCallback('profile', { userId: post.userId });
@@ -198,10 +198,10 @@ export function renderPostCard(post, navigateCallback) {
 function formatPostText(text) {
   const escaped = escapeHtml(text);
   // Bold combos or text in asterisks
-  let formatted = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="color-secondary font-heading">$1</strong>');
+  let formatted = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="color-secondary">$1</strong>');
   
   // Highlight hashtag topics
-  formatted = formatted.replace(/(#[a-zA-Z0-9_]+)/g, '<span class="color-primary font-semibold">$1</span>');
+  formatted = formatted.replace(/(#[a-zA-Z0-9_]+)/g, '<span class="color-primary">$1</span>');
   
   // Highlight inline backticked combo sequences
   formatted = formatted.replace(/`([^`]+)`/g, '<code class="post-code-inline">$1</code>');

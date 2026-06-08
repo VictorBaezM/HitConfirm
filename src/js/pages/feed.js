@@ -29,7 +29,7 @@ export function renderFeedPage(navigateCallback) {
       <div id="post-creator-box"></div>
 
       <!-- Feed Pill Tabs -->
-      <div class="pill-tabs" style="margin-bottom: 16px;">
+      <div class="pill-tabs">
         <div class="pill-tab active" id="feed-tab-all" data-tab="all">All Activity</div>
         <div class="pill-tab" id="feed-tab-following" data-tab="following">Following</div>
       </div>
@@ -41,47 +41,47 @@ export function renderFeedPage(navigateCallback) {
     <!-- Sidebar Dashboard Widgets (Right) -->
     <div id="feed-sidebar" class="flex flex-col gap-6">
       <!-- Dojo Training Widget -->
-      <div class="card" style="padding: 20px;">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-fire" style="color: var(--color-primary);"></i> Hottest Combos
+      <div class="card">
+        <h3 class="wiki-console-title">
+          <i class="fa-solid fa-fire"></i> Hottest Combos
         </h3>
         <div id="sidebar-hot-combos" class="flex flex-col gap-3"></div>
-        <button class="btn btn-secondary btn-sm w-full" id="sidebar-go-dojo" style="margin-top: 12px; font-size: 0.75rem;">
+        <button class="btn btn-secondary btn-sm w-full" id="sidebar-go-dojo">
           Browse Dojo
         </button>
       </div>
 
       <!-- FGC Event Tracker -->
-      <div class="card" style="padding: 20px;">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-trophy" style="color: var(--color-accent);"></i> Weekly Dojo Challenge
+      <div class="card">
+        <h3 class="wiki-console-title">
+          <i class="fa-solid fa-trophy"></i> Weekly Dojo Challenge
         </h3>
-        <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.03);">
-          <div style="font-weight: 800; color: var(--color-secondary); margin-bottom: 4px;">Street Fighter 6 Ryu Challenge</div>
-          <p style="color: var(--text-secondary); margin-bottom: 8px;">Perform a corner combo ending in Shin Shoryuken with maximum damage scaling.</p>
-          <div class="flex items-center justify-between" style="font-size: 0.8rem;">
-            <span>Reward: <strong style="color: var(--color-accent);">"Legend" Title</strong></span>
+        <div class="wiki-comment-item">
+          <div class="wiki-comment-user">Street Fighter 6 Ryu Challenge</div>
+          <p class="wiki-comment-text">Perform a corner combo ending in Shin Shoryuken with maximum damage scaling.</p>
+          <div class="flex items-center justify-between">
+            <span>Reward: <strong>"Legend" Title</strong></span>
             <span>Ends: <strong>3 days</strong></span>
           </div>
         </div>
-        <button class="btn btn-primary btn-sm w-full" id="sidebar-go-builder" style="margin-top: 12px; font-size: 0.75rem;">
+        <button class="btn btn-primary btn-sm w-full" id="sidebar-go-builder">
           Try in Combo Builder
         </button>
       </div>
 
       <!-- FGC Game Resources & Patch Notes Widget -->
-      <div class="card" style="padding: 20px;" id="feed-news-resources-widget">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-newspaper" style="color: var(--color-primary);"></i> Game Resources & Patches
+      <div class="card" id="feed-news-resources-widget">
+        <h3 class="wiki-console-title">
+          <i class="fa-solid fa-newspaper"></i> Game Resources & Patches
         </h3>
         <div class="flex flex-col gap-3">
           <!-- SF6 -->
-          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
-            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="wiki-comment-item">
+            <div class="wiki-comment-meta">
               <span>Street Fighter 6</span>
-              <span class="badge badge-sf6" style="font-size: 0.6rem; padding: 1px 4px;">SF6</span>
+              <span class="badge badge-sf6">SF6</span>
             </div>
-            <div class="flex gap-2" style="flex-wrap: wrap;">
+            <div class="flex gap-2">
               <a href="https://www.streetfighter.com/6/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-sf6">
                 <i class="fa-solid fa-globe"></i> Site
               </a>
@@ -95,12 +95,12 @@ export function renderFeedPage(navigateCallback) {
           </div>
           
           <!-- Tekken 8 -->
-          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
-            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="wiki-comment-item">
+            <div class="wiki-comment-meta">
               <span>Tekken 8</span>
-              <span class="badge badge-t8" style="font-size: 0.6rem; padding: 1px 4px;">T8</span>
+              <span class="badge badge-t8">T8</span>
             </div>
-            <div class="flex gap-2" style="flex-wrap: wrap;">
+            <div class="flex gap-2">
               <a href="https://tekken.com/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-t8">
                 <i class="fa-solid fa-globe"></i> Site
               </a>
@@ -114,12 +114,12 @@ export function renderFeedPage(navigateCallback) {
           </div>
 
           <!-- GGST -->
-          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
-            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="wiki-comment-item">
+            <div class="wiki-comment-meta">
               <span>Guilty Gear -Strive-</span>
-              <span class="badge badge-ggst" style="font-size: 0.6rem; padding: 1px 4px;">GGST</span>
+              <span class="badge badge-ggst">GGST</span>
             </div>
-            <div class="flex gap-2" style="flex-wrap: wrap;">
+            <div class="flex gap-2">
               <a href="https://www.guiltygear.com/ggst/en/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ggst">
                 <i class="fa-solid fa-globe"></i> Site
               </a>
@@ -133,12 +133,12 @@ export function renderFeedPage(navigateCallback) {
           </div>
 
           <!-- SSBU -->
-          <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">
-            <div style="font-weight: 800; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div class="wiki-comment-item">
+            <div class="wiki-comment-meta">
               <span>Smash Ultimate</span>
-              <span class="badge badge-ssbu" style="font-size: 0.6rem; padding: 1px 4px;">SSBU</span>
+              <span class="badge badge-ssbu">SSBU</span>
             </div>
-            <div class="flex gap-2" style="flex-wrap: wrap;">
+            <div class="flex gap-2">
               <a href="https://www.smashbros.com/en_US/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ssbu">
                 <i class="fa-solid fa-globe"></i> Site
               </a>
@@ -250,18 +250,14 @@ export function renderFeedPage(navigateCallback) {
     sideMount.innerHTML = '';
     combos.forEach(combo => {
       const row = document.createElement('div');
-      row.style.background = 'rgba(255, 255, 255, 0.02)';
-      row.style.border = '1px solid var(--border-color)';
-      row.style.borderRadius = '6px';
-      row.style.padding = '10px';
+      row.className = 'wiki-comment-item wiki-hoverable';
       row.style.cursor = 'pointer';
-      row.style.transition = 'border-color var(--transition-fast)';
       row.innerHTML = `
-        <div class="flex items-center justify-between" style="margin-bottom: 4px; font-size: 0.75rem;">
-          <span class="badge badge-${combo.game}" style="font-size:0.65rem; padding: 2px 6px;">${combo.game.toUpperCase()}</span>
-          <span style="font-weight: 700; color: var(--color-accent);">${combo.damage} DMG</span>
+        <div class="flex items-center justify-between">
+          <span class="badge badge-${combo.game}">${combo.game.toUpperCase()}</span>
+          <span class="wiki-char-badge">${combo.damage} DMG</span>
         </div>
-        <div style="font-weight: 700; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        <div class="wiki-comment-user" style="margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           ${combo.character}: ${combo.title}
         </div>
       `;

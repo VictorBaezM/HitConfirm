@@ -17,31 +17,33 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
 
   // Build game list HTML
   let gameItemsHtml = `
-    <div class="sidebar-game-item ${activeGame === 'all' ? 'active' : ''}" data-game="all" id="sidebar-game-all">
-      <span class="sidebar-game-dot dot-all"></span>
-      All Games
+    <div class="wiki-console-tab ${activeGame === 'all' ? 'active' : ''}" data-game="all" id="sidebar-game-all">
+      <span class="wiki-console-dot dot-all"></span>
+      All Databases
     </div>
   `;
 
   Object.values(games).forEach(game => {
     const isActive = activeGame === game.id ? 'active' : '';
     gameItemsHtml += `
-      <div class="sidebar-game-item ${isActive}" data-game="${game.id}" id="sidebar-game-${game.id}">
-        <span class="sidebar-game-dot dot-${game.id}"></span>
+      <div class="wiki-console-tab ${isActive}" data-game="${game.id}" id="sidebar-game-${game.id}">
+        <span class="wiki-console-dot dot-${game.id}"></span>
         ${game.name}
       </div>
     `;
   });
 
   mount.innerHTML = `
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Games</div>
-      ${gameItemsHtml}
+    <div class="wiki-console">
+      <div class="wiki-console-title">GAME SELECTOR</div>
+      <div class="wiki-console-tabs-grid">
+        ${gameItemsHtml}
+      </div>
     </div>
   `;
 
   // Attach game selection events
-  mount.querySelectorAll('.sidebar-game-item').forEach(item => {
+  mount.querySelectorAll('.wiki-console-tab').forEach(item => {
     item.addEventListener('click', () => {
       const gameId = item.getAttribute('data-game');
       if (onGameChange) onGameChange(gameId);

@@ -36,30 +36,30 @@ export function renderBuilderPage(navigateCallback) {
   mount.innerHTML = `
     <!-- Builder Area (Left) -->
     <div id="builder-left-pane">
-      <div style="margin-bottom: 24px;">
-        <h1 class="gradient-text" style="font-size: 1.8rem;">COMBO BUILDER</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Interactively construct fighting game combos and generate visual notations.</p>
+      <div>
+        <h1>COMBO BUILDER</h1>
+        <p class="wiki-empty-text">Interactively construct fighting game combos and generate visual notations.</p>
       </div>
 
       <!-- Live Preview Card -->
-      <div class="card" style="border-color: var(--color-secondary); margin-bottom: 24px; background: linear-gradient(180deg, rgba(0,240,255,0.02) 0%, rgba(0,0,0,0) 100%);">
-        <h4 style="font-family: var(--font-heading); color: var(--color-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+      <div class="card">
+        <h4 class="form-label">
           Live Notation Preview
         </h4>
-        <div id="builder-live-preview" style="min-height: 70px; display: flex; align-items: center;">
-          <span class="text-muted" style="font-size: 0.9rem;">Start clicking the virtual pad below to build your combo...</span>
+        <div id="builder-live-preview">
+          <span class="text-muted">Start clicking the virtual pad below to build your combo...</span>
         </div>
-        <div id="builder-buffer-preview" style="margin-top: 8px; font-size: 0.85rem; min-height: 20px;">
+        <div id="builder-buffer-preview">
           <!-- Buffer helper injected here -->
         </div>
-        <div class="flex justify-between items-center" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">
-          <span>Character: <strong id="preview-char-label" style="color:var(--text-primary);">${selectedCharacter || 'None'}</strong> (${games[selectedGame] ? games[selectedGame].name : 'No Game'})</span>
-          <button class="btn btn-secondary btn-sm" id="btn-clear-all" style="padding: 4px 10px; font-size: 0.75rem;">Clear Combo</button>
+        <div class="flex justify-between items-center" style="margin-top: 12px;">
+          <span class="form-label">Character: <strong id="preview-char-label">${selectedCharacter || 'None'}</strong> (${games[selectedGame] ? games[selectedGame].name : 'No Game'})</span>
+          <button class="btn btn-secondary btn-sm" id="btn-clear-all">Clear Combo</button>
         </div>
       </div>
 
       <!-- Combo Configurator -->
-      <div class="card" style="margin-bottom: 24px;">
+      <div class="card">
         <div class="flex gap-4" style="flex-wrap: wrap; margin-bottom: 20px;">
           <!-- Game Select -->
           <div style="flex: 1; min-width: 200px;">
@@ -72,44 +72,44 @@ export function renderBuilderPage(navigateCallback) {
           <!-- Character Select -->
           <div style="flex: 1; min-width: 200px;">
             <label class="form-label">Character</label>
-            <div style="display: flex; gap: 8px;">
-              <select id="builder-char-select" class="form-select" style="flex: 1;"></select>
-              <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px; display: flex; align-items: center; justify-content: center; min-width: 38px;" title="Add new DLC character">
+            <div class="flex gap-2">
+              <select id="builder-char-select" class="form-select"></select>
+              <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px;" title="Add new DLC character">
                 <i class="fa-solid fa-plus"></i>
               </button>
             </div>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+        <div>
           <!-- Visual Keypad Panel -->
-          <div id="virtual-keypad-container" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 20px; border-radius: var(--radius-sm);">
-            <h4 style="font-size: 0.95rem; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+          <div id="virtual-keypad-container">
+            <h4 class="form-label" style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px;">
               Virtual Lab Pad
             </h4>
             
-            <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+            <div class="flex flex-col gap-4">
               <!-- Joystick Grid (Numpad) -->
               <div>
-                <span class="form-label" style="font-size: 0.8rem;">1. Joystick Directions</span>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <span class="form-label">1. Joystick Directions</span>
+                <div class="flex gap-4" style="flex-wrap: wrap;">
                   <!-- Left: Arrows Grid -->
-                  <div style="display: grid; grid-template-columns: repeat(3, 40px); gap: 6px; width: 132px; justify-content: center; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
-                    <button class="btn btn-secondary pad-dir" data-dir="7" style="padding:0; width:40px; height:40px;">↖</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="8" style="padding:0; width:40px; height:40px;">↑</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="9" style="padding:0; width:40px; height:40px;">↗</button>
+                  <div class="joystick-grid">
+                    <button class="btn btn-secondary pad-dir" data-dir="7">↖</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="8">↑</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="9">↗</button>
                     
-                    <button class="btn btn-secondary pad-dir" data-dir="4" style="padding:0; width:40px; height:40px;">←</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="5" style="padding:0; width:40px; height:40px;">•</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="6" style="padding:0; width:40px; height:40px;">→</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="4">←</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="5">•</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="6">→</button>
                     
-                    <button class="btn btn-secondary pad-dir" data-dir="1" style="padding:0; width:40px; height:40px;">↙</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="2" style="padding:0; width:40px; height:40px;">↓</button>
-                    <button class="btn btn-secondary pad-dir" data-dir="3" style="padding:0; width:40px; height:40px;">↘</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="1">↙</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="2">↓</button>
+                    <button class="btn btn-secondary pad-dir" data-dir="3">↘</button>
                   </div>
                   
                   <!-- Right: Motion Shortcuts -->
-                  <div style="flex: 1; min-width: 140px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start;">
+                  <div class="motion-shortcuts">
                     <button class="btn btn-secondary pad-motion btn-sm" data-motion="236">QCF (236)</button>
                     <button class="btn btn-secondary pad-motion btn-sm" data-motion="214">QCB (214)</button>
                     <button class="btn btn-secondary pad-motion btn-sm" data-motion="623">DP (623)</button>
@@ -122,14 +122,14 @@ export function renderBuilderPage(navigateCallback) {
 
               <!-- Action Buttons Pad -->
               <div>
-                <span class="form-label" style="font-size: 0.8rem;">2. Attack Buttons</span>
-                <div id="attack-buttons-grid" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <span class="form-label">2. Attack Buttons</span>
+                <div id="attack-buttons-grid">
                   <!-- Dynamic game buttons go here -->
                 </div>
               </div>
 
               <!-- Sequence link tools -->
-              <div class="flex gap-2" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 8px;">
+              <div class="flex gap-2" style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 8px;">
                 <button class="btn btn-accent btn-sm" id="btn-link-move" style="flex: 2;">
                   <i class="fa-solid fa-arrow-right-long"></i> Link Next Move
                 </button>
@@ -141,17 +141,17 @@ export function renderBuilderPage(navigateCallback) {
           </div>
 
           <!-- Manual Notation edit Option -->
-          <div>
+          <div class="form-group" style="margin-top: 16px;">
             <label class="form-label">Manual Notation Editor (Optional)</label>
-            <input type="text" id="builder-manual-input" class="form-input" placeholder="Or type directly (e.g., 236P > 5K > 2D)" style="font-family: var(--font-mono); font-size: 0.85rem;" />
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">Use <strong>&gt;</strong> or <strong>,</strong> or <strong>-&gt;</strong> as move links.</span>
+            <input type="text" id="builder-manual-input" class="form-input" placeholder="Or type directly (e.g., 236P > 5K > 2D)" />
+            <span class="wiki-update-log" style="margin-top: 4px;">Use &gt; or , or -&gt; as move links.</span>
           </div>
         </div>
       </div>
 
       <!-- Combo Details Submission Form -->
-      <div class="card" style="margin-bottom: 24px;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+      <div class="card">
+        <h3 class="wiki-console-title">
           Combo Details & Publishing
         </h3>
         
@@ -160,16 +160,16 @@ export function renderBuilderPage(navigateCallback) {
           <input type="text" id="combo-title" class="form-input" placeholder="e.g. High Damage Corner Carry, Bread & Butter..." />
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 16px;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">Damage (or scaling)</label>
+        <div class="flex gap-4" style="flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; min-width: 120px;">
+            <label class="form-label">Damage</label>
             <input type="text" id="combo-damage" class="form-input" placeholder="e.g. 250 or 2100" />
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
+          <div class="form-group" style="flex: 1; min-width: 120px;">
             <label class="form-label">Meter Required</label>
             <input type="text" id="combo-meter" class="form-input" placeholder="e.g. 50% or 2 Bars" />
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
+          <div class="form-group" style="flex: 1; min-width: 120px;">
             <label class="form-label">Execution Difficulty</label>
             <select id="combo-difficulty" class="form-select">
               <option value="easy">Easy</option>
@@ -186,24 +186,24 @@ export function renderBuilderPage(navigateCallback) {
 
         <div class="form-group">
           <label class="form-label">Demonstration Video Link (YouTube/Twitch - Optional)</label>
-          <div style="position: relative; display: flex; align-items: center; margin-bottom: 10px;">
-            <i id="combo-video-icon" class="fa-solid fa-video" style="position: absolute; left: 12px; color: var(--text-muted); font-size: 1.1rem;"></i>
-            <input type="text" id="combo-video" class="form-input" placeholder="https://www.youtube.com/watch?v=..." style="padding-left: 36px;" />
+          <div class="video-input-wrapper">
+            <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
+            <input type="text" id="combo-video" class="form-input" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           
           <!-- Format hint -->
-          <div id="video-format-hint" style="display: none; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.12);">
+          <div id="video-format-hint" class="wiki-comment-item" style="display: none; margin-top: 8px;">
             <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
             <span id="video-format-hint-text"></span>
           </div>
 
           <!-- Validation banner -->
-          <div id="video-validation-banner" style="display: none; font-size: 0.82rem; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;"></div>
+          <div id="video-validation-banner" style="display: none; margin-top: 8px;"></div>
 
           <!-- Confirmation checkbox row -->
-          <div id="video-confirm-row" style="display: none; margin-bottom: 12px;">
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
-              <input type="checkbox" id="video-confirm-checkbox" style="accent-color: var(--color-primary); width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer;">
+          <div id="video-confirm-row" style="display: none; margin-top: 8px;">
+            <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
+              <input type="checkbox" id="video-confirm-checkbox" style="width: 16px; height: 16px; margin-top: 2px;">
               <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
             </label>
           </div>
@@ -217,11 +217,11 @@ export function renderBuilderPage(navigateCallback) {
 
     <!-- Sidebar Guidelines (Right) -->
     <div id="builder-sidebar" class="flex flex-col gap-6">
-      <div class="card" style="padding: 20px;">
-        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-          <i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> How to Build
+      <div class="card">
+        <h3 class="wiki-console-title">
+          <i class="fa-solid fa-circle-info"></i> How to Build
         </h3>
-        <ol style="padding-left: 18px; font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px;">
+        <ol class="dojo-notations-list" style="margin-left: 16px;">
           <li>Select the <strong>Game</strong> and <strong>Character</strong> you are labbing.</li>
           <li>Choose a **Joystick Direction** (like 2/↓ or 236/QCF) from the pad. It buffers into the current step.</li>
           <li>Select an **Attack Button** (like P, K, or LP) to complete the current move and add it!</li>

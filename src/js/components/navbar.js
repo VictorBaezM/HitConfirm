@@ -23,10 +23,10 @@ export function renderNavbar(activePage, navigateCallback) {
   links.forEach(link => {
     const isActive = activePage === link.id ? 'active' : '';
     linksHtml += `
-      <li>
-        <a class="nav-link ${isActive}" data-page="${link.id}">
+      <li class="wiki-nav-item">
+        <a class="wiki-nav-link nav-link ${isActive}" data-page="${link.id}">
           <i class="fa-solid ${link.icon}"></i>
-          <span>${link.label}</span>
+          <span class="wiki-nav-text">${link.label}</span>
         </a>
       </li>
     `;
@@ -35,10 +35,10 @@ export function renderNavbar(activePage, navigateCallback) {
   // Profile link requires login, or redirects to auth
   const profileActive = activePage === 'profile' ? 'active' : '';
   linksHtml += `
-    <li>
-      <a class="nav-link ${profileActive}" data-page="profile">
+    <li class="wiki-nav-item">
+      <a class="wiki-nav-link nav-link ${profileActive}" data-page="profile">
         <i class="fa-solid fa-user"></i>
-        <span>My Dojo</span>
+        <span class="wiki-nav-text">My Dojo</span>
       </a>
     </li>
   `;
@@ -46,48 +46,50 @@ export function renderNavbar(activePage, navigateCallback) {
   let authHtml = '';
   if (currentUser) {
     authHtml = `
-      <div class="nav-actions">
-        <div class="avatar" style="border-color: ${currentUser.avatarColor}">
+      <div class="wiki-auth-panel">
+        <div class="wiki-user-avatar" style="border: 2px solid ${currentUser.avatarColor}">
           ${currentUser.username.substring(0, 2).toUpperCase()}
         </div>
-        <span class="nav-user-label">
-          ${currentUser.username}
-        </span>
-        <button id="logout-btn" class="btn btn-secondary btn-sm">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
+        <div class="wiki-user-info">
+          <span class="wiki-user-name">${currentUser.username}</span>
+          <button id="logout-btn" class="wiki-logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
       </div>
     `;
   } else {
     authHtml = `
-      <div class="nav-actions">
-        <button id="nav-login-btn" class="btn btn-accent btn-sm">Log In</button>
-        <button id="nav-register-btn" class="btn btn-primary btn-sm">Sign Up</button>
+      <div class="wiki-auth-actions">
+        <button id="nav-login-btn" class="wiki-btn wiki-btn-outline">Log In</button>
+        <button id="nav-register-btn" class="wiki-btn wiki-btn-primary">Sign Up</button>
       </div>
     `;
   }
 
   mount.innerHTML = `
-    <nav class="navbar">
-      <div class="nav-flex-wrapper">
-        <div class="nav-brand nav-logo-brand" id="nav-logo">
-          <i class="fa-solid fa-bolt nav-logo-icon"></i>
-          <span>HIT</span>CONFIRM
-        </div>
-        <div id="repo-latest-update" class="repo-update-badge">
+    <aside class="wiki-left-nav">
+      <div class="wiki-brand" id="nav-logo" style="cursor: pointer;">
+        <i class="fa-solid fa-bolt wiki-brand-icon"></i>
+        <span class="wiki-brand-text">HITCONFIRM</span>
+      </div>
+      
+      <ul class="wiki-nav-menu">
+        ${linksHtml}
+      </ul>
+      
+      <div class="wiki-nav-footer">
+        ${authHtml}
+        <div id="repo-latest-update" class="wiki-update-log">
           <span class="pulse-dot"></span>
           <span class="update-text">Checking updates...</span>
         </div>
       </div>
-      <ul class="nav-links">
-        ${linksHtml}
-      </ul>
-      ${authHtml}
-    </nav>
+    </aside>
   `;
 
   // Attach Event Listeners
-  mount.querySelectorAll('.nav-link').forEach(link => {
+  mount.querySelectorAll('.wiki-nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const page = link.getAttribute('data-page');
