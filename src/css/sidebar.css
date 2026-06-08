@@ -47,7 +47,7 @@
 
 /* ── Section Labels ── */
 .sidebar-section-label {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -70,22 +70,23 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   border-left: 3px solid transparent;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   user-select: none;
 }
 
 .sidebar-game-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(212, 175, 55, 0.04);
   color: var(--text-primary);
 }
 
 .sidebar-game-item.active {
-  background: rgba(255, 0, 60, 0.06);
+  background: rgba(212, 175, 55, 0.08);
   border-left-color: var(--color-primary);
   color: var(--text-primary);
+  box-shadow: inset 2px 0 0 var(--color-primary);
 }
 
 /* ── Game Color Dots ── */

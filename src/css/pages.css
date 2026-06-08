@@ -465,8 +465,8 @@
 .feed-creator-banner {
   margin-bottom: 24px;
   text-align: center;
-  border-color: rgba(255, 0, 91, 0.15);
-  background: linear-gradient(135deg, rgba(255, 0, 91, 0.03), rgba(0, 240, 255, 0.03));
+  border-color: rgba(212, 175, 55, 0.2);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.03), rgba(15, 41, 33, 0.2));
 }
 
 .feed-creator-card {
@@ -581,7 +581,7 @@
   text-align: center;
   padding: 48px !important;
   color: var(--text-secondary);
-  border-color: rgba(255, 0, 91, 0.15) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
 }
 
 .feed-empty-card {
