@@ -1,70 +1,70 @@
 /* Design System Variables — HitConfirm Redesign v2 */
 :root {
   /* Base Backgrounds */
-  --bg-darkest: #080b10;
-  --bg-darker: #0d1117;
-  --bg-card: #161b27;
-  --bg-card-hover: #1c2235;
-  --bg-input: #111827;
-  --bg-sidebar: #111622;
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-color-hover: rgba(255, 255, 255, 0.14);
+  --bg-darkest: #050505;
+  --bg-darker: #0d0d0f;
+  --bg-card: #0f0f11;
+  --bg-card-hover: #151518;
+  --bg-input: #0c0c0e;
+  --bg-sidebar: #09090b;
+  --border-color: rgba(255, 255, 255, 0.05);
+  --border-color-hover: rgba(255, 255, 255, 0.12);
 
   /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3ac;
+  --text-muted: #52525b;
 
-  /* Primary: Electric Blue */
-  --color-primary: #3b82f6;
-  --color-primary-rgb: 59, 130, 246;
+  /* Primary: Electric Crimson */
+  --color-primary: #ff003c;
+  --color-primary-rgb: 255, 0, 60;
 
-  /* Secondary: Violet */
-  --color-secondary: #8b5cf6;
-  --color-secondary-rgb: 139, 92, 246;
+  /* Secondary: Stark White */
+  --color-secondary: #ffffff;
+  --color-secondary-rgb: 255, 255, 255;
 
-  /* Accent: Amber */
-  --color-accent: #f59e0b;
-  --color-accent-rgb: 245, 158, 11;
+  /* Accent: Electric Crimson */
+  --color-accent: #ff003c;
+  --color-accent-rgb: 255, 0, 60;
 
   /* Status */
-  --color-success: #22c55e;
-  --color-danger: #ef4444;
-  --color-info: #38bdf8;
+  --color-success: #10b981;
+  --color-danger: #ff003c;
+  --color-info: #06b6d4;
 
   /* Per-Game Colors */
-  --game-sf6: #e85d00;
-  --game-t8: #3b82f6;
-  --game-ggst: #8b5cf6;
-  --game-mk1: #ef4444;
+  --game-sf6: #ff4500;
+  --game-t8: #ff003c;
+  --game-ggst: #e11d48;
+  --game-mk1: #dc2626;
   --game-dbfz: #f59e0b;
-  --game-ssbu: #a855f7;
+  --game-ssbu: #7c3aed;
 
   /* Button Input Colors (FGC notation) */
-  --btn-punch: #ff6b6b;
-  --btn-kick: #60a5fa;
-  --btn-slash: #c084fc;
-  --btn-hslash: #fbbf24;
-  --btn-dust: #4ade80;
-  --btn-special: #f59e0b;
+  --btn-punch: #ef4444;
+  --btn-kick: #3b82f6;
+  --btn-slash: #a855f7;
+  --btn-hslash: #eab308;
+  --btn-dust: #22c55e;
+  --btn-special: #f97316;
 
   /* Typography */
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+  --font-heading: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   /* Shadows & Glows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.9);
-  --glow-primary: 0 0 15px rgba(59, 130, 246, 0.4);
-  --glow-secondary: 0 0 15px rgba(139, 92, 246, 0.4);
-  --glow-accent: 0 0 15px rgba(245, 158, 11, 0.4);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --glow-primary: 0 0 10px rgba(255, 0, 60, 0.2);
+  --glow-secondary: 0 0 10px rgba(255, 255, 255, 0.1);
+  --glow-accent: 0 0 10px rgba(255, 0, 60, 0.2);
 
   /* Borders & Radii */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
   --radius-round: 50%;
 
   /* Transitions */
