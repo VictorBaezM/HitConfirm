@@ -707,9 +707,18 @@ class Store {
     this.combos.unshift(newCombo);
 
     // Auto-create a feed post about it asynchronously (fire and forget / await both)
+    let postContent = `💥 Just shared a new combo for ${DEFAULT_GAMES[comboData.game]?.name || comboData.game} - **${comboData.character}**! \n\n"${comboData.title}"`;
+    if (comboData.character) {
+      const hashtag = '#' + comboData.character.replace(/[-.\s]/g, '');
+      postContent += `\n\n${hashtag}`;
+    }
+    if (comboData.notation) {
+      postContent += '\n\n---NOTATION---\n' + comboData.notation;
+    }
+
     await this.savePost({
       game: comboData.game,
-      content: `💥 Just shared a new combo for ${DEFAULT_GAMES[comboData.game].name} - **${comboData.character}**! \n\n"${comboData.title}"\nNotation: \`${comboData.notation}\``,
+      content: postContent,
       videoUrl: comboData.videoUrl || ''
     });
 

@@ -19,6 +19,29 @@ async function injectFakeUser(page) {
     route.fulfill({
       contentType: 'text/javascript',
       body: `
+        const db = {
+          users: [{
+            id: 'test-user-e2e',
+            username: 'TestPlayer',
+            avatar_color: '#3b82f6',
+            main_game: 'sf6',
+            main_char: 'Ryu',
+            rank: 'Gold',
+            saved_combos: [],
+            played_games: [],
+            game_characters: {},
+            following: []
+          }],
+          games: [{
+            id: 'sf6',
+            name: 'Street Fighter 6',
+            characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'],
+            notation_type: 'sf'
+          }],
+          combos: [],
+          posts: []
+        };
+
         export const supabase = {
           auth: {
             getSession: async () => ({
@@ -37,32 +60,16 @@ async function injectFakeUser(page) {
               order: () => builder,
               eq: () => builder,
               update: () => builder,
-              insert: () => builder,
-              then: (resolve) => {
-                let data = [];
-                if (table === 'users') {
-                  data = [{
-                    id: 'test-user-e2e',
-                    username: 'TestPlayer',
-                    avatar_color: '#3b82f6',
-                    main_game: 'sf6',
-                    main_char: 'Ryu',
-                    rank: 'Gold',
-                    saved_combos: [],
-                    played_games: [],
-                    game_characters: {},
-                    following: []
-                  }];
-                } else if (table === 'games') {
-                  data = [
-                    {
-                      id: 'sf6',
-                      name: 'Street Fighter 6',
-                      characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'],
-                      notation_type: 'sf'
-                    }
-                  ];
+              insert: (payload) => {
+                if (Array.isArray(payload)) {
+                  db[table] = [...payload, ...db[table]];
+                } else {
+                  db[table].unshift(payload);
                 }
+                return builder;
+              },
+              then: (resolve) => {
+                let data = db[table] || [];
                 resolve({ data, error: null, count: data.length });
               }
             };
@@ -114,3 +121,49 @@ test('submitting post with combo notation renders it visually in timeline', asyn
   await expect(sequence).toContainText('➔');
   await expect(sequence).toContainText('QCFKK');
 });
+
+test('sharing a combo from builder page automatically creates feed post with visual notation rendering', async ({ page }) => {
+  await injectFakeUser(page);
+
+  await page.goto('/');
+  await page.waitForSelector('text=Share a Strategic Thought or Clip', { timeout: 15_000 });
+
+  // Navigate to Builder
+  await page.click('.nav-link[data-page="builder"]');
+  await page.waitForSelector('#builder-game-select', { timeout: 10_000 });
+
+  // Fill combo details
+  await page.selectOption('#builder-game-select', 'sf6');
+  await page.selectOption('#builder-char-select', 'Ryu');
+  await page.fill('#combo-title', 'Corner Carry From Builder');
+  await page.fill('#builder-manual-input', '236P > 5P');
+  await page.locator('#builder-manual-input').dispatchEvent('input');
+
+  // Submit combo
+  await page.click('#btn-publish-combo');
+
+  // Success toast check
+  const toast = page.locator('#toast-notification');
+  await expect(toast).toBeVisible({ timeout: 5_000 });
+  await expect(toast).toContainText('published');
+
+  // Navigate back to Feed
+  await page.click('.nav-link[data-page="feed"]');
+  await page.waitForSelector('text=Share a Strategic Thought or Clip', { timeout: 15_000 });
+
+  // Look for the newly created post card on the feed timeline
+  const newPost = page.locator('.wiki-post-panel').first();
+  await expect(newPost).toBeVisible();
+
+  // Validate post content title & character tags
+  await expect(newPost.locator('.wiki-post-content')).toContainText('Corner Carry From Builder');
+  await expect(newPost.locator('.wiki-post-content')).toContainText('#Ryu');
+
+  // Verify that the combo sequence is parsed and rendered visually
+  const sequence = newPost.locator('.wiki-combo-sequence');
+  await expect(sequence).toBeVisible();
+  await expect(sequence).toContainText('QCFP');
+  await expect(sequence).toContainText('➔');
+  await expect(sequence).toContainText('•P');
+});
+
