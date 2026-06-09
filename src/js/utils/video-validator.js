@@ -168,14 +168,14 @@ export function validateVideoTitle(title, gameId, selectedChar) {
 
   const lowerTitle = title.toLowerCase();
 
-  const hasGameKeyword = gameData.gameKeywords.some(kw => lowerTitle.includes(kw));
+  const hasGameKeyword = gameData.gameKeywords.some(function (kw) { return lowerTitle.includes(kw); });
 
   let hasCharKeyword = false;
   if (selectedChar) {
     const charKeywords = getCharacterKeywords(selectedChar);
-    hasCharKeyword = Array.from(charKeywords).some(kw => lowerTitle.includes(kw));
+    hasCharKeyword = Array.from(charKeywords).some(function (kw) { return lowerTitle.includes(kw); });
   } else {
-    hasCharKeyword = gameData.characterKeywords.some(kw => lowerTitle.includes(kw));
+    hasCharKeyword = gameData.characterKeywords.some(function (kw) { return lowerTitle.includes(kw); });
   }
 
   return {

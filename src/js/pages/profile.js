@@ -25,7 +25,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
   // Determine which user profile to render
   let targetUser = null;
   if (options.userId) {
-    targetUser = store.getUsers().find(u => u.id === options.userId);
+    targetUser = store.getUsers().find(function (u) { return u.id === options.userId; });
   }
 
   const isPublicView = targetUser && (!currentUser || currentUser.id !== targetUser.id);
@@ -49,10 +49,10 @@ export function renderProfilePage(navigateCallback, options = {}) {
       </div>
     `;
 
-    mount.querySelector('.btn-profile-signup').addEventListener('click', () => {
+    mount.querySelector('.btn-profile-signup').addEventListener('click', function () {
       window.openAuthModal('register', navigateCallback);
     });
-    mount.querySelector('.btn-profile-login').addEventListener('click', () => {
+    mount.querySelector('.btn-profile-login').addEventListener('click', function () {
       window.openAuthModal('login', navigateCallback);
     });
     return;
@@ -61,18 +61,18 @@ export function renderProfilePage(navigateCallback, options = {}) {
   // Logged-in profile dashboard
   let activeTab = 'my-combos'; // my-combos, saved-combos, my-posts
 
-  const countUserCombos = (userId) => {
-    return store.getCombos().filter(c => c.userId === userId).length;
-  };
+  function countUserCombos(userId) {
+    return store.getCombos().filter(function (c) { return c.userId === userId; }).length;
+  }
 
-  const drawTabList = () => {
+  function drawTabList() {
     const listMount = document.getElementById('profile-submissions-list');
     if (!listMount) return;
 
     listMount.innerHTML = '';
 
     if (isPublicView || activeTab === 'my-combos') {
-      const combos = store.getCombos().filter(c => c.userId === viewedUser.id);
+      const combos = store.getCombos().filter(function (c) { return c.userId === viewedUser.id; });
       if (combos.length === 0) {
         listMount.innerHTML = `
           <div class="card profile-empty-card">
@@ -81,12 +81,12 @@ export function renderProfilePage(navigateCallback, options = {}) {
         `;
         return;
       }
-      combos.forEach(combo => {
+      combos.forEach(function (combo) {
         listMount.appendChild(renderComboCard(combo, navigateCallback));
       });
     } else if (activeTab === 'saved-combos') {
       const savedIds = viewedUser.savedCombos || [];
-      const combos = store.getCombos().filter(c => savedIds.includes(c.id));
+      const combos = store.getCombos().filter(function (c) { return savedIds.includes(c.id); });
       if (combos.length === 0) {
         listMount.innerHTML = `
           <div class="card profile-empty-card">
@@ -95,11 +95,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
         `;
         return;
       }
-      combos.forEach(combo => {
+      combos.forEach(function (combo) {
         listMount.appendChild(renderComboCard(combo, navigateCallback));
       });
     } else if (activeTab === 'my-posts') {
-      const posts = store.getPosts().filter(p => p.userId === viewedUser.id);
+      const posts = store.getPosts().filter(function (p) { return p.userId === viewedUser.id; });
       if (posts.length === 0) {
         listMount.innerHTML = `
           <div class="card profile-empty-card">
@@ -108,17 +108,17 @@ export function renderProfilePage(navigateCallback, options = {}) {
         `;
         return;
       }
-      posts.forEach(post => {
+      posts.forEach(function (post) {
         listMount.appendChild(renderPostCard(post, navigateCallback));
       });
     }
-  };
+  }
 
-  const drawDashboard = () => {
+  function drawDashboard() {
     const mainGameName = games[viewedUser.mainGame]?.name || viewedUser.mainGame;
     
     // Derive followers count
-    const followersList = store.getUsers().filter(u => u.following && u.following.includes(viewedUser.id));
+    const followersList = store.getUsers().filter(function (u) { return u.following && u.following.includes(viewedUser.id); });
     const followersCount = followersList.length;
     // Follow button if public view
     let followButtonHtml = '';
@@ -201,11 +201,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
         <div class="profile-games-section">
           <span class="profile-games-label">GAMES PLAYED:</span>
           <div class="flex flex-col gap-2">
-            ${playedGamesList.map(gId => {
+            ${playedGamesList.map(function (gId) {
               const gameObj = games[gId];
               if (!gameObj) return '';
               const charsPlayed = gameCharsMap[gId] || [];
-              const charsStr = charsPlayed.length > 0 ? charsPlayed.map(escapeHtml).join(', ') : 'No character mains';
+              const charsStr = charsPlayed.length > 0 ? charsPlayed.map(function (c) { return escapeHtml(c); }).join(', ') : 'No character mains';
               return `
                 <div class="profile-game-item-card">
                   <div class="flex items-center justify-between mb-1">
@@ -272,9 +272,9 @@ export function renderProfilePage(navigateCallback, options = {}) {
     // Attach Tab listeners only if it's the owner's profile
     if (!isPublicView) {
       const tabs = mount.querySelectorAll('.tab');
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabs.forEach(function (t) { t.classList.remove('active'); });
           tab.classList.add('active');
           activeTab = tab.getAttribute('data-tab');
           drawTabList();
@@ -282,7 +282,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       });
  
       // Attach Edit button listener
-      document.getElementById('btn-edit-profile-mains').addEventListener('click', () => {
+      document.getElementById('btn-edit-profile-mains').addEventListener('click', function () {
         openEditMainsModal();
       });
     }
@@ -291,7 +291,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
     if (isPublicView) {
       const followBtn = document.getElementById('btn-follow-user');
       if (followBtn) {
-        followBtn.addEventListener('click', async () => {
+        followBtn.addEventListener('click', async function () {
           if (!currentUser) {
             window.openAuthModal('login', navigateCallback);
             return;
@@ -308,8 +308,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
         });
       }
     }
-  };
-  const openEditMainsModal = () => {
+  }
+  function openEditMainsModal() {
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
     modalTitle.innerText = 'EDIT PROFILE SETTINGS';
@@ -317,11 +317,13 @@ export function renderProfilePage(navigateCallback, options = {}) {
     modalBody.innerHTML = `
       <div class="profile-modal-section-title">Primary Main Game</div>
       <div id="primary-game-select-container" class="game-select-chips">
-        ${Object.values(games).map(g => `
-          <div class="selection-chip ${currentUser.mainGame === g.id ? 'active' : ''}" data-game="${g.id}">
-            ${g.name}
-          </div>
-        `).join('')}
+        ${Object.values(games).map(function (g) {
+          return `
+            <div class="selection-chip ${currentUser.mainGame === g.id ? 'active' : ''}" data-game="${g.id}">
+              ${g.name}
+            </div>
+          `;
+        }).join('')}
       </div>
 
       <div class="profile-modal-section-title">Primary Main Character</div>
@@ -349,7 +351,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
     let currentSelectedPrimaryGame = currentUser.mainGame;
     let currentSelectedPrimaryChar = currentUser.mainChar;
 
-    const handleAddDlc = async (gameId, gridElement, isPrimary) => {
+    async function handleAddDlc(gameId, gridElement, isPrimary) {
       const gameObj = games[gameId];
       if (!gameObj) return;
 
@@ -379,7 +381,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
           
           // Collect currently selected active chars
           const currentActive = [];
-          grid.querySelectorAll('.char-chip.active').forEach(ch => {
+          grid.querySelectorAll('.char-chip.active').forEach(function (ch) {
             currentActive.push(ch.getAttribute('data-char'));
           });
           // Auto-select the newly added character
@@ -388,7 +390,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
           }
 
           // Render updated list
-          grid.innerHTML = games[gameId].characters.map(c => {
+          grid.innerHTML = games[gameId].characters.map(function (c) {
             const isChecked = currentActive.includes(c);
             const activeChipClass = isChecked ? 'active' : '';
             return `
@@ -403,8 +405,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
           `;
 
           // Re-bind listeners
-          grid.querySelectorAll('.char-chip').forEach(chip => {
-            chip.addEventListener('click', (e) => {
+          grid.querySelectorAll('.char-chip').forEach(function (chip) {
+            chip.addEventListener('click', function (e) {
               e.stopPropagation();
               chip.classList.toggle('active');
             });
@@ -412,7 +414,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
 
           const addBtn = grid.querySelector('.char-chip-add');
           if (addBtn) {
-            addBtn.addEventListener('click', (e) => {
+            addBtn.addEventListener('click', function (e) {
               e.stopPropagation();
               handleAddDlc(gameId, grid, false);
             });
@@ -421,13 +423,13 @@ export function renderProfilePage(navigateCallback, options = {}) {
       } else {
         window.showToast('Failed to add character.');
       }
-    };
+    }
 
-    const fillPrimaryChars = () => {
+    function fillPrimaryChars() {
       const gameObj = games[currentSelectedPrimaryGame];
       if (!gameObj) return;
       
-      primaryCharSelectGrid.innerHTML = gameObj.characters.map(c => {
+      primaryCharSelectGrid.innerHTML = gameObj.characters.map(function (c) {
         const isSelected = currentSelectedPrimaryChar === c;
         const activeClass = isSelected ? 'active' : '';
         return `
@@ -442,9 +444,9 @@ export function renderProfilePage(navigateCallback, options = {}) {
       `;
 
       // Attach click listeners to primary character chips
-      primaryCharSelectGrid.querySelectorAll('.char-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          primaryCharSelectGrid.querySelectorAll('.char-chip').forEach(ch => ch.classList.remove('active'));
+      primaryCharSelectGrid.querySelectorAll('.char-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          primaryCharSelectGrid.querySelectorAll('.char-chip').forEach(function (ch) { ch.classList.remove('active'); });
           chip.classList.add('active');
           currentSelectedPrimaryChar = chip.getAttribute('data-char');
         });
@@ -453,16 +455,14 @@ export function renderProfilePage(navigateCallback, options = {}) {
       // Attach click listener to primary Add DLC chip
       const addBtn = primaryCharSelectGrid.querySelector('.char-chip-add');
       if (addBtn) {
-        addBtn.addEventListener('click', () => {
+        addBtn.addEventListener('click', function () {
           handleAddDlc(currentSelectedPrimaryGame, primaryCharSelectGrid, true);
         });
       }
-    };
-
-    // Attach click listeners to primary game selection chips
-    primaryGameSelectContainer.querySelectorAll('.selection-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        primaryGameSelectContainer.querySelectorAll('.selection-chip').forEach(c => c.classList.remove('active'));
+    };    // Attach click listeners to primary game selection chips
+    primaryGameSelectContainer.querySelectorAll('.selection-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        primaryGameSelectContainer.querySelectorAll('.selection-chip').forEach(function (c) { c.classList.remove('active'); });
         chip.classList.add('active');
         currentSelectedPrimaryGame = chip.getAttribute('data-game');
         
@@ -476,7 +476,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
     fillPrimaryChars(); // initialize primary character select
  
     // Render other games list as custom styled cards
-    otherGamesContainer.innerHTML = Object.values(games).map(g => {
+    otherGamesContainer.innerHTML = Object.values(games).map(function (g) {
       const playsThisGame = currentUser.playedGames && currentUser.playedGames.includes(g.id);
       const activeClass = playsThisGame ? '' : 'hidden';
       const activeChars = currentUser.gameCharacters && currentUser.gameCharacters[g.id] || [];
@@ -491,7 +491,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
             </span>
           </div>
           <div id="char-selection-${g.id}" class="char-selection-grid profile-edit-char-grid ${activeClass}" onclick="event.stopPropagation();">
-            ${g.characters.map(c => {
+            ${g.characters.map(function (c) {
               const isChecked = activeChars.includes(c);
               const activeChipClass = isChecked ? 'active' : '';
               return `
@@ -509,8 +509,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
     }).join('');
  
     // Toggle game card state
-    otherGamesContainer.querySelectorAll('.edit-game-card').forEach(card => {
-      card.addEventListener('click', () => {
+    otherGamesContainer.querySelectorAll('.edit-game-card').forEach(function (card) {
+      card.addEventListener('click', function () {
         const gameId = card.getAttribute('data-game');
         const grid = card.querySelector(`#char-selection-${gameId}`);
         const indicator = card.querySelector('.status-indicator');
@@ -526,7 +526,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
           grid.classList.add('hidden');
           
           // Reset all chips inside this card
-          grid.querySelectorAll('.char-chip').forEach(chip => {
+          grid.querySelectorAll('.char-chip').forEach(function (chip) {
             chip.classList.remove('active');
           });
         }
@@ -534,16 +534,16 @@ export function renderProfilePage(navigateCallback, options = {}) {
     });
 
     // Toggle character chips inside cards
-    otherGamesContainer.querySelectorAll('.char-chip').forEach(chip => {
-      chip.addEventListener('click', (e) => {
+    otherGamesContainer.querySelectorAll('.char-chip').forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
         e.stopPropagation(); // Prevent toggling the game card itself
         chip.classList.toggle('active');
       });
     });
 
     // Toggle character add chips inside cards
-    otherGamesContainer.querySelectorAll('.char-chip-add').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    otherGamesContainer.querySelectorAll('.char-chip-add').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
         e.stopPropagation(); // Prevent toggling the game card itself
         const gameId = btn.getAttribute('data-game');
         const grid = otherGamesContainer.querySelector(`#char-selection-${gameId}`);
@@ -554,18 +554,18 @@ export function renderProfilePage(navigateCallback, options = {}) {
     const overlay = document.getElementById('modal-container');
     overlay.classList.add('open');
  
-    document.getElementById('modal-edit-cancel').addEventListener('click', () => {
+    document.getElementById('modal-edit-cancel').addEventListener('click', function () {
       overlay.classList.remove('open');
     });
  
-    document.getElementById('modal-edit-save').addEventListener('click', async () => {
+    document.getElementById('modal-edit-save').addEventListener('click', async function () {
       const mainGameVal = currentSelectedPrimaryGame;
       const mainCharVal = currentSelectedPrimaryChar;
       
       const playedGames = [];
       const gameCharacters = {};
       
-      otherGamesContainer.querySelectorAll('.edit-game-card').forEach(card => {
+      otherGamesContainer.querySelectorAll('.edit-game-card').forEach(function (card) {
         if (card.classList.contains('active')) {
           const gameId = card.getAttribute('data-game');
           playedGames.push(gameId);
@@ -573,7 +573,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
         }
       });
       
-      otherGamesContainer.querySelectorAll('.char-selection-grid .char-chip').forEach(chip => {
+      otherGamesContainer.querySelectorAll('.char-selection-grid .char-chip').forEach(function (chip) {
         if (chip.classList.contains('active')) {
           const gameId = chip.getAttribute('data-game');
           const charName = chip.getAttribute('data-char');
@@ -623,7 +623,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       overlay.classList.remove('open');
       drawDashboard();
     });
-  };
-
+  }
+ 
   drawDashboard();
 }

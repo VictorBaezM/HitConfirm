@@ -39,7 +39,7 @@ export function navigate(pageId, options = {}) {
   `;
 
   // Short timeout to create smooth transition feel
-  setTimeout(async () => {
+  setTimeout(async function () {
     try {
       // Pre-fetch all data from Supabase to fill store memory cache
       if (store.loadAllData) {
@@ -74,7 +74,9 @@ export function navigate(pageId, options = {}) {
           <button class="btn btn-primary btn-sm mt-4" id="btn-recovery-home">Go to Feed</button>
         </div>
       `;
-      document.getElementById('btn-recovery-home')?.addEventListener('click', () => navigate('feed'));
+      document.getElementById('btn-recovery-home')?.addEventListener('click', function () {
+        navigate('feed');
+      });
     }
   }, 150);
 }
@@ -91,7 +93,7 @@ window.showToast = function(message, duration = 3000) {
   toast.innerHTML = `<i class="fa-solid fa-bell text-secondary mr-2"></i> ${message}`;
   toast.style.transform = 'translateY(0)';
   
-  setTimeout(() => {
+  setTimeout(function () {
     toast.style.transform = 'translateY(150px)';
   }, duration);
 };
@@ -106,30 +108,30 @@ function setupGlobalModals() {
   if (!container || !closeBtn) return;
 
   // Hide modal on close button click
-  closeBtn.addEventListener('click', () => {
+  closeBtn.addEventListener('click', function () {
     container.classList.remove('open');
   });
 
   // Hide modal on click outside modal content card
-  container.addEventListener('click', (e) => {
+  container.addEventListener('click', function (e) {
     if (e.target === container) {
       container.classList.remove('open');
     }
   });
 
   // Share globally so auth can use it
-  window.openAuthModal = (type, navCallback) => {
+  window.openAuthModal = function (type, navCallback) {
     openAuthModal(type, navCallback);
   };
 }
 
 // Bootstrap Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
   setupGlobalModals();
 
   // Bind footer navigation links
-  document.querySelectorAll('.footer-nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
+  document.querySelectorAll('.footer-nav-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
       e.preventDefault();
       const page = link.getAttribute('data-page');
       navigate(page);

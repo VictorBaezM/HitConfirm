@@ -23,7 +23,7 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
     </div>
   `;
 
-  Object.values(games).forEach(game => {
+  Object.values(games).forEach(function (game) {
     const isActive = activeGame === game.id ? 'active' : '';
     gameItemsHtml += `
       <div class="wiki-console-tab ${isActive}" data-game="${game.id}" id="sidebar-game-${game.id}">
@@ -43,8 +43,8 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
   `;
 
   // Attach game selection events
-  mount.querySelectorAll('.wiki-console-tab').forEach(item => {
-    item.addEventListener('click', () => {
+  mount.querySelectorAll('.wiki-console-tab').forEach(function (item) {
+    item.addEventListener('click', function () {
       const gameId = item.getAttribute('data-game');
       if (onGameChange) onGameChange(gameId);
     });

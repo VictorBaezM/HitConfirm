@@ -58,7 +58,9 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
             <div>
               <select id="dojo-game-filter" class="form-select dojo-select-filter-box">
                 <option value="all">All Games</option>
-                ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                ${Object.values(games).map(function (g) {
+                  return `<option value="${g.id}">${g.name}</option>`;
+                }).join('')}
               </select>
             </div>
 
@@ -112,7 +114,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   let activeDojoTab = 'all'; // 'all' or 'following'
 
   // Draw list function
-  const drawList = () => {
+  function drawList() {
     const listMount = document.getElementById('dojo-combos-list');
     if (!listMount) return;
 
@@ -141,11 +143,11 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         `;
         return;
       }
-      combos = combos.filter(c => followingList.includes(c.userId));
+      combos = combos.filter(function (c) { return followingList.includes(c.userId); });
     }
     
     // 2. Perform Filtering
-    const filtered = combos.filter(c => {
+    const filtered = combos.filter(function (c) {
       // Game Filter
       if (activeGame !== 'all' && c.game !== activeGame) return false;
       // Difficulty Filter
@@ -174,13 +176,13 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     }
 
     listMount.innerHTML = '';
-    filtered.forEach(combo => {
+    filtered.forEach(function (combo) {
       listMount.appendChild(renderComboCard(combo, navigateCallback));
     });
-  };
+  }
 
   // Draw top lab masters
-  const drawTopLabMasters = () => {
+  function drawTopLabMasters() {
     const mastersMount = document.getElementById('top-lab-masters-mount');
     if (!mastersMount) return;
 
@@ -188,18 +190,22 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     const usersList = store.getUsers();
 
     const comboCounts = {};
-    combosList.forEach(c => {
+    combosList.forEach(function (c) {
       if (c.userId) {
         comboCounts[c.userId] = (comboCounts[c.userId] || 0) + 1;
       }
     });
 
     const rankedUsers = usersList
-      .map(u => ({
-        ...u,
-        comboCount: comboCounts[u.id] || 0
-      }))
-      .sort((a, b) => b.comboCount - a.comboCount || a.username.localeCompare(b.username))
+      .map(function (u) {
+        return {
+          ...u,
+          comboCount: comboCounts[u.id] || 0
+        };
+      })
+      .sort(function (a, b) {
+        return b.comboCount - a.comboCount || a.username.localeCompare(b.username);
+      })
       .slice(0, 3);
 
     mastersMount.innerHTML = '';
@@ -209,7 +215,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       return;
     }
 
-    rankedUsers.forEach((user, index) => {
+    rankedUsers.forEach(function (user, index) {
       const row = document.createElement('div');
       row.className = 'flex justify-between items-center font-sm';
       
@@ -220,13 +226,13 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         <span class="text-muted">${user.comboCount} combo${user.comboCount === 1 ? '' : 's'}</span>
       `;
 
-      row.querySelector('.master-link').addEventListener('click', () => {
+      row.querySelector('.master-link').addEventListener('click', function () {
         navigateCallback('profile', { userId: user.id });
       });
 
       mastersMount.appendChild(row);
     });
-  };
+  }
 
   drawList();
   drawTopLabMasters();
@@ -235,14 +241,14 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   const tabAll = document.getElementById('dojo-tab-all');
   const tabFollowing = document.getElementById('dojo-tab-following');
   
-  tabAll.addEventListener('click', () => {
+  tabAll.addEventListener('click', function () {
     tabAll.classList.add('active');
     tabFollowing.classList.remove('active');
     activeDojoTab = 'all';
     drawList();
   });
   
-  tabFollowing.addEventListener('click', () => {
+  tabFollowing.addEventListener('click', function () {
     tabFollowing.classList.add('active');
     tabAll.classList.remove('active');
     activeDojoTab = 'following';
@@ -251,25 +257,25 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
   // Attach filter event handlers
   const searchInput = document.getElementById('dojo-search-char');
-  searchInput.addEventListener('input', (e) => {
+  searchInput.addEventListener('input', function (e) {
     searchQuery = e.target.value;
     drawList();
   });
 
   const gameFilter = document.getElementById('dojo-game-filter');
-  gameFilter.addEventListener('change', (e) => {
+  gameFilter.addEventListener('change', function (e) {
     activeGame = e.target.value;
     drawList();
   });
 
   const difficultyFilter = document.getElementById('dojo-difficulty-filter');
-  difficultyFilter.addEventListener('change', (e) => {
+  difficultyFilter.addEventListener('change', function (e) {
     activeDifficulty = e.target.value;
     drawList();
   });
 
   // Attach Create button click
-  document.getElementById('dojo-create-combo-btn').addEventListener('click', () => {
+  document.getElementById('dojo-create-combo-btn').addEventListener('click', function () {
     if (!currentUser) {
       window.openAuthModal('login', navigateCallback);
     } else {

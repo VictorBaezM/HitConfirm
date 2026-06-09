@@ -340,12 +340,14 @@ class Store {
     await supabase.from('strategies').insert(dbStrategies);
     
     // Seed games
-    const gamesToSeed = Object.values(DEFAULT_GAMES).map(g => ({
-      id: g.id,
-      name: g.name,
-      characters: g.characters,
-      notation_type: g.notationType
-    }));
+    const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
+      return {
+        id: g.id,
+        name: g.name,
+        characters: g.characters,
+        notation_type: g.notationType
+      };
+    });
     await supabase.from('games').insert(gamesToSeed);
     
     console.log('Seeding complete.');
@@ -365,12 +367,14 @@ class Store {
         // Also check if games table needs seeding (case where users exist but games table is new/empty)
         const gamesCount = await supabase.from('games').select('id', { count: 'exact', head: true });
         if (gamesCount.count === 0) {
-          const gamesToSeed = Object.values(DEFAULT_GAMES).map(g => ({
-            id: g.id,
-            name: g.name,
-            characters: g.characters,
-            notation_type: g.notationType
-          }));
+          const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
+            return {
+              id: g.id,
+              name: g.name,
+              characters: g.characters,
+              notation_type: g.notationType
+            };
+          });
           await supabase.from('games').insert(gamesToSeed);
         }
       }
@@ -392,14 +396,14 @@ class Store {
 
       this.games = {};
       if (gamesRes.data && gamesRes.data.length > 0) {
-        gamesRes.data.forEach(row => {
+        gamesRes.data.forEach(function (row) {
           this.games[row.id] = {
             id: row.id,
             name: row.name,
             characters: row.characters || [],
             notationType: row.notation_type
           };
-        });
+        }.bind(this));
       } else {
         this.games = DEFAULT_GAMES;
       }
@@ -410,7 +414,7 @@ class Store {
       // 4. Sync active user state if logged in via Supabase Auth
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user) {
-        const freshUser = this.usersCache.find(u => u.id === session.user.id);
+        const freshUser = this.usersCache.find(function (u) { return u.id === session.user.id; });
         if (freshUser) {
           this.setCurrentUser(freshUser);
         } else {
@@ -465,7 +469,7 @@ class Store {
     if (!game) return false;
 
     // Check if character already exists (case-insensitive check)
-    const exists = game.characters.some(c => c.toLowerCase() === cleanName.toLowerCase());
+    const exists = game.characters.some(function (c) { return c.toLowerCase() === cleanName.toLowerCase(); });
     if (exists) return true;
 
     // Append to local cache
@@ -539,7 +543,7 @@ class Store {
    */
   async registerUser(email, password, username, mainGame, mainChar) {
     // Check duplicate locally first (fast check)
-    if (this.usersCache.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+    if (this.usersCache.some(function (u) { return u.username.toLowerCase() === username.toLowerCase(); })) {
       return { success: false, error: 'Username already taken.' };
     }
 
@@ -571,7 +575,7 @@ class Store {
     // If auto-logged in (email confirmation disabled)
     if (data.session) {
       // Small delay to allow the DB trigger to complete inserting user record in public.users
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(function (resolve) { setTimeout(resolve, 500); });
 
       const { data: profile, error: profileError } = await supabase
         .from('users')
@@ -734,7 +738,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const combo = this.combos.find(c => c.id === comboId);
+    const combo = this.combos.find(function (c) { return c.id === comboId; });
     if (!combo) return { success: false };
 
     const upvotedBy = [...combo.upvotedBy];
@@ -778,7 +782,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to comment!' };
 
-    const combo = this.combos.find(c => c.id === comboId);
+    const combo = this.combos.find(function (c) { return c.id === comboId; });
     if (!combo) return { success: false };
 
     const comment = {
@@ -928,7 +932,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const post = this.posts.find(p => p.id === postId);
+    const post = this.posts.find(function (p) { return p.id === postId; });
     if (!post) return { success: false };
 
     const upvotedBy = [...post.upvotedBy];
@@ -971,7 +975,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to comment!' };
 
-    const post = this.posts.find(p => p.id === postId);
+    const post = this.posts.find(function (p) { return p.id === postId; });
     if (!post) return { success: false };
 
     const comment = {
@@ -1050,7 +1054,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to vote!' };
 
-    const strategy = this.strategies.find(s => s.id === strategyId);
+    const strategy = this.strategies.find(function (s) { return s.id === strategyId; });
     if (!strategy) return { success: false };
 
     const upvotedBy = [...strategy.upvotedBy];

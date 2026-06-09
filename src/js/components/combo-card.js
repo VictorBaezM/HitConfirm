@@ -132,7 +132,7 @@ export function renderComboCard(combo, navigateCallback) {
 
   // Upvote Event Listener
   const upvoteBtn = card.querySelector('.btn-upvote');
-  upvoteBtn.addEventListener('click', async () => {
+  upvoteBtn.addEventListener('click', async function () {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
@@ -153,7 +153,7 @@ export function renderComboCard(combo, navigateCallback) {
 
   // Save Event Listener
   const saveBtn = card.querySelector('.btn-save');
-  saveBtn.addEventListener('click', async () => {
+  saveBtn.addEventListener('click', async function () {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
@@ -174,7 +174,7 @@ export function renderComboCard(combo, navigateCallback) {
 
   // Copy Notation Listener
   const copyBtn = card.querySelector('.btn-copy');
-  copyBtn.addEventListener('click', () => {
+  copyBtn.addEventListener('click', function () {
     navigator.clipboard.writeText(combo.notation);
     window.showToast('Combo notation copied to clipboard.');
   });
@@ -183,7 +183,7 @@ export function renderComboCard(combo, navigateCallback) {
   if (combo.videoUrl) {
     const videoToggle = card.querySelector('.btn-video-toggle');
     const videoContainer = card.querySelector('.wiki-video-container');
-    videoToggle.addEventListener('click', () => {
+    videoToggle.addEventListener('click', function () {
       videoContainer.classList.toggle('hidden');
       videoToggle.classList.toggle('wiki-btn-primary');
     });
@@ -211,7 +211,7 @@ export function renderComboCard(combo, navigateCallback) {
   }
 
   const commentPanel = card.querySelector('.wiki-comments-section');
-  commentToggleBtn.addEventListener('click', () => {
+  commentToggleBtn.addEventListener('click', function () {
     commentPanel.classList.toggle('hidden');
   });
 
@@ -219,7 +219,7 @@ export function renderComboCard(combo, navigateCallback) {
   const commentInput = card.querySelector('.wiki-comment-input');
   const submitBtn = card.querySelector('.wiki-btn-submit-comment');
   
-  const submitComboComment = async () => {
+  async function submitComboComment() {
     const text = commentInput.value.trim();
     if (!text) return;
 
@@ -237,17 +237,17 @@ export function renderComboCard(combo, navigateCallback) {
     } else {
       window.showToast(result.error || 'Failed to post comment.');
     }
-  };
+  }
 
   submitBtn.addEventListener('click', submitComboComment);
-  commentInput.addEventListener('keypress', (e) => {
+  commentInput.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') submitComboComment();
   });
 
   // Attach author click listener
   const authorLink = card.querySelector('.wiki-author-link');
   if (authorLink) {
-    authorLink.addEventListener('click', () => {
+    authorLink.addEventListener('click', function () {
       navigateCallback('profile', { userId: combo.userId });
     });
   }
@@ -262,15 +262,17 @@ function renderCommentsList(comments) {
 
   return `
     <div class="wiki-comments-list">
-      ${comments.map(c => `
-        <div class="wiki-comment-item">
-          <div class="wiki-comment-header">
-            <span class="wiki-comment-author">${escapeHtml(c.username)}</span>
-            <span class="wiki-comment-date">${escapeHtml(c.date)}</span>
+      ${comments.map(function (c) {
+        return `
+          <div class="wiki-comment-item">
+            <div class="wiki-comment-header">
+              <span class="wiki-comment-author">${escapeHtml(c.username)}</span>
+              <span class="wiki-comment-date">${escapeHtml(c.date)}</span>
+            </div>
+            <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
           </div>
-          <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
 }

@@ -162,7 +162,7 @@ export function renderFeedPage(navigateCallback) {
   let activeGameFilter = 'all';
   let activeFeedTab = 'all'; // 'all' or 'following'
 
-  const refreshTimeline = () => {
+  function refreshTimeline() {
     const listMount = document.getElementById('timeline-list');
     if (!listMount) return;
 
@@ -191,13 +191,13 @@ export function renderFeedPage(navigateCallback) {
         `;
         return;
       }
-      posts = posts.filter(p => followingList.includes(p.userId));
+      posts = posts.filter(function (p) { return followingList.includes(p.userId); });
     }
 
     // 2. Filter by game chip
     const filtered = activeGameFilter === 'all' 
       ? posts 
-      : posts.filter(p => p.game === activeGameFilter);
+      : posts.filter(function (p) { return p.game === activeGameFilter; });
 
     if (filtered.length === 0) {
       listMount.innerHTML = `
@@ -211,10 +211,10 @@ export function renderFeedPage(navigateCallback) {
     }
 
     listMount.innerHTML = '';
-    filtered.forEach(post => {
+    filtered.forEach(function (post) {
       listMount.appendChild(renderPostCard(post, navigateCallback));
     });
-  };
+  }
 
   refreshTimeline();
 
@@ -222,14 +222,14 @@ export function renderFeedPage(navigateCallback) {
   const tabAll = document.getElementById('feed-tab-all');
   const tabFollowing = document.getElementById('feed-tab-following');
   
-  tabAll.addEventListener('click', () => {
+  tabAll.addEventListener('click', function () {
     tabAll.classList.add('active');
     tabFollowing.classList.remove('active');
     activeFeedTab = 'all';
     refreshTimeline();
   });
   
-  tabFollowing.addEventListener('click', () => {
+  tabFollowing.addEventListener('click', function () {
     tabFollowing.classList.add('active');
     tabAll.classList.remove('active');
     activeFeedTab = 'following';
@@ -237,7 +237,7 @@ export function renderFeedPage(navigateCallback) {
   });
 
   // Draw Hot Combos Widget
-  const refreshHotCombos = () => {
+  function refreshHotCombos() {
     const sideMount = document.getElementById('sidebar-hot-combos');
     if (!sideMount) return;
 
@@ -248,7 +248,7 @@ export function renderFeedPage(navigateCallback) {
     }
 
     sideMount.innerHTML = '';
-    combos.forEach(combo => {
+    combos.forEach(function (combo) {
       const row = document.createElement('div');
       row.className = 'wiki-comment-item wiki-hoverable';
       row.style.cursor = 'pointer';
@@ -261,35 +261,35 @@ export function renderFeedPage(navigateCallback) {
           ${combo.character}: ${combo.title}
         </div>
       `;
-      row.addEventListener('click', () => {
+      row.addEventListener('click', function () {
         navigateCallback('combos', { game: combo.game });
       });
       sideMount.appendChild(row);
     });
-  };
+  }
 
   refreshHotCombos();
 
   // Attach Sidebar Button Listeners
-  document.getElementById('sidebar-go-dojo').addEventListener('click', () => navigateCallback('combos'));
-  document.getElementById('sidebar-go-builder').addEventListener('click', () => navigateCallback('builder'));
+  document.getElementById('sidebar-go-dojo').addEventListener('click', function () { navigateCallback('combos'); });
+  document.getElementById('sidebar-go-builder').addEventListener('click', function () { navigateCallback('builder'); });
 
   // Initialize Left Game Sidebar
-  const initSidebar = (activeGame, activeDifficulties) => {
+  function initSidebar(activeGame, activeDifficulties) {
     renderGameSidebar({
       activeGame,
       activeDifficulties,
-      onGameChange: (gameId) => {
+      onGameChange: function (gameId) {
         activeGameFilter = gameId;
         refreshTimeline();
         initSidebar(gameId, activeDifficulties);
       },
-      onDifficultyChange: (difficulties) => {
+      onDifficultyChange: function (difficulties) {
         activeDifficulties = difficulties;
         initSidebar(activeGameFilter, difficulties);
       }
     });
-  };
+  }
 
   initSidebar(activeGameFilter, []);
 }
@@ -318,10 +318,10 @@ function renderCreatorBox(navigateCallback) {
       </div>
     `;
 
-    mount.querySelector('.btn-feed-signup').addEventListener('click', () => {
+    mount.querySelector('.btn-feed-signup').addEventListener('click', function () {
       window.openAuthModal('register', navigateCallback);
     });
-    mount.querySelector('.btn-feed-login').addEventListener('click', () => {
+    mount.querySelector('.btn-feed-login').addEventListener('click', function () {
       window.openAuthModal('login', navigateCallback);
     });
     return;
@@ -343,7 +343,9 @@ function renderCreatorBox(navigateCallback) {
         <div style="flex: 1; min-width: 140px;">
           <select class="form-select post-game-select" id="post-game-select">
             <option value="">Tag Game (Optional)</option>
-            ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+            ${Object.values(games).map(function (g) {
+              return `<option value="${g.id}">${g.name}</option>`;
+            }).join('')}
           </select>
         </div>
 
@@ -407,7 +409,7 @@ function renderCreatorBox(navigateCallback) {
   const notationInput = mount.querySelector('#post-notation-input');
 
   /** Updates the format hint text whenever the selected game changes. */
-  const updateFormatHint = () => {
+  function updateFormatHint() {
     const gameId = gameSelect.value;
     if (!gameId) {
       formatHint.style.display = 'none';
@@ -422,7 +424,7 @@ function renderCreatorBox(navigateCallback) {
       `and the character (e.g. "${exampleChar}"). ` +
       `Example: "${gameData.label} – ${exampleChar} BnB Combo Guide"`;
     formatHint.style.display = 'block';
-  };
+  }
 
   /**
    * Renders the oEmbed validation result into the banner element.
@@ -431,7 +433,7 @@ function renderCreatorBox(navigateCallback) {
    * @param {{ isValid: boolean, hasGameKeyword: boolean, hasCharKeyword: boolean, label: string } | null} result
    * @param {string} safeTitle - HTML-escaped video title string.
    */
-  const renderValidationBanner = (result, safeTitle) => {
+  function renderValidationBanner(result, safeTitle) {
     if (!result) {
       // oEmbed failed — show neutral info banner, do not block
       validationBanner.style.display = 'block';
@@ -472,13 +474,13 @@ function renderCreatorBox(navigateCallback) {
       `Please use a video whose title clearly mentions both. You may still post, ` +
       `but must confirm relevance below.`;
     showConfirmRow(gameSelect.value);
-  };
+  }
 
   /**
    * Shows the confirmation checkbox row with the correct game label.
    * @param {string} gameId - The currently selected game ID.
    */
-  const showConfirmRow = (gameId) => {
+  function showConfirmRow(gameId) {
     const gameData = GAME_VIDEO_KEYWORDS[gameId];
     const gameName = gameData ? gameData.label : 'the tagged game';
     const selectedCharName = charSelect.value;
@@ -487,24 +489,26 @@ function renderCreatorBox(navigateCallback) {
       `I confirm this video is a ${gameName} combo or clip featuring ${charName}.`;
     confirmRow.style.display = 'block';
     confirmCheckbox.checked = false;
-  };
+  }
 
   /** Hides validation UI when the video URL or game is cleared. */
-  const resetValidationUI = () => {
+  function resetValidationUI() {
     validationBanner.style.display = 'none';
     validationBanner.innerHTML = '';
     confirmRow.style.display = 'none';
     confirmCheckbox.checked = false;
-  };
+  }
 
   // Wire: game select changes → update format hint, populate char dropdown, re-validate if URL present
-  gameSelect.addEventListener('change', () => {
+  gameSelect.addEventListener('change', function () {
     const gameId = gameSelect.value;
     if (gameId) {
       const gameData = games[gameId];
       if (gameData && gameData.characters) {
         charSelect.innerHTML = `<option value="">Select Character</option>` +
-          gameData.characters.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+          gameData.characters.map(function (c) {
+            return `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+          }).join('');
         charSelectContainer.style.display = 'block';
       } else {
         charSelectContainer.style.display = 'none';
@@ -524,7 +528,7 @@ function renderCreatorBox(navigateCallback) {
   });
 
   // Wire: character select changes → re-validate if URL present, update format hint
-  charSelect.addEventListener('change', () => {
+  charSelect.addEventListener('change', function () {
     updateFormatHint();
     if (videoInput.value.trim()) {
       videoInput.dispatchEvent(new Event('blur'));
@@ -532,7 +536,7 @@ function renderCreatorBox(navigateCallback) {
   });
 
   // Wire: URL input loses focus → run oEmbed check
-  videoInput.addEventListener('blur', async () => {
+  videoInput.addEventListener('blur', async function () {
     const rawUrl = videoInput.value.trim();
     const gameId = gameSelect.value;
 
@@ -567,7 +571,7 @@ function renderCreatorBox(navigateCallback) {
   });
 
   // Publish action
-  submitBtn.addEventListener('click', async () => {
+  submitBtn.addEventListener('click', async function () {
     const text = postContent.value.trim();
     if (!text) {
       window.showToast('Please type something to post.');

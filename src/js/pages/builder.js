@@ -66,7 +66,9 @@ export function renderBuilderPage(navigateCallback) {
             <label class="form-label">Game</label>
             <select id="builder-game-select" class="form-select">
               <option value="">Select Game</option>
-              ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+              ${Object.values(games).map(function (g) {
+                return `<option value="${g.id}">${g.name}</option>`;
+              }).join('')}
             </select>
           </div>
           <!-- Character Select -->
@@ -233,7 +235,7 @@ export function renderBuilderPage(navigateCallback) {
   `;
 
   // Draw characters dropdown
-  const drawCharacters = (selectValue = null) => {
+  function drawCharacters(selectValue = null) {
     const charSelect = document.getElementById('builder-char-select');
     if (!charSelect) return;
     
@@ -241,7 +243,9 @@ export function renderBuilderPage(navigateCallback) {
     const chars = game ? game.characters : [];
     
     if (chars.length > 0) {
-      charSelect.innerHTML = chars.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      charSelect.innerHTML = chars.map(function (c) {
+        return `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+      }).join('');
     } else {
       charSelect.innerHTML = '<option value="">Select Character</option>';
     }
@@ -260,10 +264,10 @@ export function renderBuilderPage(navigateCallback) {
     
     const previewChar = document.getElementById('preview-char-label');
     if (previewChar) previewChar.innerText = selectedCharacter || 'None';
-  };
+  }
 
   // Draw game specific attack button pad
-  const drawAttackButtons = () => {
+  function drawAttackButtons() {
     const pad = document.getElementById('attack-buttons-grid');
     if (!pad) return;
 
@@ -307,15 +311,17 @@ export function renderBuilderPage(navigateCallback) {
       ];
     }
 
-    pad.innerHTML = buttons.map(b => `
-      <button class="btn pad-attack-btn builder-pad-attack-btn ${b.class}" data-btn="${b.code}">
-        ${b.code} (${b.name.split(' ')[0]})
-      </button>
-    `).join('');
+    pad.innerHTML = buttons.map(function (b) {
+      return `
+        <button class="btn pad-attack-btn builder-pad-attack-btn ${b.class}" data-btn="${b.code}">
+          ${b.code} (${b.name.split(' ')[0]})
+        </button>
+      `;
+    }).join('');
 
     // Attach attack button events
-    pad.querySelectorAll('.pad-attack-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    pad.querySelectorAll('.pad-attack-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
         const btnCode = btn.getAttribute('data-btn');
         
         // Append attack to current direction buffer
@@ -330,9 +336,9 @@ export function renderBuilderPage(navigateCallback) {
         updateBufferPreview();
       });
     });
-  };
+  }
 
-  const updateBufferPreview = () => {
+  function updateBufferPreview() {
     const bufferMount = document.getElementById('builder-buffer-preview');
     if (!bufferMount) return;
 
@@ -366,10 +372,10 @@ export function renderBuilderPage(navigateCallback) {
         <span class="builder-buffer-status-hint">(Select an Attack Button below to add this step)</span>
       </div>
     `;
-  };
+  }
 
   // Live preview refresh
-  const updateNotationPreview = () => {
+  function updateNotationPreview() {
     const previewMount = document.getElementById('builder-live-preview');
     const manualInput = document.getElementById('builder-manual-input');
     if (!previewMount) return;
@@ -387,9 +393,9 @@ export function renderBuilderPage(navigateCallback) {
     if (manualInput) {
       manualInput.value = notationString;
     }
-  };
+  }
 
-  const updateBuilderFormatHint = () => {
+  function updateBuilderFormatHint() {
     const formatHint = document.getElementById('video-format-hint');
     const formatHintText = document.getElementById('video-format-hint-text');
     const gameSel = document.getElementById('builder-game-select');
@@ -415,9 +421,9 @@ export function renderBuilderPage(navigateCallback) {
       `and the character (e.g. "${charName}"). ` +
       `Example: "${gameData.label} - ${charName} BnB Combo Guide"`;
     formatHint.style.display = 'block';
-  };
+  }
 
-  const resetBuilderValidationUI = () => {
+  const resetBuilderValidationUI = function () {
     const validationBanner = document.getElementById('video-validation-banner');
     const confirmRow = document.getElementById('video-confirm-row');
     const confirmCheckbox = document.getElementById('video-confirm-checkbox');
@@ -433,7 +439,7 @@ export function renderBuilderPage(navigateCallback) {
     }
   };
 
-  const showBuilderConfirmRow = (gameId) => {
+  const showBuilderConfirmRow = function (gameId) {
     const confirmRow = document.getElementById('video-confirm-row');
     const confirmLabel = document.getElementById('video-confirm-label');
     const confirmCheckbox = document.getElementById('video-confirm-checkbox');
@@ -448,7 +454,7 @@ export function renderBuilderPage(navigateCallback) {
     confirmCheckbox.checked = false;
   };
 
-  const renderBuilderValidationBanner = (result, safeTitle) => {
+  const renderBuilderValidationBanner = function (result, safeTitle) {
     const validationBanner = document.getElementById('video-validation-banner');
     if (!validationBanner) return;
 
@@ -494,7 +500,7 @@ export function renderBuilderPage(navigateCallback) {
     showBuilderConfirmRow(selectedGame);
   };
 
-  const setupVideoValidationEvents = () => {
+  const setupVideoValidationEvents = function () {
     const videoInput = document.getElementById('combo-video');
     const videoIcon = document.getElementById('combo-video-icon');
     const validationBanner = document.getElementById('video-validation-banner');
@@ -502,7 +508,7 @@ export function renderBuilderPage(navigateCallback) {
     if (!videoInput || !videoIcon || !validationBanner) return;
 
     // Platform icon real-time update on input event
-    videoInput.addEventListener('input', () => {
+    videoInput.addEventListener('input', function () {
       const val = videoInput.value.trim();
       if (extractYouTubeVideoId(val)) {
         videoIcon.className = 'fa-brands fa-youtube';
@@ -517,7 +523,7 @@ export function renderBuilderPage(navigateCallback) {
     });
 
     // oEmbed title validation on blur event
-    videoInput.addEventListener('blur', async () => {
+    videoInput.addEventListener('blur', async function () {
       const rawUrl = videoInput.value.trim();
       if (!rawUrl) {
         resetBuilderValidationUI();
@@ -568,7 +574,7 @@ export function renderBuilderPage(navigateCallback) {
 
   // Attach select change listeners
   const gameSelect = document.getElementById('builder-game-select');
-  gameSelect.addEventListener('change', (e) => {
+  gameSelect.addEventListener('change', function (e) {
     selectedGame = e.target.value;
     notationSequence = [];
     currentStepBuffer = '';
@@ -586,7 +592,7 @@ export function renderBuilderPage(navigateCallback) {
   });
 
   const charSelect = document.getElementById('builder-char-select');
-  charSelect.addEventListener('change', (e) => {
+  charSelect.addEventListener('change', function (e) {
     selectedCharacter = e.target.value;
     const previewChar = document.getElementById('preview-char-label');
     if (previewChar) previewChar.innerText = selectedCharacter;
@@ -602,7 +608,7 @@ export function renderBuilderPage(navigateCallback) {
   // Attach add character listener
   const btnAddChar = document.getElementById('btn-add-builder-char');
   if (btnAddChar) {
-    btnAddChar.addEventListener('click', async () => {
+    btnAddChar.addEventListener('click', async function () {
       // Check if user is logged in
       if (!store.getCurrentUser()) {
         window.showToast('Please log in or register an account to add new DLC characters.');
@@ -643,8 +649,8 @@ export function renderBuilderPage(navigateCallback) {
 
   // Attach pad direction listeners (joystick buttons)
   const dirButtons = mount.querySelectorAll('.pad-dir');
-  dirButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+  dirButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
       const dirVal = btn.getAttribute('data-dir');
       // If 5 (neutral), it can stand alone, else prepend it to attack button
       if (dirVal === '5') {
@@ -657,8 +663,8 @@ export function renderBuilderPage(navigateCallback) {
   });
 
   const motionButtons = mount.querySelectorAll('.pad-motion');
-  motionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+  motionButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
       const motionVal = btn.getAttribute('data-motion');
       if (motionVal === '5') {
         currentStepBuffer = '5';
@@ -670,7 +676,7 @@ export function renderBuilderPage(navigateCallback) {
   });
 
   // Attach edit controls
-  document.getElementById('btn-link-move').addEventListener('click', () => {
+  document.getElementById('btn-link-move').addEventListener('click', function () {
     // Usually link is automatic since attack push closes the step,
     // but if they want to force a blank link slot or manual separation:
     if (currentStepBuffer) {
@@ -681,7 +687,7 @@ export function renderBuilderPage(navigateCallback) {
     updateBufferPreview();
   });
 
-  document.getElementById('btn-delete-last').addEventListener('click', () => {
+  document.getElementById('btn-delete-last').addEventListener('click', function () {
     if (currentStepBuffer) {
       currentStepBuffer = '';
     } else {
@@ -691,7 +697,7 @@ export function renderBuilderPage(navigateCallback) {
     updateBufferPreview();
   });
 
-  document.getElementById('btn-clear-all').addEventListener('click', () => {
+  document.getElementById('btn-clear-all').addEventListener('click', function () {
     notationSequence = [];
     currentStepBuffer = '';
     updateNotationPreview();
@@ -701,7 +707,7 @@ export function renderBuilderPage(navigateCallback) {
 
   // Attach manual typing editor change listener
   const manualInput = document.getElementById('builder-manual-input');
-  manualInput.addEventListener('input', (e) => {
+  manualInput.addEventListener('input', function (e) {
     const val = e.target.value.trim();
     if (!val) {
       notationSequence = [];
@@ -711,7 +717,9 @@ export function renderBuilderPage(navigateCallback) {
     
     // Split by delimiters
     const steps = val.split(/\s*(?:>|,|->)\s*/);
-    notationSequence = steps.filter(s => s.trim() !== '');
+    notationSequence = steps.filter(function (s) {
+      return s.trim() !== '';
+    });
     
     const previewMount = document.getElementById('builder-live-preview');
     if (previewMount) {
@@ -720,7 +728,7 @@ export function renderBuilderPage(navigateCallback) {
   });
 
   // Publish Button click
-  document.getElementById('btn-publish-combo').addEventListener('click', async () => {
+  document.getElementById('btn-publish-combo').addEventListener('click', async function () {
     if (!selectedGame) {
       window.showToast('Please select a game before publishing.');
       return;

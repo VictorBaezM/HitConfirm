@@ -20,7 +20,7 @@ export function renderNavbar(activePage, navigateCallback) {
   ];
 
   let linksHtml = '';
-  links.forEach(link => {
+  links.forEach(function (link) {
     const isActive = activePage === link.id ? 'active' : '';
     linksHtml += `
       <li class="wiki-nav-item">
@@ -89,8 +89,9 @@ export function renderNavbar(activePage, navigateCallback) {
   `;
 
   // Attach Event Listeners
-  mount.querySelectorAll('.wiki-nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
+  // Attach Event Listeners
+  mount.querySelectorAll('.wiki-nav-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
       e.preventDefault();
       const page = link.getAttribute('data-page');
       navigateCallback(page);
@@ -99,12 +100,14 @@ export function renderNavbar(activePage, navigateCallback) {
 
   const logo = mount.querySelector('#nav-logo');
   if (logo) {
-    logo.addEventListener('click', () => navigateCallback('feed'));
+    logo.addEventListener('click', function () {
+      navigateCallback('feed');
+    });
   }
 
   const logoutBtn = mount.querySelector('#logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', function () {
       store.logout();
       window.showToast('Logged out successfully.');
       navigateCallback('feed');
@@ -113,24 +116,24 @@ export function renderNavbar(activePage, navigateCallback) {
 
   const loginBtn = mount.querySelector('#nav-login-btn');
   if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', function () {
       window.openAuthModal('login', navigateCallback);
     });
   }
 
   const registerBtn = mount.querySelector('#nav-register-btn');
   if (registerBtn) {
-    registerBtn.addEventListener('click', () => {
+    registerBtn.addEventListener('click', function () {
       window.openAuthModal('register', navigateCallback);
     });
   }
 
   // Fetch latest commit dynamically from GitHub
-  const fetchLatestCommit = async () => {
+  async function fetchLatestCommit() {
     const badge = document.getElementById('repo-latest-update');
     if (!badge) return;
 
-    const applyUpdateInfo = (badgeEl, sha, msg, author, fullMsg, dateStr) => {
+    function applyUpdateInfo(badgeEl, sha, msg, author, fullMsg, dateStr) {
       let displayDate = 'Recent';
       try {
         const commitDate = new Date(dateStr);
@@ -146,9 +149,9 @@ export function renderNavbar(activePage, navigateCallback) {
       badgeEl.title = `Commit ${sha}: ${fullMsg}\nBy ${author}\nDate: ${dateStr}`;
       const textEl = badgeEl.querySelector('.update-text');
       if (textEl) textEl.innerText = `Updated: ${displayDate}`;
-    };
+    }
 
-    const applyFallback = (badgeEl) => {
+    function applyFallback(badgeEl) {
       badgeEl.title = "Offline mode or GitHub rate limits reached";
       const textEl = badgeEl.querySelector('.update-text');
       if (textEl) textEl.innerText = 'Updated: Jun 7, 2026';
@@ -157,7 +160,7 @@ export function renderNavbar(activePage, navigateCallback) {
         pulseDot.style.backgroundColor = 'var(--color-primary)';
         pulseDot.style.boxShadow = '0 0 8px var(--color-primary)';
       }
-    };
+    }
 
     // Check session cache first to prevent redundant API queries and rate limiting
     const cachedUpdate = sessionStorage.getItem('hc_latest_update');

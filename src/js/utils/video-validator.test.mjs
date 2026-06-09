@@ -102,17 +102,17 @@ assert(
 );
 assert(
   'Title missing character keyword → isValid false, hasCharKeyword false',
-  (() => { const r = validateVideoTitle('Street Fighter 6 Combo Guide', 'sf6'); return { isValid: r.isValid, hasCharKeyword: r.hasCharKeyword }; })(),
+  (function () { const r = validateVideoTitle('Street Fighter 6 Combo Guide', 'sf6'); return { isValid: r.isValid, hasCharKeyword: r.hasCharKeyword }; })(),
   { isValid: false, hasCharKeyword: false }
 );
 assert(
   'Title missing game keyword → isValid false, hasGameKeyword false',
-  (() => { const r = validateVideoTitle('Ryu BnB Guide', 'sf6'); return { isValid: r.isValid, hasGameKeyword: r.hasGameKeyword }; })(),
+  (function () { const r = validateVideoTitle('Ryu BnB Guide', 'sf6'); return { isValid: r.isValid, hasGameKeyword: r.hasGameKeyword }; })(),
   { isValid: false, hasGameKeyword: false }
 );
 assert(
   'Completely unrelated title → isValid false, both flags false',
-  (() => { const r = validateVideoTitle('Funny Cat Compilation', 'sf6'); return { isValid: r.isValid, hasGameKeyword: r.hasGameKeyword, hasCharKeyword: r.hasCharKeyword }; })(),
+  (function () { const r = validateVideoTitle('Funny Cat Compilation', 'sf6'); return { isValid: r.isValid, hasGameKeyword: r.hasGameKeyword, hasCharKeyword: r.hasCharKeyword }; })(),
   { isValid: false, hasGameKeyword: false, hasCharKeyword: false }
 );
 assert(
@@ -161,10 +161,10 @@ assert(
 );
 assert(
   'Each game entry has gameKeywords and characterKeywords arrays',
-  Object.values(GAME_VIDEO_KEYWORDS).every(g =>
-    Array.isArray(g.gameKeywords) && g.gameKeywords.length > 0 &&
-    Array.isArray(g.characterKeywords) && g.characterKeywords.length > 0
-  ),
+  Object.values(GAME_VIDEO_KEYWORDS).every(function (g) {
+    return Array.isArray(g.gameKeywords) && g.gameKeywords.length > 0 &&
+      Array.isArray(g.characterKeywords) && g.characterKeywords.length > 0;
+  }),
   true
 );
 
@@ -254,7 +254,7 @@ assert(
 );
 assert(
   'SF6 with mismatched character Ken → isValid false, hasCharKeyword false',
-  (() => { const r = validateVideoTitle('SF6 Ryu BnB Combos', 'sf6', 'Ken'); return { isValid: r.isValid, hasCharKeyword: r.hasCharKeyword }; })(),
+  (function () { const r = validateVideoTitle('SF6 Ryu BnB Combos', 'sf6', 'Ken'); return { isValid: r.isValid, hasCharKeyword: r.hasCharKeyword }; })(),
   { isValid: false, hasCharKeyword: false }
 );
 assert(

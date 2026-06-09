@@ -22,11 +22,11 @@ export function renderStrategyPage(navigateCallback) {
   let selectedGame = 'all';
   let activeGuide = null; // Currently reading guide object
 
-  const refreshPage = () => {
+  function refreshPage() {
     const guides = store.getStrategies();
     const filteredGuides = selectedGame === 'all' 
       ? guides 
-      : guides.filter(g => g.game === selectedGame);
+      : guides.filter(function (g) { return g.game === selectedGame; });
 
     mount.innerHTML = `
       <!-- Guides List & Matrix (Left Column) -->
@@ -44,9 +44,11 @@ export function renderStrategyPage(navigateCallback) {
         <!-- Selector Bar -->
         <div class="game-selector-bar mb-5" id="strategy-game-chips">
           <div class="game-chip ${selectedGame === 'all' ? 'active' : ''}" data-game="all">All Games</div>
-          ${Object.values(games).map(g => `
-            <div class="game-chip ${selectedGame === g.id ? 'active' : ''}" data-game="${g.id}">${g.name}</div>
-          `).join('')}
+          ${Object.values(games).map(function (g) {
+            return `
+              <div class="game-chip ${selectedGame === g.id ? 'active' : ''}" data-game="${g.id}">${g.name}</div>
+            `;
+          }).join('')}
         </div>
 
         <!-- Frame Punish Cheat Sheet (Dynamic Matchup Matrix Widget) -->
@@ -102,24 +104,24 @@ export function renderStrategyPage(navigateCallback) {
 
     // Attach chip listeners
     const chips = mount.querySelectorAll('#strategy-game-chips .game-chip');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
         selectedGame = chip.getAttribute('data-game');
         refreshPage();
       });
     });
 
     // Attach create guide click
-    document.getElementById('btn-create-guide').addEventListener('click', () => {
+    document.getElementById('btn-create-guide').addEventListener('click', function () {
       if (!currentUser) {
         window.openAuthModal('login', navigateCallback);
       } else {
         openCreateGuideModal();
       }
     });
-  };
+  }
 
-  const drawMatchupTable = () => {
+  function drawMatchupTable() {
     const tbody = document.getElementById('cheat-sheet-tbody');
     if (!tbody) return;
 
@@ -132,25 +134,27 @@ export function renderStrategyPage(navigateCallback) {
       { game: 'ggst', char: 'Ky Kiske', move: 'Stun Dipper (236K)', block: '-15', punish: 'Far S > 2S or full launch punch' }
     ];
 
-    const filtered = selectedGame === 'all' ? data : data.filter(d => d.game === selectedGame);
+    const filtered = selectedGame === 'all' ? data : data.filter(function (d) { return d.game === selectedGame; });
 
     if (filtered.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-muted">No cheat sheet reference for this filter.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = filtered.map(d => `
-      <tr class="strategy-matrix-tr">
-        <td class="strategy-matrix-td-game">${d.game}</td>
-        <td class="strategy-matrix-td-char">${d.char}</td>
-        <td class="strategy-matrix-td-move">${d.move}</td>
-        <td class="strategy-matrix-td-block" style="color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
-        <td class="strategy-matrix-td-punish">${d.punish}</td>
-      </tr>
-    `).join('');
-  };
+    tbody.innerHTML = filtered.map(function (d) {
+      return `
+        <tr class="strategy-matrix-tr">
+          <td class="strategy-matrix-td-game">${d.game}</td>
+          <td class="strategy-matrix-td-char">${d.char}</td>
+          <td class="strategy-matrix-td-move">${d.move}</td>
+          <td class="strategy-matrix-td-block" style="color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
+          <td class="strategy-matrix-td-punish">${d.punish}</td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-  const drawGuidesList = (guides) => {
+  function drawGuidesList(guides) {
     const listMount = document.getElementById('guides-list');
     if (!listMount) return;
 
@@ -164,7 +168,7 @@ export function renderStrategyPage(navigateCallback) {
     }
 
     listMount.innerHTML = '';
-    guides.forEach(guide => {
+    guides.forEach(function (guide) {
       const item = document.createElement('div');
       item.className = 'card card-hoverable strategy-guide-item';
       
@@ -182,7 +186,7 @@ export function renderStrategyPage(navigateCallback) {
         <span class="strategy-guide-item-meta">${guide.upvotes} 🔥</span>
       `;
 
-      item.addEventListener('click', () => {
+      item.addEventListener('click', function () {
         activeGuide = guide;
         drawActiveGuide();
       });
@@ -196,7 +200,7 @@ export function renderStrategyPage(navigateCallback) {
     }
   };
 
-  const drawActiveGuide = () => {
+  function drawActiveGuide() {
     const viewer = document.getElementById('guide-viewer');
     if (!viewer) return;
 
@@ -242,7 +246,7 @@ export function renderStrategyPage(navigateCallback) {
     `;
 
     // Attach upvote event handler
-    viewer.querySelector('.btn-upvote-guide').addEventListener('click', async () => {
+    viewer.querySelector('.btn-upvote-guide').addEventListener('click', async function () {
       if (!currentUser) {
         window.openAuthModal('login', navigateCallback);
         return;
@@ -258,15 +262,15 @@ export function renderStrategyPage(navigateCallback) {
         }
         // Sync original list count
         const origList = store.getStrategies();
-        activeGuide = origList.find(g => g.id === activeGuide.id);
-        drawGuidesList(selectedGame === 'all' ? origList : origList.filter(g => g.game === selectedGame));
+        activeGuide = origList.find(function (g) { return g.id === activeGuide.id; });
+        drawGuidesList(selectedGame === 'all' ? origList : origList.filter(function (g) { return g.game === selectedGame; }));
       } else {
         window.showToast(result.error || 'Failed to update reaction.');
       }
     });
-  };
+  }
 
-  const openCreateGuideModal = () => {
+  function openCreateGuideModal() {
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
     
@@ -282,7 +286,9 @@ export function renderStrategyPage(navigateCallback) {
         <div class="form-group strategy-modal-form-group-flat">
           <label class="form-label">Game</label>
           <select id="modal-guide-game" class="form-select">
-            ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+            ${Object.values(games).map(function (g) {
+              return `<option value="${g.id}">${g.name}</option>`;
+            }).join('')}
           </select>
         </div>
         <div class="form-group strategy-modal-form-group-flat">
@@ -308,12 +314,12 @@ export function renderStrategyPage(navigateCallback) {
     const modalGameSel = document.getElementById('modal-guide-game');
     const modalCharSel = document.getElementById('modal-guide-char');
     
-    const fillChars = () => {
+    function fillChars() {
       const gameId = modalGameSel.value;
-      modalCharSel.innerHTML = games[gameId].characters.map(c => `
-        <option value="${c}">${c}</option>
-      `).join('');
-    };
+      modalCharSel.innerHTML = games[gameId].characters.map(function (c) {
+        return `<option value="${c}">${c}</option>`;
+      }).join('');
+    }
 
     modalGameSel.addEventListener('change', fillChars);
     fillChars(); // seed initial values
@@ -323,11 +329,11 @@ export function renderStrategyPage(navigateCallback) {
     overlay.classList.add('open');
 
     // Attach buttons inside modal
-    document.getElementById('modal-guide-cancel').addEventListener('click', () => {
+    document.getElementById('modal-guide-cancel').addEventListener('click', function () {
       overlay.classList.remove('open');
     });
 
-    document.getElementById('modal-guide-publish').addEventListener('click', async () => {
+    document.getElementById('modal-guide-publish').addEventListener('click', async function () {
       const titleVal = document.getElementById('modal-guide-title').value.trim();
       const gameVal = modalGameSel.value;
       const charVal = modalCharSel.value;
@@ -354,7 +360,7 @@ export function renderStrategyPage(navigateCallback) {
         window.showToast(result.error || 'Failed to publish.');
       }
     });
-  };
+  }
 
   // Run initializer draw
   refreshPage();

@@ -88,7 +88,7 @@ function parseComboStep(stepStr) {
 
   // 2. Check for directional inputs/modifers
   // Sort keys by length descending to match longer strings first (like 'd/f' before 'd')
-  const directionKeys = Object.keys(DIRECTION_ARROWS).sort((a, b) => b.length - a.length);
+  const directionKeys = Object.keys(DIRECTION_ARROWS).sort(function (a, b) { return b.length - a.length; });
   
   // We can loop to parse directions and modifiers (+ signs, etc.)
   let matchedDir = true;
@@ -127,7 +127,7 @@ function parseComboStep(stepStr) {
   }
 
   // Look for matchable buttons in the remaining string
-  const buttonKeys = Object.keys(BUTTON_CLASSES).sort((a, b) => b.length - a.length);
+  const buttonKeys = Object.keys(BUTTON_CLASSES).sort(function (a, b) { return b.length - a.length; });
   
   while (remaining.length > 0) {
     let abbrevMatched = false;
@@ -202,7 +202,7 @@ export function parseComboToHtml(notationString) {
   
   let html = `<div class="combo-sequence">`;
   
-  steps.forEach((step, idx) => {
+  steps.forEach(function (step, idx) {
     if (idx > 0) {
       html += `<span class="combo-flow">➔</span>`;
     }

@@ -42,7 +42,7 @@ export function openAuthModal(type = 'login', navigateCallback) {
     const emailInput = bodyMount.querySelector('#auth-email');
     const passwordInput = bodyMount.querySelector('#auth-password');
     
-    const handleLogin = async () => {
+    async function handleLogin() {
       const emailVal = emailInput.value.trim();
       const passwordVal = passwordInput.value;
       if (!emailVal || !passwordVal) {
@@ -68,19 +68,19 @@ export function openAuthModal(type = 'login', navigateCallback) {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Sign In';
       }
-    };
+    }
 
     submitBtn.addEventListener('click', handleLogin);
     
     // Support enter key on both fields
-    emailInput.addEventListener('keypress', (e) => {
+    emailInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') handleLogin();
     });
-    passwordInput.addEventListener('keypress', (e) => {
+    passwordInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') handleLogin();
     });
 
-    bodyMount.querySelector('#btn-toggle-auth-reg').addEventListener('click', (e) => {
+    bodyMount.querySelector('#btn-toggle-auth-reg').addEventListener('click', function (e) {
       e.preventDefault();
       openAuthModal('register', navigateCallback);
     });
@@ -107,7 +107,9 @@ export function openAuthModal(type = 'login', navigateCallback) {
         <div class="form-group mb-0">
           <label class="form-label">Main Game</label>
           <select id="auth-game" class="form-select">
-            ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+            ${Object.values(games).map(function (g) {
+              return `<option value="${g.id}">${g.name}</option>`;
+            }).join('')}
           </select>
         </div>
         <div class="form-group mb-0">
@@ -128,12 +130,12 @@ export function openAuthModal(type = 'login', navigateCallback) {
     const gameSel = bodyMount.querySelector('#auth-game');
     const charSel = bodyMount.querySelector('#auth-char');
 
-    const fillChars = () => {
+    function fillChars() {
       const gameId = gameSel.value;
-      charSel.innerHTML = games[gameId].characters.map(c => `
-        <option value="${c}">${c}</option>
-      `).join('');
-    };
+      charSel.innerHTML = games[gameId].characters.map(function (c) {
+        return `<option value="${c}">${c}</option>`;
+      }).join('');
+    }
 
     gameSel.addEventListener('change', fillChars);
     fillChars();
@@ -144,7 +146,7 @@ export function openAuthModal(type = 'login', navigateCallback) {
     const emailInput = bodyMount.querySelector('#auth-email');
     const passwordInput = bodyMount.querySelector('#auth-password');
     
-    const handleRegister = async () => {
+    async function handleRegister() {
       const usernameVal = usernameInput.value.trim();
       const emailVal = emailInput.value.trim();
       const passwordVal = passwordInput.value;
@@ -182,28 +184,28 @@ export function openAuthModal(type = 'login', navigateCallback) {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Register';
       }
-    };
+    }
 
     submitBtn.addEventListener('click', handleRegister);
     
-    usernameInput.addEventListener('keypress', (e) => {
+    usernameInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') handleRegister();
     });
-    emailInput.addEventListener('keypress', (e) => {
+    emailInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') handleRegister();
     });
-    passwordInput.addEventListener('keypress', (e) => {
+    passwordInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') handleRegister();
     });
 
-    bodyMount.querySelector('#btn-toggle-auth-login').addEventListener('click', (e) => {
+    bodyMount.querySelector('#btn-toggle-auth-login').addEventListener('click', function (e) {
       e.preventDefault();
       openAuthModal('login', navigateCallback);
     });
   }
 
   // Common Close listeners
-  bodyMount.querySelector('#btn-auth-cancel').addEventListener('click', () => {
+  bodyMount.querySelector('#btn-auth-cancel').addEventListener('click', function () {
     overlay.classList.remove('open');
   });
 

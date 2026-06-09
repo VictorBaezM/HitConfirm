@@ -60,15 +60,17 @@ export function renderPostCard(post, navigateCallback) {
   if (post.comments && post.comments.length > 0) {
     commentsHtml = `
       <div class="wiki-comments-list">
-        ${post.comments.map(c => `
-          <div class="wiki-comment-row">
-            <div class="wiki-comment-meta">
-              <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
-              <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
+        ${post.comments.map(function (c) {
+          return `
+            <div class="wiki-comment-row">
+              <div class="wiki-comment-meta">
+                <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
+                <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
+              </div>
+              <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
             </div>
-            <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
   }
@@ -133,7 +135,7 @@ export function renderPostCard(post, navigateCallback) {
 
   // Attach functionality
   const upvoteBtn = card.querySelector('.btn-upvote');
-  upvoteBtn.addEventListener('click', async () => {
+  upvoteBtn.addEventListener('click', async function () {
     if (!store.getCurrentUser()) {
       window.openAuthModal('login', navigateCallback);
       return;
@@ -154,14 +156,14 @@ export function renderPostCard(post, navigateCallback) {
 
   const commentBtn = card.querySelector('.btn-comment');
   const panel = card.querySelector('.wiki-comments-panel');
-  commentBtn.addEventListener('click', () => {
+  commentBtn.addEventListener('click', function () {
     panel.classList.toggle('hidden');
   });
 
   const replyBtn = card.querySelector('.btn-submit-comment');
   const commentInput = card.querySelector('.comment-input');
   
-  const submitComment = async () => {
+  async function submitComment() {
     const text = commentInput.value.trim();
     if (!text) return;
     
@@ -181,31 +183,33 @@ export function renderPostCard(post, navigateCallback) {
       
       container.innerHTML = `
         <div class="wiki-comments-list">
-          ${result.comments.map(c => `
-            <div class="wiki-comment-row">
-              <div class="wiki-comment-meta">
-                <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
-                <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
+          ${result.comments.map(function (c) {
+            return `
+              <div class="wiki-comment-row">
+                <div class="wiki-comment-meta">
+                  <span class="wiki-comment-user">${escapeHtml(c.username)}</span>
+                  <span class="wiki-comment-time">${escapeHtml(c.date)}</span>
+                </div>
+                <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
               </div>
-              <p class="wiki-comment-text">${escapeHtml(c.text)}</p>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     } else {
       window.showToast(result.error || 'Failed to post reply.');
     }
-  };
+  }
 
   replyBtn.addEventListener('click', submitComment);
-  commentInput.addEventListener('keypress', (e) => {
+  commentInput.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') submitComment();
   });
 
   // Attach author click listener
   const authorLinks = card.querySelectorAll('.wiki-author-link');
-  authorLinks.forEach(link => {
-    link.addEventListener('click', () => {
+  authorLinks.forEach(function (link) {
+    link.addEventListener('click', function () {
       navigateCallback('profile', { userId: post.userId });
     });
   });
