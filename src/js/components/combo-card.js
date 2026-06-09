@@ -1,6 +1,6 @@
 /* Combo Dojo Card Component */
 import store from '../store.js';
-import { parseComboToHtml } from '../utils/combo-parser.js';
+import { renderNotationHtml } from '../utils/combo-parser.js';
 import { escapeHtml } from '../utils/security.js';
 
 
@@ -43,9 +43,6 @@ export function renderComboCard(combo, navigateCallback) {
     `;
   }
 
-  // Parse combo notation to HTML buttons
-  const visualNotationHtml = parseComboToHtml(combo.notation);
-
   // Render difficulty badge
   const difficultyBadge = `<span class="wiki-badge wiki-badge-difficulty-${combo.difficulty}">${combo.difficulty}</span>`;
   const gameBadge = `<span class="wiki-badge wiki-badge-${combo.game}">${gameName}</span>`;
@@ -75,9 +72,7 @@ export function renderComboCard(combo, navigateCallback) {
     </div>
 
     <!-- Visual Combo Rendering -->
-    <div class="wiki-combo-sequence">
-      ${visualNotationHtml}
-    </div>
+    ${renderNotationHtml(combo.notation)}
 
     <!-- Frame stats table -->
     <table class="wiki-frame-table">

@@ -1,7 +1,7 @@
 /* Social Post Card Component */
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
-import { parseComboToHtml } from '../utils/combo-parser.js';
+import { renderNotationHtml } from '../utils/combo-parser.js';
 
 /**
  * Creates and renders a timeline social post card node supporting voting, replying, and youtube media embeds.
@@ -26,15 +26,6 @@ export function renderPostCard(post, navigateCallback) {
       notation = match[1].trim();
       displayContent = displayContent.replace(/\nNotation:\s*`?[^`\n\r]+`?/i, '').trim();
     }
-  }
-
-  let notationHtml = '';
-  if (notation) {
-    notationHtml = `
-      <div class="wiki-combo-sequence">
-        ${parseComboToHtml(notation)}
-      </div>
-    `;
   }
 
   // Parse video iframe
@@ -114,7 +105,7 @@ export function renderPostCard(post, navigateCallback) {
     
     ${videoHtml}
     
-    ${notationHtml}
+    ${renderNotationHtml(notation)}
 
     <div class="wiki-post-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">

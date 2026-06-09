@@ -653,3 +653,126 @@
   color: var(--text-muted);
 }
 
+/* Visual Combo Notation Sequence Styles */
+.combo-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+}
+
+.combo-step {
+  display: inline-flex;
+  align-items: center;
+  background: #1e1e24;
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  border-radius: 0px; /* Flat industrial style */
+}
+
+/* Direction Arrow Bubble */
+.combo-dir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-secondary); /* Cyber Cyan */
+}
+
+/* Action Button Bubble */
+.combo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+  border-radius: 0px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Action / Abbrev Bubble (e.g. WS, WR) */
+.combo-custom-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border-color);
+  border: 1px solid var(--text-muted);
+  color: var(--text-primary);
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 0px;
+}
+
+/* Button Color Theme Variants */
+.combo-btn.btn-p  { background: #ee3b2b; color: #fff; } /* GG Punch: Red */
+.combo-btn.btn-k  { background: #3c9ee9; color: #fff; } /* GG Kick: Blue */
+.combo-btn.btn-s  { background: #3cb85c; color: #fff; } /* GG Slash: Green */
+.combo-btn.btn-hs { background: #eab420; color: #121214; } /* GG Heavy Slash: Yellow/Gold */
+.combo-btn.btn-d  { background: #8e44ad; color: #fff; } /* GG Dust: Purple */
+
+/* SF Buttons */
+.combo-btn.btn-lp { background: #ee5253; color: #fff; }
+.combo-btn.btn-mp { background: #ff9f43; color: #121214; }
+.combo-btn.btn-hp { background: #10ac84; color: #fff; }
+.combo-btn.btn-lk { background: #54a0ff; color: #fff; }
+.combo-btn.btn-mk { background: #5f27cd; color: #fff; }
+.combo-btn.btn-hk { background: #01a3a4; color: #fff; }
+
+/* Tekken Buttons */
+.combo-btn.btn-t1 { background: #ff9ff3; color: #121214; }
+.combo-btn.btn-t2 { background: #feca57; color: #121214; }
+.combo-btn.btn-t3 { background: #ff6b6b; color: #fff; }
+.combo-btn.btn-t4 { background: #48dbfb; color: #121214; }
+
+/* Smash Buttons */
+.combo-btn.btn-a { background: #ff2222; color: #fff; }
+.combo-btn.btn-b { background: #22cc22; color: #fff; }
+.combo-btn.btn-x { background: #cccccc; color: #121214; }
+.combo-btn.btn-y { background: #cccccc; color: #121214; }
+
+/* Motion Input bubbles (e.g. QCF, DP) */
+.combo-motion {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 107, 0, 0.08);
+  border: 1px solid var(--color-primary);
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+}
+
+/* Link/Flow arrow between moves */
+.combo-flow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 0 4px;
+}
+
+/* Simple text representation if parser skips */
+.combo-text-fallback {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  background: var(--bg-panel);
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+}
+
+

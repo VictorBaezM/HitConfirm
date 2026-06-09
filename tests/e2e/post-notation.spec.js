@@ -120,6 +120,7 @@ test('submitting post with combo notation renders it visually in timeline', asyn
   await expect(sequence).toContainText('•HP');
   await expect(sequence).toContainText('➔');
   await expect(sequence).toContainText('QCFKK');
+  await expect(sequence).toContainText('WS');
 });
 
 test('sharing a combo from builder page automatically creates feed post with visual notation rendering', async ({ page }) => {

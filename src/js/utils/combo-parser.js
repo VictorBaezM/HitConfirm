@@ -130,6 +130,23 @@ function parseComboStep(stepStr) {
   const buttonKeys = Object.keys(BUTTON_CLASSES).sort((a, b) => b.length - a.length);
   
   while (remaining.length > 0) {
+    let abbrevMatched = false;
+    for (const abbrev of ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch']) {
+      if (remaining.startsWith(abbrev)) {
+        html += `<span class="combo-custom-action">${abbrev.toUpperCase()}</span>`;
+        remaining = remaining.substring(abbrev.length);
+        if (remaining.startsWith('+')) {
+          remaining = remaining.substring(1);
+        }
+        abbrevMatched = true;
+        break;
+      }
+    }
+    if (abbrevMatched) {
+      parsedAny = true;
+      continue;
+    }
+
     let buttonMatched = false;
     for (const btnKey of buttonKeys) {
       if (remaining.startsWith(btnKey)) {
@@ -194,4 +211,19 @@ export function parseComboToHtml(notationString) {
 
   html += `</div>`;
   return html;
+}
+
+/**
+ * Standard visual HTML rendering wrapper for fighting game combo notations.
+ * Used uniformly across timeline feed posts and dojo combo cards.
+ * @param {string} notationString - The raw numpad/text combo notation string.
+ * @returns {string} - Styled HTML markup block representing the sequence.
+ */
+export function renderNotationHtml(notationString) {
+  if (!notationString || !notationString.trim()) return '';
+  return `
+    <div class="wiki-combo-sequence">
+      ${parseComboToHtml(notationString)}
+    </div>
+  `;
 }
