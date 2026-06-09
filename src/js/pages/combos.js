@@ -237,6 +237,22 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   drawList();
   drawTopLabMasters();
 
+  // Initialize game logo selector sidebar
+  function initDojoSidebar(gameId) {
+    renderGameSidebar({
+      activeGame: gameId,
+      onGameChange: function (selectedId) {
+        activeGame = selectedId;
+        const gameFilterEl = document.getElementById('dojo-game-filter');
+        if (gameFilterEl) gameFilterEl.value = selectedId;
+        drawList();
+        initDojoSidebar(selectedId);
+      }
+    });
+  }
+
+  initDojoSidebar(activeGame);
+
   // Attach Dojo Tab listeners
   const tabAll = document.getElementById('dojo-tab-all');
   const tabFollowing = document.getElementById('dojo-tab-following');
@@ -266,6 +282,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   gameFilter.addEventListener('change', function (e) {
     activeGame = e.target.value;
     drawList();
+    initDojoSidebar(activeGame);
   });
 
   const difficultyFilter = document.getElementById('dojo-difficulty-filter');
