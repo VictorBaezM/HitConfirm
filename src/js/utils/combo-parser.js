@@ -224,6 +224,17 @@ export function renderNotationHtml(notationString) {
   return `
     <div class="wiki-combo-sequence">
       ${parseComboToHtml(notationString)}
+      <div class="wiki-notation-helper">
+        <i class="fa-solid fa-circle-question"></i>
+        <div class="wiki-notation-tooltip">
+          <div class="tooltip-title">Reading Notations</div>
+          <ul>
+            <li><strong>Anime (GG):</strong> Numpad directions (e.g., 236 = QCF) and buttons: <strong>P</strong> (Punch), <strong>K</strong> (Kick), <strong>S</strong> (Slash), <strong>HS</strong> (Heavy), <strong>D</strong> (Dust).</li>
+            <li><strong>SF6:</strong> Classic directions (2MK = cr.MK) and buttons: <strong>LP/LK</strong>, <strong>MP/MK</strong>, <strong>HP/HK</strong>.</li>
+            <li><strong>Tekken:</strong> Buttons <strong>1</strong> (LP), <strong>2</strong> (RP), <strong>3</strong> (LK), <strong>4</strong> (RK) with arrow directions.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   `;
 }
