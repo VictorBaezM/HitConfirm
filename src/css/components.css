@@ -184,13 +184,14 @@
 .wiki-console-tab {
   background: var(--bg-canvas);
   border: 1px solid var(--border-color);
-  width: 54px;
+  width: 100px;
   height: 54px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  overflow: hidden;
   transition: all var(--transition-fast);
 }
 
@@ -203,10 +204,21 @@
   background: var(--bg-panel-hover);
 }
 
+#sidebar-game-sf6 { background: #000000; }
+#sidebar-game-t8 { background: #000000; }
+#sidebar-game-ggst { background: #440606; }
+#sidebar-game-ssbu { background: #f9f8f9; }
+
+#sidebar-game-sf6:hover, #sidebar-game-sf6.active { background: #000000; }
+#sidebar-game-t8:hover, #sidebar-game-t8.active { background: #000000; }
+#sidebar-game-ggst:hover, #sidebar-game-ggst.active { background: #440606; }
+#sidebar-game-ssbu:hover, #sidebar-game-ssbu.active { background: #f9f8f9; }
+
 .wiki-console-tab .game-logo-image {
-  max-width: 85%;
-  max-height: 85%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  display: block;
   opacity: 0.45;
   filter: grayscale(100%);
   transition: opacity var(--transition-fast), filter var(--transition-fast), transform var(--transition-fast);
