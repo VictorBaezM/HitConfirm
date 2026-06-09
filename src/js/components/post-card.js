@@ -20,6 +20,12 @@ export function renderPostCard(post, navigateCallback) {
   if (parts.length > 1) {
     displayContent = parts[0];
     notation = parts.slice(1).join('\n\n---NOTATION---\n');
+  } else {
+    const match = displayContent.match(/\nNotation:\s*`?([^`\n\r]+)`?/i);
+    if (match) {
+      notation = match[1].trim();
+      displayContent = displayContent.replace(/\nNotation:\s*`?[^`\n\r]+`?/i, '').trim();
+    }
   }
 
   let notationHtml = '';
