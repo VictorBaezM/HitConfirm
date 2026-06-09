@@ -206,12 +206,12 @@
 
 #sidebar-game-sf6 { background: #000000; }
 #sidebar-game-t8 { background: #000000; }
-#sidebar-game-ggst { background: #440606; }
+#sidebar-game-ggst { background: #000000; }
 #sidebar-game-ssbu { background: #f9f8f9; }
 
 #sidebar-game-sf6:hover, #sidebar-game-sf6.active { background: #000000; }
 #sidebar-game-t8:hover, #sidebar-game-t8.active { background: #000000; }
-#sidebar-game-ggst:hover, #sidebar-game-ggst.active { background: #440606; }
+#sidebar-game-ggst:hover, #sidebar-game-ggst.active { background: #000000; }
 #sidebar-game-ssbu:hover, #sidebar-game-ssbu.active { background: #f9f8f9; }
 
 .wiki-console-tab .game-logo-image {
