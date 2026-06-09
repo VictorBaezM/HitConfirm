@@ -203,25 +203,46 @@
   background: var(--bg-panel-hover);
 }
 
-.wiki-console-tab .game-logo-svg {
-  width: 38px;
-  height: 38px;
+.wiki-console-tab .game-logo-image {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
   opacity: 0.45;
   filter: grayscale(100%);
   transition: opacity var(--transition-fast), filter var(--transition-fast), transform var(--transition-fast);
 }
 
-.wiki-console-tab:hover .game-logo-svg {
+.wiki-console-tab:hover .game-logo-image {
   opacity: 0.85;
   filter: grayscale(30%);
   transform: scale(1.05);
 }
 
-.wiki-console-tab.active .game-logo-svg {
+.wiki-console-tab.active .game-logo-image {
   opacity: 1;
   filter: none;
   transform: scale(1.1);
 }
+
+.wiki-console-tab .database-logo-icon {
+  font-size: 1.6rem;
+  color: var(--text-secondary);
+  opacity: 0.45;
+  transition: opacity var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.wiki-console-tab:hover .database-logo-icon {
+  opacity: 0.85;
+  color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.wiki-console-tab.active .database-logo-icon {
+  opacity: 1;
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
 
 
 /* Flat Wiki Cards */
