@@ -1,6 +1,7 @@
 /* Social Post Card Component */
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
+import { parseComboToHtml } from '../utils/combo-parser.js';
 
 /**
  * Creates and renders a timeline social post card node supporting voting, replying, and youtube media embeds.
@@ -12,6 +13,23 @@ export function renderPostCard(post, navigateCallback) {
   const currentUser = store.getCurrentUser();
   const isUpvoted = currentUser && post.upvotedBy && post.upvotedBy.includes(currentUser.id);
   const upvoteClass = isUpvoted ? 'active' : '';
+
+  let displayContent = post.content || '';
+  let notation = '';
+  const parts = displayContent.split('\n\n---NOTATION---\n');
+  if (parts.length > 1) {
+    displayContent = parts[0];
+    notation = parts.slice(1).join('\n\n---NOTATION---\n');
+  }
+
+  let notationHtml = '';
+  if (notation) {
+    notationHtml = `
+      <div class="wiki-combo-sequence">
+        ${parseComboToHtml(notation)}
+      </div>
+    `;
+  }
 
   // Parse video iframe
   let videoHtml = '';
@@ -85,10 +103,12 @@ export function renderPostCard(post, navigateCallback) {
     </div>
     
     <div class="wiki-post-content">
-      ${formatPostText(post.content)}
+      ${formatPostText(displayContent)}
     </div>
     
     ${videoHtml}
+    
+    ${notationHtml}
 
     <div class="wiki-post-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">

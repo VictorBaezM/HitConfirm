@@ -1,0 +1,116 @@
+// @ts-check
+const { test, expect } = require('@playwright/test');
+
+const FAKE_USER = {
+  id: 'test-user-e2e',
+  username: 'TestPlayer',
+  email: 'test@hitconfirm.test',
+  avatarColor: '#3b82f6',
+  mainGame: 'sf6',
+  mainChar: 'Ryu',
+  rank: 'Gold',
+  following: [],
+  followers: [],
+  bio: '',
+};
+
+async function injectFakeUser(page) {
+  await page.route('**/src/js/supabase.js', route => {
+    route.fulfill({
+      contentType: 'text/javascript',
+      body: `
+        export const supabase = {
+          auth: {
+            getSession: async () => ({
+              data: {
+                session: {
+                  user: { id: 'test-user-e2e', email: 'test@hitconfirm.test' }
+                }
+              },
+              error: null
+            }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+          },
+          from: (table) => {
+            const builder = {
+              select: () => builder,
+              order: () => builder,
+              eq: () => builder,
+              update: () => builder,
+              insert: () => builder,
+              then: (resolve) => {
+                let data = [];
+                if (table === 'users') {
+                  data = [{
+                    id: 'test-user-e2e',
+                    username: 'TestPlayer',
+                    avatar_color: '#3b82f6',
+                    main_game: 'sf6',
+                    main_char: 'Ryu',
+                    rank: 'Gold',
+                    saved_combos: [],
+                    played_games: [],
+                    game_characters: {},
+                    following: []
+                  }];
+                } else if (table === 'games') {
+                  data = [
+                    {
+                      id: 'sf6',
+                      name: 'Street Fighter 6',
+                      characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'],
+                      notation_type: 'sf'
+                    }
+                  ];
+                }
+                resolve({ data, error: null, count: data.length });
+              }
+            };
+            return builder;
+          }
+        };
+        export default supabase;
+      `
+    });
+  });
+
+  await page.addInitScript((user) => {
+    localStorage.setItem('hc_current_user', JSON.stringify(user));
+  }, FAKE_USER);
+}
+
+test('submitting post with combo notation renders it visually in timeline', async ({ page }) => {
+  await injectFakeUser(page);
+
+  await page.goto('/');
+  await page.waitForSelector('text=Share a Strategic Thought or Clip', { timeout: 15_000 });
+
+  // Fill in the post details
+  await page.fill('.post-input', 'Lab work on Ryu BnB combos!');
+  await page.selectOption('#post-game-select', 'sf6');
+  await page.selectOption('#post-char-select', 'Ryu');
+  await page.fill('#post-notation-input', '5HP > 236KK > WS');
+
+  // Submit the post
+  await page.click('#btn-submit-post');
+
+  // Success toast check
+  const toast = page.locator('#toast-notification');
+  await expect(toast).toBeVisible({ timeout: 5_000 });
+  await expect(toast).toContainText('Post published successfully!');
+
+  // Look for the newly created post card on the feed timeline
+  const newPost = page.locator('.wiki-post-panel').first();
+  await expect(newPost).toBeVisible();
+
+  // Validate post text content includes user content and auto hashtag
+  await expect(newPost.locator('.wiki-post-content')).toContainText('Lab work on Ryu BnB combos!');
+  await expect(newPost.locator('.wiki-post-content')).toContainText('#Ryu');
+
+  // Verify that the combo sequence is parsed and rendered visually
+  const sequence = newPost.locator('.wiki-combo-sequence');
+  await expect(sequence).toBeVisible();
+  await expect(sequence).toContainText('•HP');
+  await expect(sequence).toContainText('➔');
+  await expect(sequence).toContainText('QCFKK');
+});

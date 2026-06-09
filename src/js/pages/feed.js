@@ -329,19 +329,19 @@ function renderCreatorBox(navigateCallback) {
 
   // Logged-in feed layout
   mount.innerHTML = `
-    <div class="card" style="margin-bottom: 24px;">
-      <h3 style="font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-        <i class="fa-solid fa-pen-nib" style="color: var(--color-primary);"></i> Share a Strategic Thought or Clip
+    <div class="card">
+      <h3 class="wiki-console-title">
+        <i class="fa-solid fa-pen-nib"></i> Share a Strategic Thought or Clip
       </h3>
       
-      <div class="form-group" style="margin-bottom: 12px;">
-        <textarea class="form-textarea post-input" placeholder="What are you learning in the lab today? Use **bold** for combos or #hashtags..." style="min-height: 80px; font-size: 0.9rem;"></textarea>
+      <div class="form-group">
+        <textarea class="form-textarea post-input" placeholder="What are you learning in the lab today? Use **bold** for combos or #hashtags..."></textarea>
       </div>
 
       <div class="flex gap-3" style="flex-wrap: wrap; margin-bottom: 8px;">
         <!-- Game Dropdown tag -->
         <div style="flex: 1; min-width: 140px;">
-          <select class="form-select post-game-select" style="padding: 8px 12px; font-size: 0.85rem;" id="post-game-select">
+          <select class="form-select post-game-select" id="post-game-select">
             <option value="">Tag Game (Optional)</option>
             ${Object.values(games).map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
           </select>
@@ -349,38 +349,42 @@ function renderCreatorBox(navigateCallback) {
 
         <!-- Character Dropdown tag -->
         <div style="flex: 1; min-width: 140px; display: none;" id="post-char-select-container">
-          <select class="form-select post-char-select" style="padding: 8px 12px; font-size: 0.85rem;" id="post-char-select">
+          <select class="form-select post-char-select" id="post-char-select">
             <option value="">Select Character</option>
           </select>
         </div>
 
         <!-- Video Input Link -->
-        <div style="flex: 2; min-width: 200px; display: flex; align-items: center; position: relative;">
-          <i class="fa-brands fa-youtube" style="position: absolute; left: 12px; color: #ff0000; font-size: 1.1rem;"></i>
-          <input type="text" class="form-input post-video-input" id="post-video-input"
-            placeholder="YouTube Video URL (Optional)"
-            style="padding: 8px 12px 8px 36px; font-size: 0.85rem;" />
+        <div class="video-input-wrapper" style="flex: 2; min-width: 200px;">
+          <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
+          <input type="text" id="post-video-input" class="form-input post-video-input" placeholder="YouTube Video URL (Optional)" />
         </div>
       </div>
 
+      <!-- Combo Notation Input (placed underneath the chosen video row) -->
+      <div class="form-group" style="margin-top: 12px;">
+        <label class="form-label">Combo Notation (Optional)</label>
+        <input type="text" id="post-notation-input" class="form-input" placeholder="e.g. 236P > 5K > 2D" />
+      </div>
+
       <!-- Video format hint (always visible when a game is selected) -->
-      <div id="video-format-hint" style="display: none; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.12);">
+      <div id="video-format-hint" class="wiki-comment-item" style="display: none; margin-top: 8px;">
         <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
         <span id="video-format-hint-text"></span>
       </div>
 
       <!-- oEmbed validation banner (shown after URL is entered) -->
-      <div id="video-validation-banner" style="display: none; font-size: 0.82rem; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;"></div>
+      <div id="video-validation-banner" style="display: none; margin-top: 8px;"></div>
 
       <!-- Confirmation checkbox (shown when video + game are both present) -->
-      <div id="video-confirm-row" style="display: none; margin-bottom: 12px;">
-        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
-          <input type="checkbox" id="video-confirm-checkbox" style="accent-color: var(--color-primary); width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer;">
+      <div id="video-confirm-row" style="display: none; margin-top: 8px;">
+        <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
+          <input type="checkbox" id="video-confirm-checkbox" style="width: 16px; height: 16px; margin-top: 2px;">
           <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
         </label>
       </div>
 
-      <div class="flex justify-between items-center" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+      <div class="flex justify-between items-center" style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
         <span style="font-size: 0.8rem; color: var(--text-muted);">Posting as <strong>${escapeHtml(currentUser.username)}</strong></span>
         <button class="btn btn-primary btn-sm btn-submit-post" id="btn-submit-post">Publish Post</button>
       </div>
@@ -400,6 +404,7 @@ function renderCreatorBox(navigateCallback) {
   const confirmLabel = mount.querySelector('#video-confirm-label');
   const charSelect  = mount.querySelector('#post-char-select');
   const charSelectContainer = mount.querySelector('#post-char-select-container');
+  const notationInput = mount.querySelector('#post-notation-input');
 
   /** Updates the format hint text whenever the selected game changes. */
   const updateFormatHint = () => {
@@ -608,6 +613,11 @@ function renderCreatorBox(navigateCallback) {
       }
     }
 
+    const postNotation = notationInput ? notationInput.value.trim() : '';
+    if (postNotation) {
+      finalContent += '\n\n---NOTATION---\n' + postNotation;
+    }
+
     const postData = {
       content: finalContent,
       game: gameId || '',
@@ -621,6 +631,7 @@ function renderCreatorBox(navigateCallback) {
       charSelect.value = '';
       charSelectContainer.style.display = 'none';
       videoInput.value = '';
+      if (notationInput) notationInput.value = '';
       resetValidationUI();
       formatHint.style.display = 'none';
       window.showToast('Post published successfully!');
