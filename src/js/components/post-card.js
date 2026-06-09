@@ -72,14 +72,16 @@ export function renderPostCard(post, navigateCallback) {
         <div class="wiki-user-avatar wiki-author-link" style="border: 2px solid ${post.avatarColor || '#00f0ff'}; cursor: pointer;">
           ${escapeHtml(post.username.substring(0,2).toUpperCase())}
         </div>
-        <div class="wiki-author-details">
           <h4>
             <span class="wiki-author-link wiki-link">${escapeHtml(post.username)}</span>
-            ${gameBadge}
           </h4>
           <span class="wiki-post-date">${dateStr}</span>
-        </div>
       </div>
+      <br/>
+              <div class="wiki-author-details">
+          ${gameBadge}
+          
+        </div>
     </div>
     
     <div class="wiki-post-content">

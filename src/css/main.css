@@ -47,13 +47,58 @@ body {
     linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 24px 24px;
 }
+table, th, td {
+  border: 1px solid var(--border-color);
+}
 
+.strategy-guide-item-author {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+}
+
+.strategy-matrix-thead-row {
+  background-color: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+.strategy-guide-item-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+  align-self: flex-end;
+}
+.wiki-author-link{
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+.wiki-post-author-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wiki-post-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.strategy-matrix-tr{
+  text-align: center;
+  font-size: 14px;
+}
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--text-primary);
   text-transform: uppercase;
+}
+
+h4 {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 a {

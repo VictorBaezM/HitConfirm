@@ -176,10 +176,10 @@ export function renderStrategyPage(navigateCallback) {
             ${badge}
             <span class="badge strategy-badge-char">${escapeHtml(guide.character)}</span>
           </div>
-          <span class="strategy-guide-item-meta">${guide.upvotes} 🔥</span>
         </div>
         <h4 class="strategy-guide-item-title">${escapeHtml(guide.title)}</h4>
-        <div class="strategy-guide-item-author">By ${escapeHtml(guide.author)}</div>
+        <div class="strategy-guide-item-author">${escapeHtml(guide.author)}</div>
+        <span class="strategy-guide-item-meta">${guide.upvotes} 🔥</span>
       `;
 
       item.addEventListener('click', () => {
