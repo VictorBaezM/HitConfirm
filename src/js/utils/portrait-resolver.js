@@ -134,17 +134,96 @@ export async function resolvePortraitUrl(gameId, charName) {
   return '/src/images/placeholder.svg';
 }
 
+// Compact MD5 implementation for MediaWiki filename hashing path calculation
+function md5(str) {
+  var k = [], i = 0;
+  for (; i < 64; ) k[i] = 0 | (Math.abs(Math.sin(++i)) * 4294967296);
+  var s = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+  var h = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476];
+  var words = [];
+  var strLen = str.length;
+  for (i = 0; i < strLen; i++) words[i >> 2] |= (str.charCodeAt(i) & 0xff) << ((i % 4) * 8);
+  words[strLen >> 2] |= 0x80 << ((strLen % 4) * 8);
+  var wordsLen = ((strLen + 8) >> 6) * 16 + 14;
+  words[wordsLen] = strLen * 8;
+  for (var j = 0; j < wordsLen; j += 16) {
+    var a = h[0], b = h[1], c = h[2], d = h[3];
+    for (i = 0; i < 64; i++) {
+      var f, g;
+      if (i < 16) {
+        f = (b & c) | (~b & d);
+        g = i;
+      } else if (i < 32) {
+        f = (d & b) | (~d & c);
+        g = (5 * i + 1) % 16;
+      } else if (i < 48) {
+        f = b ^ c ^ d;
+        g = (3 * i + 5) % 16;
+      } else {
+        f = c ^ (b | ~d);
+        g = (7 * i) % 16;
+      }
+      var temp = d;
+      d = c;
+      c = b;
+      b = b + RotateLeft(a + f + k[i] + (words[j + g] || 0), s[(i >> 4) * 4 + (i % 4)]);
+      a = temp;
+    }
+    h[0] = (h[0] + a) | 0;
+    h[1] = (h[1] + b) | 0;
+    h[2] = (h[2] + c) | 0;
+    h[3] = (h[3] + d) | 0;
+  }
+  function RotateLeft(lValue, iShiftBits) {
+    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+  }
+  var res = "";
+  for (i = 0; i < 4; i++) {
+    for (var n = 0; n < 4; n++) {
+      var val = (h[i] >> (n * 8)) & 0xff;
+      res += (val < 16 ? "0" : "") + val.toString(16);
+    }
+  }
+  return res;
+}
+
 /**
  * Resolves direct URLs for multiple Wiki file names in a single query.
+ * Falls back to direct MD5 CDN URL construction if the MediaWiki API fails.
  * @param {string[]} filenames Semicolon-separated file names.
+ * @param {string} gameId The active game ID.
  * @returns {Promise<Record<string, string>>} Mapping of lowercased stripped filenames to direct URLs.
  */
-export async function resolveFileUrls(filenames) {
+export async function resolveFileUrls(filenames, gameId = 'ggst') {
   if (!filenames || filenames.length === 0) return {};
   
   const cleanNames = filenames.filter(Boolean).map(f => f.trim());
   if (cleanNames.length === 0) return {};
 
+  const isSuperCombo = (gameId === 'sf6');
+  const baseImgUrl = isSuperCombo 
+    ? 'https://wiki.supercombo.gg/images' 
+    : 'https://www.dustloop.com/wiki/images';
+  const baseApiUrl = isSuperCombo 
+    ? 'https://wiki.supercombo.gg/api.php' 
+    : 'https://www.dustloop.com/wiki/api.php';
+
+  const result = {};
+
+  // 1. Generate direct MD5 CDN URL fallbacks for all files
+  cleanNames.forEach(f => {
+    let wikiName = f.replace(/\s+/g, '_');
+    if (wikiName.length > 0) {
+      wikiName = wikiName.charAt(0).toUpperCase() + wikiName.slice(1);
+    }
+    const hash = md5(wikiName);
+    const c1 = hash.charAt(0);
+    const c2 = hash.substring(0, 2);
+    const titleKey = f.toLowerCase().replace(/[\s_]/g, '');
+    result[titleKey] = `${baseImgUrl}/${c1}/${c2}/${wikiName}`;
+  });
+
+  // 2. Attempt to resolve official URLs from the MediaWiki API
   const titles = cleanNames.map(f => `File:${f}`).join('|');
   try {
     const params = new URLSearchParams({
@@ -156,24 +235,23 @@ export async function resolveFileUrls(filenames) {
       origin: '*'
     });
 
-    const res = await fetch(`https://www.dustloop.com/wiki/api.php?${params.toString()}`);
-    if (!res.ok) throw new Error(`MediaWiki status ${res.status}`);
+    const res = await fetch(`${baseApiUrl}?${params.toString()}`);
+    if (res.ok) {
+      const json = await res.json();
+      const pages = json?.query?.pages || {};
 
-    const json = await res.json();
-    const pages = json?.query?.pages || {};
-    const result = {};
-
-    for (const pageId in pages) {
-      const page = pages[pageId];
-      if (page.imageinfo && page.imageinfo[0]) {
-        const titleKey = page.title.replace(/^File:/i, '').toLowerCase().replace(/[\s_]/g, '');
-        result[titleKey] = page.imageinfo[0].url;
+      for (const pageId in pages) {
+        const page = pages[pageId];
+        if (page.imageinfo && page.imageinfo[0]) {
+          const titleKey = page.title.replace(/^File:/i, '').toLowerCase().replace(/[\s_]/g, '');
+          result[titleKey] = page.imageinfo[0].url;
+        }
       }
     }
-    return result;
   } catch (e) {
-    console.error('Failed to resolve file URLs:', e);
-    return {};
+    console.warn(`MediaWiki API resolve failed for ${gameId}, using direct CDN fallbacks:`, e);
   }
+  
+  return result;
 }
 

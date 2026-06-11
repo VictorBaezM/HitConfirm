@@ -390,7 +390,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       return;
     }
 
-    resolveFileUrls(allFiles).then(urlsMap => {
+    resolveFileUrls(allFiles, gameId).then(urlsMap => {
       let imagesHtml = '';
       let hitboxesHtml = '';
       let actionFrameRendered = false;
