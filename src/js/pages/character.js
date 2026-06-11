@@ -56,6 +56,22 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     navigateCallback('hub');
   });
 
+  // Handle dismiss-on-click-outside for hitbox/hurtbox tooltips
+  const clickOutsideHandler = function (e) {
+    // If the character page is no longer in the DOM, clean up this event listener
+    if (!document.getElementById('char-header-portrait')) {
+      document.removeEventListener('click', clickOutsideHandler);
+      return;
+    }
+    if (!e.target.closest('.hitbox-helper')) {
+      document.querySelectorAll('.hitbox-helper.active').forEach(helper => {
+        helper.classList.remove('active');
+      });
+    }
+  };
+  document.addEventListener('click', clickOutsideHandler);
+
+
   // Attach portrait fallback listener
   const headerImg = document.getElementById('char-header-portrait');
   if (headerImg) {
@@ -376,7 +392,20 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           hitboxesHtml += `
             <div class="move-image-card">
               <h5 class="move-image-card-title title-hitbox">
-                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+                <span>
+                  <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+                </span>
+                <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
+                  <i class="fa-solid fa-circle-question"></i>
+                  <div class="hitbox-tooltip">
+                    <div class="tooltip-title">Box Color Guide</div>
+                    <ul>
+                      <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
+                      <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
+                      <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
+                    </ul>
+                  </div>
+                </span>
               </h5>
               <div class="move-image-wrapper">
                 <img src="${url}" alt="Hitbox Frame" class="move-details-img" onerror="this.src='/src/images/placeholder.svg';" />

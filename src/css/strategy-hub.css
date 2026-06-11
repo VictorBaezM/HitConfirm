@@ -440,6 +440,7 @@
 }
 
 .move-image-card {
+  position: relative;
   flex: 1;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -495,5 +496,82 @@
   height: 16px;
   border-width: 2px;
 }
+
+/* Hitbox & Hurtbox Tooltip Guide */
+.hitbox-helper {
+  cursor: pointer;
+  color: #88888b;
+  transition: color var(--transition-fast, 0.2s);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hitbox-helper:hover,
+.hitbox-helper.active {
+  color: var(--color-cyan, #00f0ff);
+}
+
+.hitbox-tooltip {
+  visibility: hidden;
+  position: absolute;
+  top: 40px;
+  left: 12px;
+  right: 12px;
+  background: rgba(18, 18, 22, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  color: var(--text-primary, #ffffff);
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(0, 240, 255, 0.05);
+  border-radius: 6px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity var(--transition-fast, 0.2s), visibility var(--transition-fast, 0.2s);
+  pointer-events: none;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: normal;
+}
+
+.hitbox-tooltip .tooltip-title {
+  font-family: var(--font-heading, inherit);
+  font-weight: 700;
+  color: var(--color-cyan, #00f0ff);
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  padding-bottom: 6px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.hitbox-tooltip ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hitbox-tooltip li {
+  line-height: 1.4;
+  text-align: left;
+  font-size: 0.75rem;
+}
+
+.hitbox-tooltip strong {
+  font-weight: 600;
+}
+
+.hitbox-helper:hover .hitbox-tooltip,
+.hitbox-helper.active .hitbox-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
 
 
