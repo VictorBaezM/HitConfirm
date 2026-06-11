@@ -403,6 +403,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
                       <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
                       <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
                       <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
+                      <li><strong style="color: #ffffff;">White / Absence (Invincibility):</strong> Immune to hits. Represented by white/dashed boxes or the complete disappearance of blue hurtboxes.</li>
                     </ul>
                   </div>
                 </span>
