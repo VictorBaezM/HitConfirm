@@ -30,22 +30,22 @@ const SUPPORTED_GAMES: Record<string, GameConfig> = {
   },
   dbfz: {
     cargoTable: "MoveData_DBFZ",
-    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock",
+    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,images,hitboxes",
     maxRows: 500,
   },
   dbfzce: {
     cargoTable: "MoveData_DBFZCE",
-    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock",
+    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,images,hitboxes",
     maxRows: 500,
   },
   gbvsr: {
     cargoTable: "MoveData_GBVSR",
-    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit",
+    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit,images,hitboxes",
     maxRows: 500,
   },
   dnfd: {
     cargoTable: "MoveData_DNFD",
-    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit",
+    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit,images,hitboxes",
     maxRows: 500,
   },
 };
