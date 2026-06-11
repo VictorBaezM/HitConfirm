@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node src/js/utils/video-validator.test.mjs",
+    "test": "node src/js/utils/video-validator.test.mjs && node src/js/utils/dustloop-helpers.test.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui"
   },

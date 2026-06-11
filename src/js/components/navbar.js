@@ -16,7 +16,8 @@ export function renderNavbar(activePage, navigateCallback) {
     { id: 'feed', label: 'Feed', icon: 'fa-square-rss' },
     { id: 'combos', label: 'Dojo', icon: 'fa-gamepad' },
     { id: 'builder', label: 'Builder', icon: 'fa-hammer' },
-    { id: 'strategy', label: 'Guides', icon: 'fa-book-open' }
+    { id: 'strategy', label: 'Guides', icon: 'fa-book-open' },
+    { id: 'hub', label: 'Strategy Hub', icon: 'fa-book' }
   ];
 
   let linksHtml = '';

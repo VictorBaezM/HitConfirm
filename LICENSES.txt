@@ -1,0 +1,31 @@
+LICENSES.txt
+
+# Asset Attribution & Licenses
+
+This document outlines the licensing and attribution requirements for all external data and image assets integrated into HitConfirm.
+
+## 1. Frame Data Attribution
+All frame data (startup, active, recovery, advantage, damage, guard) displayed in the Strategy Hub and Character Details pages are fetched dynamically from the **Dustloop Wiki Cargo API** (https://www.dustloop.com/).
+
+- **Source:** Dustloop Wiki Database (Cargo Table Schema)
+- **License:** All text content on the Dustloop Wiki is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)** license.
+- **Attribution:** We thank the editors and contributors of the Dustloop community for compiling and maintaining this invaluable resource for the fighting game community (FGC).
+
+## 2. Character Portrait & Game Logo Images
+Game logos and character portraits used on character cards and header sections are originally owned by their respective game developers and publishers.
+
+- **Arc System Works (Guilty Gear -Strive-, Dragon Ball FighterZ, Granblue Fantasy Versus: Rising, DNF Duel):**
+  - Character designs, portraits, and game logo assets are copyrights and trademarks of Arc System Works Co., Ltd., Bandai Namco Entertainment, Cygames, and Nexon.
+  - Sourced via Dustloop Wiki under fair use for community-based educational and reference guides.
+- **Street Fighter 6:**
+  - Assets owned by Capcom Co., Ltd.
+- **Tekken 8:**
+  - Assets owned by Bandai Namco Entertainment Inc.
+- **Super Smash Bros. Ultimate:**
+  - Assets owned by Nintendo Co., Ltd.
+
+These assets are used purely for non-commercial, educational, and reference purposes under Fair Use. HitConfirm does not claim ownership over any of these logos or character assets.
+
+## 3. SVG Placeholder Assets
+The default controller placeholder image (`/src/images/placeholder.svg`) was custom-created by the HitConfirm development team.
+- **License:** Released under the **MIT License**.

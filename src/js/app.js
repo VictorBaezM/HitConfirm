@@ -7,6 +7,8 @@ import { renderBuilderPage } from './pages/builder.js';
 import { renderStrategyPage } from './pages/strategy.js';
 import { renderProfilePage } from './pages/profile.js';
 import { openAuthModal } from './pages/auth.js';
+import { renderCharacterPage } from './pages/character.js';
+import { renderHubPage } from './pages/hub.js';
 
 // Global application state
 let currentPage = 'feed';
@@ -61,6 +63,12 @@ export function navigate(pageId, options = {}) {
           break;
         case 'profile':
           renderProfilePage(navigate, pageOptions);
+          break;
+        case 'character':
+          renderCharacterPage(navigate, pageOptions);
+          break;
+        case 'hub':
+          renderHubPage(navigate);
           break;
         default:
           renderFeedPage(navigate);

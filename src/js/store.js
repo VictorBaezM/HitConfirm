@@ -1,5 +1,7 @@
 /* LocalStorage State Manager (HitConfirm Database) */
 import { supabase } from './supabase.js';
+import { dustloopService } from './services/dustloopService.js';
+import { cache } from './cache.js';
 
 
 const DEFAULT_GAMES = {
@@ -20,6 +22,30 @@ const DEFAULT_GAMES = {
     name: 'Guilty Gear -Strive-',
     characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Zato-1'],
     notationType: 'gg'
+  },
+  dbfz: {
+    id: 'dbfz',
+    name: 'Dragon Ball FighterZ',
+    characters: ['Android 16', 'Android 17', 'Android 18', 'Android 21', 'Android 21 (Lab Coat)', 'Bardock', 'Beerus', 'Broly', 'Broly (DBS)', 'Captain Ginyu', 'Cell', 'Cooler', 'Frieza', 'Gogeta (SS4)', 'Gogeta (SSGSS)', 'Gohan (Adult)', 'Gohan (Teen)', 'Goku', 'Goku (GT)', 'Goku (SS4, DAIMA)', 'Goku (SSGSS)', 'Goku (Super Saiyan)', 'Goku (Ultra Instinct)', 'Goku Black', 'Gotenks', 'Hit', 'Janemba', 'Jiren', 'Kefla', 'Kid Buu', 'Krillin', 'Majin Buu', 'Master Roshi', 'Nappa', 'Piccolo', 'Super Baby 2', 'Tien', 'Trunks', 'Vegeta', 'Vegeta (SSGSS)', 'Vegeta (Super Saiyan)', 'Vegito (SSGSS)', 'Videl', 'Yamcha', 'Zamasu (Fused)'],
+    notationType: 'anime'
+  },
+  dbfzce: {
+    id: 'dbfzce',
+    name: 'Dragon Ball FighterZ (CE)',
+    characters: ['Adult Gohan', 'Android 16', 'Android 17', 'Android 18', 'Android 21', 'Bardock', 'Beerus', 'Broly', 'Captain Ginyu', 'Cell', 'Cooler', 'DBS Broly', 'Frieza', 'Fused Zamasu', 'Goku', 'Goku Black', 'Gotenks', 'GT Goku', 'Hit', 'Janemba', 'Jiren', 'Kefla', 'Kid Buu', 'Krillin', 'Majin Buu', 'Master Roshi', 'Nappa', 'Piccolo', 'SS Goku', 'SS Vegeta', 'SS4 Gogeta', 'SSB Gogeta', 'SSB Goku', 'SSB Vegeta', 'SSB Vegito', 'Super Baby 2', 'Teen Gohan', 'Tien', 'Trunks', 'UI Goku', 'Vegeta', 'Videl', 'Yamcha'],
+    notationType: 'anime'
+  },
+  gbvsr: {
+    id: 'gbvsr',
+    name: 'Granblue Fantasy Versus: Rising',
+    characters: ['2B', 'Anila', 'Anre', 'Avatar Belial', 'Beatrix', 'Beelzebub', 'Belial', 'Cagliostro', 'Charlotta', 'Djeeta', 'Djeeta (EX)', 'Eustace', 'Ferry', 'Galleon', 'Gran', 'Gran (EX)', 'Grimnir', 'Ilsa', 'Katalina', 'Ladiva', 'Lancelot', 'Lowain', 'Lucilius', 'Meg', 'Metera', 'Narmaya', 'Narmaya (EX)', 'Nier', 'Percival', 'Sandalphon', 'Seox', 'Siegfried', 'Soriz', 'Vane', 'Vaseraga', 'Versusia', 'Vikala', 'Vira', 'Wilnas', 'Yuel', 'Zeta', 'Zooey'],
+    notationType: 'anime'
+  },
+  dnfd: {
+    id: 'dnfd',
+    name: 'DNF Duel',
+    characters: ['Battle Mage', 'Berserker', 'Brawler', 'Crusader', 'Dragon Knight', 'Enchantress', 'Ghostblade', 'Grappler', 'Hitman', 'Inquisitor', 'Kunoichi', 'Launcher', 'Lost Warrior', 'Monk', 'Nen Master', 'Ranger', 'Spectre', 'Striker', 'Swift Master', 'Troubleshooter', 'Vanguard'],
+    notationType: 'anime'
   },
   ssbu: {
     id: 'ssbu',
@@ -348,7 +374,7 @@ class Store {
         notation_type: g.notationType
       };
     });
-    await supabase.from('games').insert(gamesToSeed);
+    await supabase.from('games').upsert(gamesToSeed);
     
     console.log('Seeding complete.');
   }
@@ -366,7 +392,7 @@ class Store {
       } else {
         // Also check if games table needs seeding (case where users exist but games table is new/empty)
         const gamesCount = await supabase.from('games').select('id', { count: 'exact', head: true });
-        if (gamesCount.count === 0) {
+        if (gamesCount.count < Object.keys(DEFAULT_GAMES).length) {
           const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
             return {
               id: g.id,
@@ -375,7 +401,7 @@ class Store {
               notation_type: g.notationType
             };
           });
-          await supabase.from('games').insert(gamesToSeed);
+          await supabase.from('games').upsert(gamesToSeed);
         }
       }
 
@@ -726,6 +752,44 @@ class Store {
       videoUrl: comboData.videoUrl || ''
     });
 
+    return { success: true, combo: newCombo };
+  }
+
+  /**
+   * Saves a new combo to Supabase without automatically creating a corresponding timeline post.
+   * @param {Object} comboData - Raw metadata of the new combo.
+   * @returns {Promise<Object>} Object containing success status and the new combo object.
+   */
+  async createComboWithoutPost(comboData) {
+    const user = this.getCurrentUser();
+    if (!user) return { success: false, error: 'Must be logged in to save combos.' };
+
+    const newCombo = {
+      id: 'c_' + Date.now(),
+      userId: user.id,
+      username: user.username,
+      avatarColor: user.avatarColor,
+      game: comboData.game,
+      character: comboData.character,
+      title: comboData.title,
+      notation: comboData.notation,
+      damage: comboData.damage || 'N/A',
+      meter: comboData.meter || 'None',
+      difficulty: comboData.difficulty || 'medium',
+      description: comboData.description || '',
+      upvotes: 0,
+      upvotedBy: [],
+      comments: [],
+      videoUrl: comboData.videoUrl || '',
+      createdAt: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('combos').insert(mapComboToDb(newCombo));
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    this.combos.unshift(newCombo);
     return { success: true, combo: newCombo };
   }
 
@@ -1085,6 +1149,50 @@ class Store {
     strategy.upvotedBy = upvotedBy;
     strategy.upvotes = upvotes;
     return { success: true, upvotes, upvoted: index === -1 };
+  }
+
+  /**
+   * Fetches frame data for a given game from Supabase or localStorage cache.
+   * @param {string} gameId
+   * @returns {Promise<Array<Object>>}
+   */
+  async fetchDustloopData(gameId) {
+    const cached = cache.get(`dustloop_${gameId}`, 60 * 60 * 1000); // 1 hour
+    if (cached) return cached;
+
+    try {
+      const { data, error } = await supabase
+        .from('dustloop_cache')
+        .select('data')
+        .eq('game_id', gameId)
+        .single();
+
+      if (error) throw error;
+      if (data && data.data) {
+        // Check if game is unsupported
+        if (data.data._unsupported) {
+          return data.data;
+        }
+        cache.set(`dustloop_${gameId}`, data.data);
+        return data.data;
+      }
+    } catch (e) {
+      console.warn(`Supabase fetch failed for ${gameId}, attempting stale cache:`, e);
+      // Retrieve even if stale (ignore maxAge) as fallback
+      const stale = cache.get(`dustloop_${gameId}`);
+      if (stale) return stale;
+    }
+    return [];
+  }
+
+  /**
+   * Gets cached frame data directly from local storage.
+   * @param {string} gameId
+   * @param {number} maxAgeMs
+   * @returns {Array<Object>|null}
+   */
+  getCachedDustloopData(gameId, maxAgeMs) {
+    return cache.get(`dustloop_${gameId}`, maxAgeMs);
   }
 }
 

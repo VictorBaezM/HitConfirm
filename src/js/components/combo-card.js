@@ -158,7 +158,7 @@ export function renderComboCard(combo, navigateCallback) {
       window.openAuthModal('login', navigateCallback);
       return;
     }
-    const result = await store.saveCombo(combo.id);
+    const result = await store.toggleSaveCombo(combo.id);
     if (result.success) {
       if (result.saved) {
         saveBtn.classList.add('active');

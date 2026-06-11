@@ -28,6 +28,16 @@ export function renderPostCard(post, navigateCallback) {
     }
   }
 
+  let saveClass = '';
+  if (currentUser && notation) {
+    const matchingCombo = store.getCombos().find(function (c) {
+      return c.notation === notation;
+    });
+    if (matchingCombo && currentUser.savedCombos && currentUser.savedCombos.includes(matchingCombo.id)) {
+      saveClass = 'active';
+    }
+  }
+
   // Parse video iframe
   let videoHtml = '';
   if (post.videoUrl) {
@@ -115,6 +125,16 @@ export function renderPostCard(post, navigateCallback) {
       </button>
       <span class="wiki-upvote-text upvote-count">${post.upvotes} 🔥</span>
       
+      ${notation ? `
+        <button class="wiki-action-btn btn-save ${saveClass}" title="Save to Dojo">
+          <i class="fa-regular fa-bookmark"></i>
+        </button>
+
+        <button class="wiki-action-btn btn-copy" title="Copy Notation">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      ` : ''}
+      
       <button class="wiki-action-btn btn-comment" title="Toggle comments" style="margin-left: auto;">
         <i class="fa-regular fa-comment"></i>
       </button>
@@ -153,6 +173,64 @@ export function renderPostCard(post, navigateCallback) {
       window.showToast(result.error || 'Failed to update reaction.');
     }
   });
+
+  if (notation) {
+    const saveBtn = card.querySelector('.btn-save');
+    saveBtn.addEventListener('click', async function () {
+      if (!store.getCurrentUser()) {
+        window.openAuthModal('login', navigateCallback);
+        return;
+      }
+      
+      let matchingCombo = store.getCombos().find(function (c) {
+        return c.notation === notation;
+      });
+
+      if (!matchingCombo) {
+        const charName = parseCharacterFromPost(post);
+        const titleText = parseTitleFromPost(post);
+        
+        const comboData = {
+          game: post.game || 'ggst',
+          character: charName,
+          title: titleText,
+          notation: notation,
+          damage: 'N/A',
+          meter: 'None',
+          difficulty: 'medium',
+          description: post.content || '',
+          videoUrl: post.videoUrl || ''
+        };
+        
+        const createResult = await store.createComboWithoutPost(comboData);
+        if (createResult.success) {
+          matchingCombo = createResult.combo;
+        } else {
+          window.showToast(createResult.error || 'Failed to save combo to Dojo.');
+          return;
+        }
+      }
+
+      const result = await store.toggleSaveCombo(matchingCombo.id);
+      if (result.success) {
+        if (result.saved) {
+          saveBtn.classList.add('active');
+          window.showToast('Combo saved to your Dojo.');
+        } else {
+          saveBtn.classList.remove('active');
+          window.showToast('Combo removed from your Dojo.');
+        }
+      } else {
+        window.showToast(result.error || 'Failed to update bookmark.');
+      }
+    });
+
+    const copyBtn = card.querySelector('.btn-copy');
+    copyBtn.addEventListener('click', function () {
+      navigator.clipboard.writeText(notation);
+      window.showToast('Combo notation copied to clipboard.');
+    });
+  }
 
   const commentBtn = card.querySelector('.btn-comment');
   const panel = card.querySelector('.wiki-comments-panel');
@@ -230,4 +308,28 @@ function formatPostText(text) {
   formatted = formatted.replace(/`([^`]+)`/g, '<code class="post-code-inline">$1</code>');
   
   return formatted;
+}
+
+function parseCharacterFromPost(post) {
+  if (!post.game) return 'All';
+  const games = store.getGames();
+  const gameObj = games[post.game];
+  if (!gameObj || !gameObj.characters) return 'All';
+  
+  const contentUpper = (post.content || '').toUpperCase();
+  for (let i = 0; i < gameObj.characters.length; i++) {
+    const charName = gameObj.characters[i];
+    const normalizedChar = charName.toUpperCase();
+    const noSpecialChar = normalizedChar.replace(/[-.\s]/g, '');
+    if (contentUpper.includes(normalizedChar) || contentUpper.includes(noSpecialChar)) {
+      return charName;
+    }
+  }
+  return 'All';
+}
+
+function parseTitleFromPost(post) {
+  const quoteMatch = (post.content || '').match(/"([^"]+)"/);
+  if (quoteMatch) return quoteMatch[1];
+  return 'Combo by ' + post.username;
 }

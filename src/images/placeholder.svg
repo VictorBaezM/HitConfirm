@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200" width="150" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e24" />
+      <stop offset="100%" stop-color="#121214" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff005b" />
+      <stop offset="100%" stop-color="#00f0ff" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)" rx="8" />
+  <rect width="100%" height="100%" fill="none" stroke="url(#accent)" stroke-width="2" rx="8" opacity="0.3" />
+  
+  <!-- Controller Icon -->
+  <path d="M45,90 C35,90 25,98 25,115 C25,130 35,145 50,145 C58,145 65,138 75,138 C85,138 92,145 100,145 C115,145 125,130 125,115 C125,98 115,90 105,90 L45,90 Z" fill="#2d2d38" />
+  <circle cx="48" cy="115" r="5" fill="#4a4a5a" />
+  <circle cx="62" cy="115" r="5" fill="#4a4a5a" />
+  <circle cx="102" cy="110" r="4" fill="#ff005b" />
+  <circle cx="92" cy="120" r="4" fill="#00f0ff" />
+  <circle cx="102" cy="120" r="4" fill="#ffca00" />
+  
+  <text x="75" y="65" font-family="monospace, sans-serif" font-size="12" font-weight="bold" fill="#4a4a5a" text-anchor="middle" letter-spacing="1">HITCONFIRM</text>
+  <text x="75" y="170" font-family="sans-serif" font-size="10" font-weight="bold" fill="#6a6a7a" text-anchor="middle">NO PORTRAIT</text>
+</svg>

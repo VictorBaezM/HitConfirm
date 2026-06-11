@@ -42,6 +42,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       <div class="tabs dojo-tabs-wrapper">
         <div class="tab active" id="dojo-tab-all">Browse Dojo</div>
         <div class="tab" id="dojo-tab-following">Following Dojo</div>
+        <div class="tab" id="dojo-tab-strategy">Strategy Hub</div>
       </div>
 
       <!-- Filters Panel -->
@@ -256,10 +257,12 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   // Attach Dojo Tab listeners
   const tabAll = document.getElementById('dojo-tab-all');
   const tabFollowing = document.getElementById('dojo-tab-following');
+  const tabStrategy = document.getElementById('dojo-tab-strategy');
   
   tabAll.addEventListener('click', function () {
     tabAll.classList.add('active');
     tabFollowing.classList.remove('active');
+    tabStrategy.classList.remove('active');
     activeDojoTab = 'all';
     drawList();
   });
@@ -267,8 +270,13 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   tabFollowing.addEventListener('click', function () {
     tabFollowing.classList.add('active');
     tabAll.classList.remove('active');
+    tabStrategy.classList.remove('active');
     activeDojoTab = 'following';
     drawList();
+  });
+
+  tabStrategy.addEventListener('click', function () {
+    navigateCallback('hub');
   });
 
   // Attach filter event handlers

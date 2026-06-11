@@ -168,3 +168,61 @@ test('sharing a combo from builder page automatically creates feed post with vis
   await expect(sequence).toContainText('•P');
 });
 
+test('feed post with notation displays save and copy buttons and supports toggle bookmark and clipboard copy', async ({ page, context }) => {
+  await injectFakeUser(page);
+
+  // Grant clipboard access
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await page.goto('/');
+  await page.waitForSelector('text=Share a Strategic Thought or Clip', { timeout: 15_000 });
+
+  // Fill in the post details
+  await page.fill('.post-input', 'Test feed actions');
+  await page.selectOption('#post-game-select', 'sf6');
+  await page.selectOption('#post-char-select', 'Ryu');
+  await page.fill('#post-notation-input', '5HP > 236KK > WS');
+
+  // Submit the post
+  await page.click('#btn-submit-post');
+
+  // Wait for post panel
+  const postCard = page.locator('.wiki-post-panel').first();
+  await expect(postCard).toBeVisible();
+
+  // Verify save and copy buttons are present
+  const saveBtn = postCard.locator('.btn-save');
+  const copyBtn = postCard.locator('.btn-copy');
+  await expect(saveBtn).toBeVisible();
+  await expect(copyBtn).toBeVisible();
+
+  // Verify save is not active
+  await expect(saveBtn).not.toHaveClass(/active/);
+
+  // Click save button (should save combo and bookmark it)
+  await saveBtn.click();
+  const toast = page.locator('#toast-notification');
+  await expect(toast).toBeVisible({ timeout: 5_000 });
+  await expect(toast).toContainText('Combo saved to your Dojo.');
+
+  // Verify save button is now active
+  await expect(saveBtn).toHaveClass(/active/);
+
+  // Click save button again (should remove bookmark)
+  await saveBtn.click();
+  await expect(toast).toBeVisible({ timeout: 5_000 });
+  await expect(toast).toContainText('Combo removed from your Dojo.');
+
+  // Verify save is no longer active
+  await expect(saveBtn).not.toHaveClass(/active/);
+
+  // Click copy button
+  await copyBtn.click();
+  await expect(toast).toBeVisible({ timeout: 5_000 });
+  await expect(toast).toContainText('Combo notation copied to clipboard.');
+
+  // Read from clipboard and assert it matches the notation
+  const clipboardText = await page.evaluate(async () => navigator.clipboard.readText());
+  expect(clipboardText).toBe('5HP > 236KK > WS');
+});
+
