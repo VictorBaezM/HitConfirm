@@ -20,7 +20,7 @@ const DEFAULT_GAMES = {
   ggst: {
     id: 'ggst',
     name: 'Guilty Gear -Strive-',
-    characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Zato-1'],
+    characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Jam Kuradoberi', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'Lucy', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Queen Dizzy', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Unika', 'Venom', 'Zato-1'],
     notationType: 'gg'
   },
   dbfz: {
@@ -390,19 +390,16 @@ class Store {
       if (usersCount.count === 0) {
         await this.seedSupabase();
       } else {
-        // Also check if games table needs seeding (case where users exist but games table is new/empty)
-        const gamesCount = await supabase.from('games').select('id', { count: 'exact', head: true });
-        if (gamesCount.count < Object.keys(DEFAULT_GAMES).length) {
-          const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
-            return {
-              id: g.id,
-              name: g.name,
-              characters: g.characters,
-              notation_type: g.notationType
-            };
-          });
-          await supabase.from('games').upsert(gamesToSeed);
-        }
+        // Sync the games config to keep the character roster updated
+        const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
+          return {
+            id: g.id,
+            name: g.name,
+            characters: g.characters,
+            notation_type: g.notationType
+          };
+        });
+        await supabase.from('games').upsert(gamesToSeed);
       }
 
       // 2. Fetch all tables in parallel including games
