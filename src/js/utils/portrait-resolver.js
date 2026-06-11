@@ -26,7 +26,7 @@ export function getWikiFilename(gameId, charName) {
   // Manual character overrides for special names
   const overrides = {
     ggst: {
-      'A.B.A': 'ABA',
+      'A.B.A': 'A.B.A',
       'Asuka R#': 'Asuka_R',
       'Bedman?': 'Bedman',
       'Jack-O': 'Jack-O',

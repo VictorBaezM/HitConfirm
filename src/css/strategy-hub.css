@@ -171,6 +171,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  object-position: top; /* Align to top to prevent cutting off heads/faces */
   background-color: rgba(0, 0, 0, 0.2);
   filter: contrast(1.05) saturate(1.1);
   transition: filter 0.2s ease;
