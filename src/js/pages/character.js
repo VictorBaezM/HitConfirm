@@ -349,8 +349,34 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     const imagesStr = move.images || '';
     const hitboxesStr = move.hitboxes || '';
 
-    const imageFiles = imagesStr.split(';').map(f => f.trim()).filter(Boolean);
-    const hitboxFiles = hitboxesStr.split(';').map(f => f.trim()).filter(Boolean);
+    let imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+    let hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+
+    // Guess fallback files if data is missing from Cargo
+    if (move.input) {
+      const gamePrefix = gameId.toUpperCase();
+      const charClean = charName.replace(/\s+/g, '_');
+      const inputClean = move.input.replace(/\s+/g, '');
+      const moveNameClean = (move.name || '').replace(/\s+/g, '_');
+
+      if (imageFiles.length === 0) {
+        imageFiles.push(`${gamePrefix}_${charClean}_${inputClean}.png`);
+        imageFiles.push(`${gamePrefix} ${charName} ${move.input}.png`);
+        if (moveNameClean) {
+          imageFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}.png`);
+          imageFiles.push(`${gamePrefix} ${charName} ${move.name}.png`);
+        }
+      }
+
+      if (hitboxFiles.length === 0) {
+        hitboxFiles.push(`${gamePrefix}_${charClean}_${inputClean}_Hitbox.png`);
+        hitboxFiles.push(`${gamePrefix} ${charName} ${move.input} Hitbox.png`);
+        if (moveNameClean) {
+          hitboxFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}_Hitbox.png`);
+          hitboxFiles.push(`${gamePrefix} ${charName} ${move.name} Hitbox.png`);
+        }
+      }
+    }
 
     const allFiles = [...imageFiles, ...hitboxFiles];
 
@@ -367,11 +393,14 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     resolveFileUrls(allFiles).then(urlsMap => {
       let imagesHtml = '';
       let hitboxesHtml = '';
+      let actionFrameRendered = false;
+      let hitboxFrameRendered = false;
 
       imageFiles.forEach(file => {
         const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
         const url = urlsMap[urlKey];
-        if (url) {
+        if (url && !actionFrameRendered) {
+          actionFrameRendered = true;
           imagesHtml += `
             <div class="move-image-card">
               <h5 class="move-image-card-title title-action">
@@ -388,7 +417,8 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       hitboxFiles.forEach(file => {
         const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
         const url = urlsMap[urlKey];
-        if (url) {
+        if (url && !hitboxFrameRendered) {
+          hitboxFrameRendered = true;
           hitboxesHtml += `
             <div class="move-image-card">
               <h5 class="move-image-card-title title-hitbox">
