@@ -126,4 +126,26 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(page.locator('.unsupported-notice h3')).toHaveText('Phase 2 Expansion');
     await expect(page.locator('.unsupported-notice')).toContainText('coming in Phase 2');
   });
+
+  test('should load DNF Duel character frame data successfully', async ({ page }) => {
+    // 1. Go to Strategy Hub
+    await page.click('.nav-link[data-page="hub"]');
+
+    // 2. Search for DNF Duel character Grappler
+    const searchInput = page.locator('#hub-search');
+    await searchInput.fill('Grappler');
+
+    const card = page.locator('#section-dnfd .character-card:has-text("Grappler")');
+    await expect(card).toBeVisible();
+    await card.click();
+
+    // 3. Verify character page header
+    await expect(page.locator('.character-header h1')).toHaveText('Grappler');
+    await expect(page.locator('.character-portrait-large')).toBeVisible();
+
+    // 4. Wait for frame data table to load
+    const frameTable = page.locator('#data-table-el');
+    await expect(frameTable).toBeVisible();
+    await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
+  });
 });
