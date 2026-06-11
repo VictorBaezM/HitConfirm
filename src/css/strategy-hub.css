@@ -250,7 +250,9 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 4px;
   border: 2px solid var(--color-primary, #ff005b);
   box-shadow: 0 0 16px rgba(255, 0, 91, 0.3);
 }
