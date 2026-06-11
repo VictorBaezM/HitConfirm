@@ -4,6 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
+import { resolvePortraitUrl, resolveFileUrls } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -26,7 +27,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       
       <div class="character-header flex justify-between items-end gap-4 mt-6 pb-6">
         <div class="flex items-center gap-4">
-          <img src="${portraitUrl}" alt="${charName}" class="character-portrait-large" onerror="this.onerror=null; this.src='/src/images/placeholder.svg';" />
+          <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" />
           <div>
             <h1 class="gradient-text m-0">${charName}</h1>
             <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
@@ -54,6 +55,25 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   document.getElementById('btn-back').addEventListener('click', function () {
     navigateCallback('hub');
   });
+
+  // Attach portrait fallback listener
+  const headerImg = document.getElementById('char-header-portrait');
+  if (headerImg) {
+    let hasTriedWiki = false;
+    headerImg.onerror = function () {
+      if (!hasTriedWiki) {
+        hasTriedWiki = true;
+        resolvePortraitUrl(gameId, charName).then(url => {
+          headerImg.src = url;
+        }).catch(() => {
+          headerImg.src = '/src/images/placeholder.svg';
+        });
+      } else {
+        headerImg.onerror = null;
+        headerImg.src = '/src/images/placeholder.svg';
+      }
+    };
+  }
 
   // Load the frame data
   store.fetchDustloopData(gameId).then(data => {
@@ -122,7 +142,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       <div class="table-controls">
         <div class="search-wrapper w-full md:w-72 relative">
           <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
-          <input type="text" id="table-search" class="form-input pl-10 w-full" placeholder="Search moves by name or input..." value="${searchQuery}" />
+          <input type="text" id="table-search" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
         </div>
       </div>
 
@@ -162,10 +182,10 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     });
 
     // 2. Map columns dynamically based on keys present in the first row
-    // We omit 'chara' / 'character' from the table since it's redundant
+    // We omit 'chara' / 'character', 'images', and 'hitboxes' from columns
     const allKeys = processedRows.length > 0 ? Object.keys(processedRows[0]) : [];
     const fieldsToRender = allKeys.filter(key => 
-      !['chara', 'character', 'Char'].includes(key)
+      !['chara', 'character', 'Char', 'images', 'hitboxes'].includes(key)
     );
 
     // Map fields to friendly header labels
@@ -226,7 +246,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         </tr>
       `;
     } else {
-      bodyHtml = processedRows.map(row => {
+      bodyHtml = processedRows.map((row, idx) => {
         const cells = fieldsToRender.map(field => {
           const rawVal = row[field];
           const cleanVal = cleanDustloopValue(rawVal);
@@ -237,7 +257,21 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           }
           return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
         }).join('');
-        return `<tr class="frame-data-tr">${cells}</tr>`;
+        
+        return `
+          <tr class="frame-data-tr clickable-row" data-index="${idx}">
+            ${cells}
+          </tr>
+          <tr class="frame-details-tr hidden" id="details-row-${idx}">
+            <td colspan="${fieldsToRender.length}" class="p-0">
+              <div class="move-details-expanded p-4" id="details-content-${idx}">
+                <div class="loading-images text-center text-muted p-4">
+                  <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading move images...
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
       }).join('');
     }
 
@@ -252,7 +286,8 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     // 6. Attach sort click handlers to the new headers
     tableEl.querySelectorAll('.frame-data-th').forEach(th => {
-      th.addEventListener('click', () => {
+      th.addEventListener('click', (e) => {
+        e.stopPropagation();
         const field = th.getAttribute('data-field');
         if (sortByField === field) {
           sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
@@ -262,6 +297,116 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         }
         renderRows(filteredRows);
       });
+    });
+
+    // 7. Attach click handlers to row expansion
+    tableEl.querySelectorAll('.clickable-row').forEach(rowEl => {
+      rowEl.addEventListener('click', () => {
+        const idx = parseInt(rowEl.getAttribute('data-index'), 10);
+        const detailsRow = document.getElementById(`details-row-${idx}`);
+        if (!detailsRow) return;
+
+        const isCollapsed = detailsRow.classList.contains('hidden');
+        
+        // Collapse all other details rows first
+        tableEl.querySelectorAll('.frame-details-tr').forEach(r => r.classList.add('hidden'));
+        tableEl.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('expanded'));
+
+        if (isCollapsed) {
+          detailsRow.classList.remove('hidden');
+          rowEl.classList.add('expanded');
+          
+          // Load images for this move dynamically
+          loadMoveImages(processedRows[idx], idx);
+        }
+      });
+    });
+  }
+
+  // Helper to load move images asynchronously
+  function loadMoveImages(move, index) {
+    const contentContainer = document.getElementById(`details-content-${index}`);
+    if (!contentContainer) return;
+
+    if (contentContainer.getAttribute('data-loaded') === 'true') return;
+
+    const imagesStr = move.images || '';
+    const hitboxesStr = move.hitboxes || '';
+
+    const imageFiles = imagesStr.split(';').map(f => f.trim()).filter(Boolean);
+    const hitboxFiles = hitboxesStr.split(';').map(f => f.trim()).filter(Boolean);
+
+    const allFiles = [...imageFiles, ...hitboxFiles];
+
+    if (allFiles.length === 0) {
+      contentContainer.innerHTML = `
+        <div class="text-center text-muted p-4">
+          <i class="fa-solid fa-image-slash mr-2"></i> No move images or hitboxes available for this move.
+        </div>
+      `;
+      contentContainer.setAttribute('data-loaded', 'true');
+      return;
+    }
+
+    resolveFileUrls(allFiles).then(urlsMap => {
+      let imagesHtml = '';
+      let hitboxesHtml = '';
+
+      imageFiles.forEach(file => {
+        const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+        const url = urlsMap[urlKey];
+        if (url) {
+          imagesHtml += `
+            <div class="move-image-card">
+              <h5 class="move-image-card-title title-action">
+                <i class="fa-solid fa-gamepad"></i> Action Frame
+              </h5>
+              <div class="move-image-wrapper">
+                <img src="${url}" alt="Action Frame" class="move-details-img" onerror="this.src='/src/images/placeholder.svg';" />
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      hitboxFiles.forEach(file => {
+        const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+        const url = urlsMap[urlKey];
+        if (url) {
+          hitboxesHtml += `
+            <div class="move-image-card">
+              <h5 class="move-image-card-title title-hitbox">
+                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+              </h5>
+              <div class="move-image-wrapper">
+                <img src="${url}" alt="Hitbox Frame" class="move-details-img" onerror="this.src='/src/images/placeholder.svg';" />
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if (!imagesHtml && !hitboxesHtml) {
+        contentContainer.innerHTML = `
+          <div class="text-center text-muted p-4">
+            <i class="fa-solid fa-triangle-exclamation mr-2"></i> Failed to resolve file links from wiki.
+          </div>
+        `;
+      } else {
+        contentContainer.innerHTML = `
+          <div class="move-images-flex">
+            ${imagesHtml}
+            ${hitboxesHtml}
+          </div>
+        `;
+      }
+      contentContainer.setAttribute('data-loaded', 'true');
+    }).catch(err => {
+      contentContainer.innerHTML = `
+        <div class="text-center text-danger p-4">
+          <i class="fa-solid fa-triangle-exclamation mr-2"></i> Error loading images: ${err.message || err}
+        </div>
+      `;
     });
   }
 }
@@ -275,8 +420,6 @@ function getGameName(id) {
   return game ? game.name : id.toUpperCase();
 }
 
-// Helpers imported from ../utils/dustloop-helpers.js
-
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -286,3 +429,4 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+

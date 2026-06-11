@@ -25,3 +25,10 @@ playwright/.local-browsers/
 
 # Deployment and scripts
 deploy.py
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+

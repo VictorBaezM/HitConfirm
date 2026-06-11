@@ -11,10 +11,18 @@ const FAKE_USER = {
   rank: 'Gold',
   following: [],
   followers: [],
+  savedCombos: [],
   bio: '',
 };
 
 async function injectFakeUser(page) {
+  page.on('console', msg => {
+    console.log(`[E2E BROWSER CONSOLE ${msg.type().toUpperCase()}]: ${msg.text()}`);
+  });
+  page.on('pageerror', err => {
+    console.error(`[E2E BROWSER ERROR]: ${err.stack || err.message}`);
+  });
+
   await page.route('**/src/js/supabase.js', route => {
     route.fulfill({
       contentType: 'text/javascript',

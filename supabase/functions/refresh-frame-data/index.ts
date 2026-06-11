@@ -25,7 +25,7 @@ interface GameConfig {
 const SUPPORTED_GAMES: Record<string, GameConfig> = {
   ggst: {
     cargoTable: "MoveData_GGST",
-    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit",
+    fields: "chara,input,name,damage,guard,startup,active,recovery,onBlock,onHit,images,hitboxes",
     maxRows: 500,
   },
   dbfz: {
@@ -104,11 +104,11 @@ async function fetchAllPages(cfg: GameConfig): Promise<unknown[]> {
 Deno.serve(async (_req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseKey) {
       return new Response(
-        JSON.stringify({ error: "Missing SUPABASE_URL or SERVICE_ROLE_KEY env vars" }),
+        JSON.stringify({ error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars" }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }

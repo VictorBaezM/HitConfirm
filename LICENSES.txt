@@ -24,8 +24,15 @@ Game logos and character portraits used on character cards and header sections a
 - **Super Smash Bros. Ultimate:**
   - Assets owned by Nintendo Co., Ltd.
 
-These assets are used purely for non-commercial, educational, and reference purposes under Fair Use. HitConfirm does not claim ownership over any of these logos or character assets.
+These assets are used purely for non-commercial, educational, and reference purposes under Fair Use. HitConfirm does not claim ownership over any of these logos, character designs, or hitbox renders.
 
-## 3. SVG Placeholder Assets
+## 3. Local Custom Character Portraits
+To maintain a high-quality, cohesive dark neon aesthetic, the core character portraits (`Sol_Badguy.png`, `Ryu.png`, `Kazuya.png`, `Mario.png` under `/src/images/characters/`) were custom illustrated using the Google DeepMind AI agent, staying strictly faithful to the original, official visual designs of the copyright holders.
+
+## 4. Move Action & Hitbox Images
+Move-specific graphics and hitbox/hurtbox screenshots displayed in the expandable table accordion are loaded dynamically from the Dustloop Wiki database. All original character animations, game graphics, and sprite assets remain the copyrights and trademarks of Arc System Works Co., Ltd. and their respective game developers.
+
+## 5. SVG Placeholder Assets
 The default controller placeholder image (`/src/images/placeholder.svg`) was custom-created by the HitConfirm development team.
 - **License:** Released under the **MIT License**.
+

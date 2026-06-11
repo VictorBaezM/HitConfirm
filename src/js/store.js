@@ -880,7 +880,7 @@ class Store {
     const user = this.getCurrentUser();
     if (!user) return { success: false, error: 'Log in to bookmark combos!' };
 
-    const savedCombos = [...user.savedCombos];
+    const savedCombos = [...(user.savedCombos || [])];
     const index = savedCombos.indexOf(comboId);
     let saved = false;
 

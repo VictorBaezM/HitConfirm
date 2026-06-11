@@ -82,6 +82,24 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await commandHeader.click();
     await expect(commandHeader).toHaveClass(/sorted-desc/);
 
+    // 7.5. Test inline row expansion (accordion)
+    await tableSearch.fill(''); // clear search
+    const firstMoveRow = frameTable.locator('.clickable-row').first();
+    await expect(firstMoveRow).toBeVisible();
+    
+    // Click to expand row
+    await firstMoveRow.click();
+    await expect(firstMoveRow).toHaveClass(/expanded/);
+    
+    // Verify detail row is visible
+    const detailsRow = frameTable.locator('.frame-details-tr').first();
+    await expect(detailsRow).not.toHaveClass(/hidden/);
+
+    // Click again to collapse
+    await firstMoveRow.click();
+    await expect(firstMoveRow).not.toHaveClass(/expanded/);
+
+
     // 8. Go back to Strategy Hub
     const backBtn = page.locator('#btn-back');
     await expect(backBtn).toBeVisible();
