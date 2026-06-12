@@ -33,7 +33,15 @@ export function renderStrategyHub(navigate) {
       <div style="position: relative; min-height: 250px; width: 100%;">
         <!-- Loading Overlay -->
         <div id="hub-loading-overlay" class="hub-loading-overlay">
-          <div class="spinner"></div>
+          <div class="loader-content">
+            <div class="spinner"></div>
+            <div class="loading-progress-container">
+              <div class="loading-progress-bar">
+                <div id="hub-progress-fill" class="loading-progress-fill"></div>
+              </div>
+              <div id="hub-progress-text" class="loading-progress-text">Loading portraits...</div>
+            </div>
+          </div>
         </div>
 
         <div id="hub-sections-wrapper" class="hub-sections-wrapper loading">
@@ -160,7 +168,21 @@ export function renderStrategyHub(navigate) {
       }
     }
 
+    function updateProgressBar() {
+      const fill = document.getElementById('hub-progress-fill');
+      const text = document.getElementById('hub-progress-text');
+      if (totalImages > 0) {
+        const percentage = Math.round((loadedCount / totalImages) * 100);
+        if (fill) fill.style.width = `${percentage}%`;
+        if (text) text.textContent = `Loading portraits: ${loadedCount} / ${totalImages} (${percentage}%)`;
+      } else {
+        if (fill) fill.style.width = '100%';
+        if (text) text.textContent = 'Loading portraits: 100%';
+      }
+    }
+
     function checkImagesLoaded() {
+      updateProgressBar();
       if (loadedCount >= totalImages) {
         hideLoader();
       }
@@ -171,6 +193,7 @@ export function renderStrategyHub(navigate) {
     }, 15000); // 15-second safety timeout fallback
 
     if (totalImages === 0) {
+      updateProgressBar();
       hideLoader();
     } else {
       portraits.forEach(img => {
@@ -187,6 +210,7 @@ export function renderStrategyHub(navigate) {
           });
         }
       });
+      updateProgressBar();
       checkImagesLoaded();
     }
   }

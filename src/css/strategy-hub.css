@@ -671,3 +671,50 @@
   opacity: 0 !important;
   pointer-events: none;
 }
+
+/* Loading Progress Bar Styling */
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.loading-progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.loading-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.loading-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-secondary, #00cbd6) 0%, var(--color-danger, #ff005b) 100%);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  border-radius: 2px;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loading-progress-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-secondary, #a0a0ab);
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-transform: none;
+}
+

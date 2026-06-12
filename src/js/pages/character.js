@@ -43,6 +43,33 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   let portraitLoaded = false;
   let logoLoaded = false;
 
+  function updateProgress() {
+    let resolvedCount = 0;
+    if (dataLoaded) resolvedCount++;
+    if (portraitLoaded) resolvedCount++;
+    if (logoLoaded) resolvedCount++;
+
+    const percentage = Math.round((resolvedCount / 3) * 100);
+    
+    const fill = document.getElementById('char-progress-fill');
+    const text = document.getElementById('char-progress-text');
+    if (fill) fill.style.width = `${percentage}%`;
+    
+    if (text) {
+      let statusMsg = '';
+      if (!dataLoaded) {
+        statusMsg = 'Loading frame data...';
+      } else if (!portraitLoaded) {
+        statusMsg = 'Loading character portrait...';
+      } else if (!logoLoaded) {
+        statusMsg = 'Loading game logo...';
+      } else {
+        statusMsg = 'Ready!';
+      }
+      text.textContent = `${statusMsg} (${resolvedCount} / 3 loaded, ${percentage}%)`;
+    }
+  }
+
   function checkAllReady() {
     if (dataLoaded && portraitLoaded && logoLoaded) {
       hideLoader();
@@ -73,7 +100,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   mount.innerHTML = `
     <!-- Page Loading Overlay -->
     <div id="char-loading-overlay" class="char-loading-overlay">
-      <div class="spinner"></div>
+      <div class="loader-content">
+        <div class="spinner"></div>
+        <div class="loading-progress-container">
+          <div class="loading-progress-bar">
+            <div id="char-progress-fill" class="loading-progress-fill"></div>
+          </div>
+          <div id="char-progress-text" class="loading-progress-text">Loading character data...</div>
+        </div>
+      </div>
     </div>
 
     <div class="character-page char-page-container loading">
@@ -105,6 +140,9 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     </div>
   `;
 
+  // Initial progress update
+  updateProgress();
+
   // Attach back button listener
   document.getElementById('btn-back').addEventListener('click', function () {
     navigateCallback('hub');
@@ -130,13 +168,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   const headerImg = document.getElementById('char-header-portrait');
   
   function checkPortraitLoaded() {
+    if (portraitLoaded) return;
     portraitLoaded = true;
+    updateProgress();
     checkAllReady();
   }
 
   if (headerImg) {
     if (headerImg.complete) {
-      portraitLoaded = true;
+      checkPortraitLoaded();
     } else {
       headerImg.addEventListener('load', checkPortraitLoaded);
     }
@@ -171,19 +211,22 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   const logoImg = mount.querySelector('.game-header-logo-large');
   
   function checkLogoLoaded() {
+    if (logoLoaded) return;
     logoLoaded = true;
+    updateProgress();
     checkAllReady();
   }
 
   if (logoImg && logoImg.tagName === 'IMG') {
     if (logoImg.complete) {
-      logoLoaded = true;
+      checkLogoLoaded();
     } else {
       logoImg.addEventListener('load', checkLogoLoaded);
       logoImg.addEventListener('error', checkLogoLoaded);
     }
   } else {
     logoLoaded = true;
+    updateProgress();
   }
 
   // Load the frame data
@@ -192,6 +235,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (data && data._unsupported) {
       drawUnsupportedState(data.note || 'Data is not supported for this title.');
       dataLoaded = true;
+      updateProgress();
       checkAllReady();
       return;
     }
@@ -199,6 +243,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     rawRows = data || [];
     drawTableContainer();
     dataLoaded = true;
+    updateProgress();
     checkAllReady();
   }).catch(err => {
     const container = document.getElementById('character-table-mount');
@@ -212,6 +257,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       `;
     }
     dataLoaded = true;
+    updateProgress();
     checkAllReady();
   });
 
