@@ -390,7 +390,8 @@ class Store {
       if (usersCount.count === 0) {
         await this.seedSupabase();
       } else {
-        // Sync the games config to keep the character roster updated
+        // Sync the games config to keep the character roster updated.
+        // Wrap in a try-catch to handle offline mock testing or RLS restrictions gracefully.
         const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
           return {
             id: g.id,
@@ -399,7 +400,14 @@ class Store {
             notation_type: g.notationType
           };
         });
-        await supabase.from('games').upsert(gamesToSeed);
+        try {
+          const { error } = await supabase.from('games').upsert(gamesToSeed);
+          if (error) {
+            console.debug('Note: Games configuration sync skipped (read-only client).');
+          }
+        } catch (e) {
+          console.debug('Note: Games configuration sync skipped (read-only or mocked client).');
+        }
       }
 
       // 2. Fetch all tables in parallel including games

@@ -168,7 +168,7 @@ export function renderStrategyHub(navigate) {
 
     let timeoutId = setTimeout(() => {
       hideLoader();
-    }, 600); // 600ms safety timeout fallback
+    }, 15000); // 15-second safety timeout fallback
 
     if (totalImages === 0) {
       hideLoader();

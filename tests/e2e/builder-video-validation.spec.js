@@ -49,6 +49,7 @@ async function injectFakeUserAndMockSupabase(page) {
               eq: () => builder,
               update: () => builder,
               insert: () => builder,
+              upsert: () => builder,
               then: (resolve) => {
                 let data = [];
                 if (table === 'users') {

@@ -38,9 +38,45 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   let sortOrder = 'asc'; // 'asc' or 'desc'
   let rawRows = [];
 
+  // Stateful Loading Logic to hide overlay only when all elements are fully loaded
+  let dataLoaded = false;
+  let portraitLoaded = false;
+  let logoLoaded = false;
+
+  function checkAllReady() {
+    if (dataLoaded && portraitLoaded && logoLoaded) {
+      hideLoader();
+    }
+  }
+
+  function hideLoader() {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+    const overlay = document.getElementById('char-loading-overlay');
+    const pageContainer = mount.querySelector('.character-page');
+    if (overlay && pageContainer) {
+      overlay.classList.add('fade-out');
+      pageContainer.classList.remove('loading');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 350);
+    }
+  }
+
+  let timeoutId = setTimeout(() => {
+    hideLoader();
+  }, 15000); // 15-second safety fallback timeout
+
   // Main Page Layout Structure
   mount.innerHTML = `
-    <div class="character-page">
+    <!-- Page Loading Overlay -->
+    <div id="char-loading-overlay" class="char-loading-overlay">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="character-page char-page-container loading">
       <button class="btn btn-secondary btn-sm" id="btn-back">← Back to Strategy Hub</button>
       
       <div class="character-header flex justify-between items-end gap-4 mt-6 pb-6">
@@ -92,7 +128,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   // Attach portrait fallback listener
   const headerImg = document.getElementById('char-header-portrait');
+  
+  function checkPortraitLoaded() {
+    portraitLoaded = true;
+    checkAllReady();
+  }
+
   if (headerImg) {
+    if (headerImg.complete) {
+      portraitLoaded = true;
+    } else {
+      headerImg.addEventListener('load', checkPortraitLoaded);
+    }
+    
     let stage = initialStage; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
     headerImg.onerror = function () {
       if (stage === 0) {
@@ -107,12 +155,35 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           stage = 3;
           headerImg.onerror = null;
           headerImg.src = PLACEHOLDER_SVG;
+          checkPortraitLoaded();
         });
       } else {
         headerImg.onerror = null;
         headerImg.src = PLACEHOLDER_SVG;
+        checkPortraitLoaded();
       }
     };
+  } else {
+    portraitLoaded = true;
+  }
+
+  // Attach logo image listener
+  const logoImg = mount.querySelector('.game-header-logo-large');
+  
+  function checkLogoLoaded() {
+    logoLoaded = true;
+    checkAllReady();
+  }
+
+  if (logoImg && logoImg.tagName === 'IMG') {
+    if (logoImg.complete) {
+      logoLoaded = true;
+    } else {
+      logoImg.addEventListener('load', checkLogoLoaded);
+      logoImg.addEventListener('error', checkLogoLoaded);
+    }
+  } else {
+    logoLoaded = true;
   }
 
   // Load the frame data
@@ -120,11 +191,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     // Check if the game is unsupported
     if (data && data._unsupported) {
       drawUnsupportedState(data.note || 'Data is not supported for this title.');
+      dataLoaded = true;
+      checkAllReady();
       return;
     }
     
     rawRows = data || [];
     drawTableContainer();
+    dataLoaded = true;
+    checkAllReady();
   }).catch(err => {
     const container = document.getElementById('character-table-mount');
     if (container) {
@@ -136,6 +211,8 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         </div>
       `;
     }
+    dataLoaded = true;
+    checkAllReady();
   });
 
   // Draw notice for unsupported titles (Phase 2 placeholder)

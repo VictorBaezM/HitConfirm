@@ -68,6 +68,7 @@ async function injectFakeUser(page) {
               order: () => builder,
               eq: () => builder,
               update: () => builder,
+              upsert: () => builder,
               insert: (payload) => {
                 if (Array.isArray(payload)) {
                   db[table] = [...payload, ...db[table]];
