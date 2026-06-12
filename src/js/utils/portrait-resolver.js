@@ -1,6 +1,8 @@
 // src/js/utils/portrait-resolver.js
 // Utility to dynamically fetch character portraits from Dustloop/Fandom Wiki.
 
+export const PLACEHOLDER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNTAgMjAwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFlMWUyNCIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTIxMjE0IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYWNjZW50IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjAwNWIiIC8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwZjBmZiIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmcpIiByeD0iOCIgLz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjYWNjZW50KSIgc3Ryb2tlLXdpZHRoPSIyIiByeD0iOCIgb3BhY2l0eT0iMC4zIiAvPgogIAogIDwhLS0gQ29udHJvbGxlciBJY29uIC0tPgogIDxwYXRoIGQ9Ik00NSw5MCBDMzUsOTAgMjUsOTggMjUsMTE1IEMyNSwxMzAgMzUsMTQ1IDUwLDE0NSBDNTgsMTQ1IDY1LDEzOCA3NSwxMzggQzg1LDEzOCA5MiwxNDUgMTAwLDE0NSBDMTE1LDE0NSAxMjUsMTMwIDEyNSwxMTUgQzEyNSw5OCAxMTUsOTAgMTA1LDkwIEw0NSw5MCBaIiBmaWxsPSIjMmQyZDM4IiAvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPgogIDxjaXJjbGUgY3g9IjYyIiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPgogIDxjaXJjbGUgY3g9IjEwMiIgY3k9IjExMCIgcj0iNCIgZmlsbD0iI2ZmMDA1YiIgLz4KICA8Y2lyY2xlIGN4PSI5MiIgY3k9IjEyMCIgcj0iNCIgZmlsbD0iIzAwZjBmZiIgLz4KICA8Y2lyY2xlIGN4PSIxMDIiIGN5PSIxMjAiIHI9IjQiIGZpbGw9IiNmZmNhMDAiIC8+CiAgCiAgPHRleHQgeD0iNzUiIHk9IjY1IiBmb250LWZhbWlseT0ibW9ub3NwYWNlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzRhNGE1YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjEiPkhJVENPTkZJUk08vdGV4dD4KICA8dGV4dCB4PSI3NSIgeT0iMTcwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM2YTZhN2EiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5PIFBPUlRSQUlUPC90ZXh0Pgo8L3N2Zz4K';
+
 const PORTRAIT_CACHE_KEY = 'hitconfirm_portrait_cache';
 
 // In-memory cache loaded from localStorage if available
@@ -52,6 +54,31 @@ export function getWikiFilename(gameId, charName) {
       'Vegeta (Super Saiyan)': 'SS_Vegeta',
       'Vegito (SSGSS)': 'SSB_Vegito',
       'Zamasu (Fused)': 'Fused_Zamasu'
+    },
+    dbfzce: {
+      'Adult Gohan': 'Gohan_(Adult)',
+      'Teen Gohan': 'Gohan_(Teen)',
+      'DBS Broly': 'Broly_(DBS)',
+      'GT Goku': 'Goku_(GT)',
+      'SS Goku': 'Goku_(Super_Saiyan)',
+      'SS Vegeta': 'Vegeta_(Super_Saiyan)',
+      'SS4 Gogeta': 'Gogeta_(SS4)',
+      'SSB Gogeta': 'Gogeta_(SSGSS)',
+      'SSB Goku': 'Goku_(SSGSS)',
+      'SSB Vegeta': 'Vegeta_(SSGSS)',
+      'SSB Vegito': 'Vegito_(SSGSS)',
+      'UI Goku': 'Goku_(Ultra_Instinct)',
+      'Fused Zamasu': 'Zamasu_(Fused)',
+      'Android 16': 'Android_16',
+      'Android 17': 'Android_17',
+      'Android 18': 'Android_18',
+      'Android 21': 'Android_21'
+    },
+    gbvsr: {
+      'Djeeta (EX)': 'Djeeta',
+      'Gran (EX)': 'Gran',
+      'Narmaya (EX)': 'Narmaya',
+      'Ladiva': 'Fastiva'
     }
   };
 
@@ -131,7 +158,7 @@ export async function resolvePortraitUrl(gameId, charName) {
   }
 
   // Fallback to placeholder if resolution fails
-  return '/src/images/placeholder.svg';
+  return PLACEHOLDER_SVG;
 }
 
 // Compact MD5 implementation for MediaWiki filename hashing path calculation
@@ -188,6 +215,29 @@ function md5(str) {
 }
 
 /**
+ * Constructs the direct MediaWiki MD5-hashed CDN URL for a given filename.
+ * @param {string} filename The file name on the wiki.
+ * @param {string} gameId The active game ID.
+ * @returns {string} The constructed CDN URL.
+ */
+export function constructCdnUrl(filename, gameId = 'ggst') {
+  if (!filename) return '';
+  const isSuperCombo = (gameId === 'sf6');
+  const baseImgUrl = isSuperCombo 
+    ? 'https://wiki.supercombo.gg/images' 
+    : 'https://www.dustloop.com/wiki/images';
+
+  let wikiName = filename.replace(/\s+/g, '_');
+  if (wikiName.length > 0) {
+    wikiName = wikiName.charAt(0).toUpperCase() + wikiName.slice(1);
+  }
+  const hash = md5(wikiName);
+  const c1 = hash.charAt(0);
+  const c2 = hash.substring(0, 2);
+  return `${baseImgUrl}/${c1}/${c2}/${wikiName}`;
+}
+
+/**
  * Resolves direct URLs for multiple Wiki file names in a single query.
  * Falls back to direct MD5 CDN URL construction if the MediaWiki API fails.
  * @param {string[]} filenames Semicolon-separated file names.
@@ -201,9 +251,6 @@ export async function resolveFileUrls(filenames, gameId = 'ggst') {
   if (cleanNames.length === 0) return {};
 
   const isSuperCombo = (gameId === 'sf6');
-  const baseImgUrl = isSuperCombo 
-    ? 'https://wiki.supercombo.gg/images' 
-    : 'https://www.dustloop.com/wiki/images';
   const baseApiUrl = isSuperCombo 
     ? 'https://wiki.supercombo.gg/api.php' 
     : 'https://www.dustloop.com/wiki/api.php';
@@ -212,15 +259,8 @@ export async function resolveFileUrls(filenames, gameId = 'ggst') {
 
   // 1. Generate direct MD5 CDN URL fallbacks for all files
   cleanNames.forEach(f => {
-    let wikiName = f.replace(/\s+/g, '_');
-    if (wikiName.length > 0) {
-      wikiName = wikiName.charAt(0).toUpperCase() + wikiName.slice(1);
-    }
-    const hash = md5(wikiName);
-    const c1 = hash.charAt(0);
-    const c2 = hash.substring(0, 2);
     const titleKey = f.toLowerCase().replace(/[\s_]/g, '');
-    result[titleKey] = `${baseImgUrl}/${c1}/${c2}/${wikiName}`;
+    result[titleKey] = constructCdnUrl(f, gameId);
   });
 
   // 2. Attempt to resolve official URLs from the MediaWiki API

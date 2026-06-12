@@ -4,7 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { resolvePortraitUrl, resolveFileUrls } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -75,18 +75,24 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   // Attach portrait fallback listener
   const headerImg = document.getElementById('char-header-portrait');
   if (headerImg) {
-    let hasTriedWiki = false;
+    let stage = 0; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
     headerImg.onerror = function () {
-      if (!hasTriedWiki) {
-        hasTriedWiki = true;
+      if (stage === 0) {
+        stage = 1;
+        const filename = getWikiFilename(gameId, charName);
+        headerImg.src = constructCdnUrl(filename, gameId);
+      } else if (stage === 1) {
+        stage = 2;
         resolvePortraitUrl(gameId, charName).then(url => {
           headerImg.src = url;
         }).catch(() => {
-          headerImg.src = '/src/images/placeholder.svg';
+          stage = 3;
+          headerImg.onerror = null;
+          headerImg.src = PLACEHOLDER_SVG;
         });
       } else {
         headerImg.onerror = null;
-        headerImg.src = '/src/images/placeholder.svg';
+        headerImg.src = PLACEHOLDER_SVG;
       }
     };
   }
@@ -339,7 +345,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     });
   }
 
-  // Helper to load move images asynchronously
+  // Helper to load move images synchronously using constructed direct CDN URLs
   function loadMoveImages(move, index) {
     const contentContainer = document.getElementById(`details-content-${index}`);
     if (!contentContainer) return;
@@ -378,9 +384,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }
     }
 
-    const allFiles = [...imageFiles, ...hitboxFiles];
-
-    if (allFiles.length === 0) {
+    if (imageFiles.length === 0 && hitboxFiles.length === 0) {
       contentContainer.innerHTML = `
         <div class="text-center text-muted p-4">
           <i class="fa-solid fa-image-slash mr-2"></i> No move images or hitboxes available for this move.
@@ -390,84 +394,62 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       return;
     }
 
-    resolveFileUrls(allFiles, gameId).then(urlsMap => {
-      let imagesHtml = '';
-      let hitboxesHtml = '';
-      let actionFrameRendered = false;
-      let hitboxFrameRendered = false;
+    let imagesHtml = '';
+    let hitboxesHtml = '';
 
-      imageFiles.forEach(file => {
-        const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
-        const url = urlsMap[urlKey];
-        if (url && !actionFrameRendered) {
-          actionFrameRendered = true;
-          imagesHtml += `
-            <div class="move-image-card">
-              <h5 class="move-image-card-title title-action">
-                <i class="fa-solid fa-gamepad"></i> Action Frame
-              </h5>
-              <div class="move-image-wrapper">
-                <img src="${url}" alt="Action Frame" class="move-details-img" onerror="this.src='/src/images/placeholder.svg';" />
-              </div>
-            </div>
-          `;
-        }
-      });
-
-      hitboxFiles.forEach(file => {
-        const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
-        const url = urlsMap[urlKey];
-        if (url && !hitboxFrameRendered) {
-          hitboxFrameRendered = true;
-          hitboxesHtml += `
-            <div class="move-image-card">
-              <h5 class="move-image-card-title title-hitbox">
-                <span>
-                  <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
-                </span>
-                <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
-                  <i class="fa-solid fa-circle-question"></i>
-                  <div class="hitbox-tooltip">
-                    <div class="tooltip-title">Box Color Guide</div>
-                    <ul>
-                      <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
-                      <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
-                      <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
-                      <li><strong style="color: #ffffff;">White / Absence (Invincibility):</strong> Immune to hits. Represented by white/dashed boxes or the complete disappearance of blue hurtboxes.</li>
-                    </ul>
-                  </div>
-                </span>
-              </h5>
-              <div class="move-image-wrapper">
-                <img src="${url}" alt="Hitbox Frame" class="move-details-img" onerror="this.src='/src/images/placeholder.svg';" />
-              </div>
-            </div>
-          `;
-        }
-      });
-
-      if (!imagesHtml && !hitboxesHtml) {
-        contentContainer.innerHTML = `
-          <div class="text-center text-muted p-4">
-            <i class="fa-solid fa-triangle-exclamation mr-2"></i> Failed to resolve file links from wiki.
+    if (imageFiles.length > 0) {
+      const firstFile = imageFiles[0];
+      const actionUrl = constructCdnUrl(firstFile, gameId);
+      const guessesAttr = escapeHtml(imageFiles.join(';'));
+      imagesHtml = `
+        <div class="move-image-card">
+          <h5 class="move-image-card-title title-action">
+            <i class="fa-solid fa-gamepad"></i> Action Frame
+          </h5>
+          <div class="move-image-wrapper">
+            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
           </div>
-        `;
-      } else {
-        contentContainer.innerHTML = `
-          <div class="move-images-flex">
-            ${imagesHtml}
-            ${hitboxesHtml}
-          </div>
-        `;
-      }
-      contentContainer.setAttribute('data-loaded', 'true');
-    }).catch(err => {
-      contentContainer.innerHTML = `
-        <div class="text-center text-danger p-4">
-          <i class="fa-solid fa-triangle-exclamation mr-2"></i> Error loading images: ${err.message || err}
         </div>
       `;
-    });
+    }
+
+    if (hitboxFiles.length > 0) {
+      const firstFile = hitboxFiles[0];
+      const hitboxUrl = constructCdnUrl(firstFile, gameId);
+      const guessesAttr = escapeHtml(hitboxFiles.join(';'));
+      hitboxesHtml = `
+        <div class="move-image-card">
+          <h5 class="move-image-card-title title-hitbox">
+            <span>
+              <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+            </span>
+            <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
+              <i class="fa-solid fa-circle-question"></i>
+              <div class="hitbox-tooltip">
+                <div class="tooltip-title">Box Color Guide</div>
+                <ul>
+                  <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
+                  <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
+                  <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
+                  <li><strong style="color: #ffffff;">White / Absence (Invincibility):</strong> Immune to hits. Represented by white/dashed boxes or the complete disappearance of blue hurtboxes.</li>
+                </ul>
+              </div>
+            </span>
+          </h5>
+          <div class="move-image-wrapper">
+            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
+          </div>
+        </div>
+      `;
+    }
+
+    contentContainer.innerHTML = `
+      <div class="move-images-flex">
+        ${imagesHtml}
+        ${hitboxesHtml}
+      </div>
+    `;
+    contentContainer.setAttribute('data-loaded', 'true');
   }
 }
 
@@ -489,4 +471,40 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// Global handler for move image load errors to lazily fall back to API query
+window.handleMoveImageError = function (imgEl, gameId) {
+  imgEl.onerror = null; // Prevent loops
+
+  const guessesStr = imgEl.getAttribute('data-guesses') || '';
+  const fileGuesses = guessesStr.split(';').map(f => f.trim()).filter(Boolean);
+  if (fileGuesses.length === 0) {
+    imgEl.src = PLACEHOLDER_SVG;
+    return;
+  }
+
+  resolveFileUrls(fileGuesses, gameId).then(urlsMap => {
+    // Find the first resolved URL from our guesses list
+    let resolvedUrl = '';
+    for (const file of fileGuesses) {
+      const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+      if (urlsMap[urlKey]) {
+        resolvedUrl = urlsMap[urlKey];
+        break;
+      }
+    }
+
+    if (resolvedUrl) {
+      imgEl.onerror = () => {
+        imgEl.onerror = null;
+        imgEl.src = PLACEHOLDER_SVG;
+      };
+      imgEl.src = resolvedUrl;
+    } else {
+      imgEl.src = PLACEHOLDER_SVG;
+    }
+  }).catch(() => {
+    imgEl.src = PLACEHOLDER_SVG;
+  });
+};
 

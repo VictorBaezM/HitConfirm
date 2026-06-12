@@ -148,4 +148,55 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(frameTable).toBeVisible();
     await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
   });
+
+  test('should load Dragon Ball FighterZ character frame data successfully', async ({ page }) => {
+    await page.click('.nav-link[data-page="hub"]');
+    const searchInput = page.locator('#hub-search');
+    await searchInput.fill('Goku (Super Saiyan)');
+
+    const card = page.locator('#section-dbfz .character-card:has-text("Goku (Super Saiyan)")');
+    await expect(card).toBeVisible();
+    await card.click();
+
+    await expect(page.locator('.character-header h1')).toHaveText('Goku (Super Saiyan)');
+    await expect(page.locator('.character-portrait-large')).toBeVisible();
+
+    const frameTable = page.locator('#data-table-el');
+    await expect(frameTable).toBeVisible();
+    await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
+  });
+
+  test('should load DBFZ CE character frame data successfully', async ({ page }) => {
+    await page.click('.nav-link[data-page="hub"]');
+    const searchInput = page.locator('#hub-search');
+    await searchInput.fill('SS Goku');
+
+    const card = page.locator('#section-dbfzce .character-card:has-text("SS Goku")');
+    await expect(card).toBeVisible();
+    await card.click();
+
+    await expect(page.locator('.character-header h1')).toHaveText('SS Goku');
+    await expect(page.locator('.character-portrait-large')).toBeVisible();
+
+    const frameTable = page.locator('#data-table-el');
+    await expect(frameTable).toBeVisible();
+    await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
+  });
+
+  test('should load GBVSR character frame data successfully', async ({ page }) => {
+    await page.click('.nav-link[data-page="hub"]');
+    const searchInput = page.locator('#hub-search');
+    await searchInput.fill('Anila');
+
+    const card = page.locator('#section-gbvsr .character-card:has-text("Anila")');
+    await expect(card).toBeVisible();
+    await card.click();
+
+    await expect(page.locator('.character-header h1')).toHaveText('Anila');
+    await expect(page.locator('.character-portrait-large')).toBeVisible();
+
+    const frameTable = page.locator('#data-table-el');
+    await expect(frameTable).toBeVisible();
+    await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
+  });
 });
