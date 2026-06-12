@@ -309,6 +309,12 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
           <input type="text" id="table-search" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
         </div>
+        <div id="preloader-status-container" class="preloader-status-container hidden">
+          <span id="preloader-status-text">Caching move images...</span>
+          <div class="preloader-bar">
+            <div id="preloader-fill" class="preloader-fill"></div>
+          </div>
+        </div>
       </div>
 
       <div class="frame-data-card">
@@ -331,6 +337,9 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     // Initial render of rows
     renderRows(characterRows);
+
+    // Start background preloading of all character move images
+    preloadCharacterMoveImages(characterRows, gameId);
   }
 
   // Render the table header and body rows based on search and sort states
@@ -486,6 +495,196 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         }
       });
     });
+  }
+
+  // Background preloader for all character moves
+  function preloadCharacterMoveImages(characterRows, gameId) {
+    const filesToPreload = [];
+    const seenFiles = new Set();
+
+    characterRows.forEach(move => {
+      const imagesStr = move.images || '';
+      const hitboxesStr = move.hitboxes || '';
+
+      let imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+      let hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+
+      // Guess files if Cargo is empty
+      if (move.input) {
+        const gamePrefix = gameId.toUpperCase();
+        const charClean = charName.replace(/\s+/g, '_');
+        const inputClean = move.input.replace(/\s+/g, '');
+        const moveNameClean = (move.name || '').replace(/\s+/g, '_');
+
+        if (imageFiles.length === 0) {
+          imageFiles.push(`${gamePrefix}_${charClean}_${inputClean}.png`);
+          imageFiles.push(`${gamePrefix} ${charName} ${move.input}.png`);
+          if (moveNameClean) {
+            imageFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}.png`);
+            imageFiles.push(`${gamePrefix} ${charName} ${move.name}.png`);
+          }
+        }
+
+        if (hitboxFiles.length === 0) {
+          hitboxFiles.push(`${gamePrefix}_${charClean}_${inputClean}_Hitbox.png`);
+          hitboxFiles.push(`${gamePrefix} ${charName} ${move.input} Hitbox.png`);
+          if (moveNameClean) {
+            hitboxFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}_Hitbox.png`);
+            hitboxFiles.push(`${gamePrefix} ${charName} ${move.name} Hitbox.png`);
+          }
+        }
+      }
+
+      const primaryImage = imageFiles[0];
+      const primaryHitbox = hitboxFiles[0];
+
+      if (primaryImage && !seenFiles.has(primaryImage)) {
+        seenFiles.add(primaryImage);
+        filesToPreload.push({
+          filename: primaryImage,
+          guesses: imageFiles,
+          cacheKey: `${gameId}:move:${primaryImage}`
+        });
+      }
+
+      if (primaryHitbox && !seenFiles.has(primaryHitbox)) {
+        seenFiles.add(primaryHitbox);
+        filesToPreload.push({
+          filename: primaryHitbox,
+          guesses: hitboxFiles,
+          cacheKey: `${gameId}:move:${primaryHitbox}`
+        });
+      }
+    });
+
+    const totalFiles = filesToPreload.length;
+    if (totalFiles === 0) return;
+
+    const container = document.getElementById('preloader-status-container');
+    const statusText = document.getElementById('preloader-status-text');
+    const fill = document.getElementById('preloader-fill');
+
+    if (container) {
+      container.classList.remove('hidden');
+    }
+
+    let activeIndex = 0;
+    let loadedCount = 0;
+
+    function updatePreloadProgress() {
+      const percentage = Math.round((loadedCount / totalFiles) * 100);
+      if (fill) fill.style.width = `${percentage}%`;
+      if (statusText) {
+        statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${loadedCount} / ${totalFiles} (${percentage}%)`;
+      }
+
+      if (loadedCount === totalFiles) {
+        if (statusText) {
+          statusText.innerHTML = `<i class="fa-solid fa-circle-check text-success mr-1"></i> All move images cached!`;
+        }
+        setTimeout(() => {
+          if (container) {
+            container.classList.add('hidden');
+          }
+        }, 2000);
+      }
+    }
+
+    function runFallbackResolution(filename, guesses, cacheKey) {
+      return new Promise((resolve) => {
+        const config = WIKI_CONFIG[gameId] || { primary: 'https://www.dustloop.com/wiki', fallbacks: [] };
+        const allBases = [config.primary, ...config.fallbacks];
+        let tryIdx = 0;
+
+        const img = new Image();
+
+        function tryNextBase() {
+          if (tryIdx < allBases.length) {
+            const currentBase = allBases[tryIdx];
+            tryIdx++;
+            img.src = constructCdnUrl(filename, gameId, currentBase);
+          } else {
+            resolveFileUrls(guesses, gameId).then(urlsMap => {
+              let resolvedUrl = '';
+              for (const file of guesses) {
+                const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+                if (urlsMap[urlKey]) {
+                  resolvedUrl = urlsMap[urlKey];
+                  break;
+                }
+              }
+
+              if (resolvedUrl) {
+                const apiImg = new Image();
+                apiImg.onload = () => {
+                  saveResolvedImageUrl(cacheKey, resolvedUrl);
+                  resolve(resolvedUrl);
+                };
+                apiImg.onerror = () => {
+                  resolve(PLACEHOLDER_SVG);
+                };
+                apiImg.src = resolvedUrl;
+              } else {
+                resolve(PLACEHOLDER_SVG);
+              }
+            }).catch(() => {
+              resolve(PLACEHOLDER_SVG);
+            });
+          }
+        }
+
+        img.onload = () => {
+          saveResolvedImageUrl(cacheKey, img.src);
+          resolve(img.src);
+        };
+
+        img.onerror = () => {
+          tryNextBase();
+        };
+
+        tryNextBase();
+      });
+    }
+
+    function preloadFile(fileItem) {
+      const { filename, guesses, cacheKey } = fileItem;
+
+      return new Promise((resolve) => {
+        const cachedResolved = getResolvedImageUrl(cacheKey);
+        if (cachedResolved) {
+          const img = new Image();
+          img.onload = () => resolve(cachedResolved);
+          img.onerror = () => {
+            deleteResolvedImageUrl(cacheKey);
+            resolve(runFallbackResolution(filename, guesses, cacheKey));
+          };
+          img.src = cachedResolved;
+          return;
+        }
+
+        resolve(runFallbackResolution(filename, guesses, cacheKey));
+      });
+    }
+
+    function startPreloadWorker() {
+      if (activeIndex >= totalFiles) return Promise.resolve();
+
+      const fileItem = filesToPreload[activeIndex++];
+      return preloadFile(fileItem).then(() => {
+        loadedCount++;
+        updatePreloadProgress();
+        return startPreloadWorker();
+      });
+    }
+
+    updatePreloadProgress();
+
+    const MAX_CONCURRENT = 4;
+    const workers = [];
+    for (let i = 0; i < Math.min(MAX_CONCURRENT, totalFiles); i++) {
+      workers.push(startPreloadWorker());
+    }
+    Promise.all(workers);
   }
 
   // Helper to load move images synchronously using constructed direct CDN URLs
