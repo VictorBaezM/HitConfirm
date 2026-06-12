@@ -55,10 +55,15 @@ export function renderStrategyHub(navigate) {
                 return '';
               }
 
+              const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
+              const logoHtml = KNOWN_LOGOS.includes(game.id)
+                ? `<img src="/src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />`
+                : `<i class="fa-solid fa-gamepad game-header-logo text-muted" style="font-size: 24px; width: 28px; text-align: center;"></i>`;
+
               return `
                 <div class="game-section mb-6" id="section-${game.id}">
                   <div class="game-section-header flex items-center gap-3 mb-4 border-b border-color pb-2">
-                    <img src="/src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />
+                    ${logoHtml}
                     <h3 class="gradient-text game-section-title m-0">${game.name}</h3>
                     <span class="character-countbadge badge badge-sm ml-auto">${matchingChars.length} characters</span>
                   </div>

@@ -4,15 +4,29 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  const sanitizedChar = charName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-  const portraitUrl = `/src/images/characters/${gameId}/${sanitizedChar}.png`;
+  const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
+  let portraitUrl;
+  let initialStage;
+  if (localPortraitUrl) {
+    portraitUrl = localPortraitUrl;
+    initialStage = 0;
+  } else {
+    const filename = getWikiFilename(gameId, charName);
+    portraitUrl = constructCdnUrl(filename, gameId);
+    initialStage = 1;
+  }
+
+  const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
+  const logoHtml = KNOWN_LOGOS.includes(gameId)
+    ? `<img src="/src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
+    : `<i class="fa-solid fa-gamepad game-header-logo-large text-muted" style="font-size: 28px; width: 32px; text-align: center;"></i>`;
 
   // Page level state
   let searchQuery = '';
@@ -33,7 +47,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
           </div>
         </div>
-        <img src="/src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />
+        ${logoHtml}
       </div>
 
       <!-- Controls & Search -->
@@ -75,7 +89,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   // Attach portrait fallback listener
   const headerImg = document.getElementById('char-header-portrait');
   if (headerImg) {
-    let stage = 0; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
+    let stage = initialStage; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
     headerImg.onerror = function () {
       if (stage === 0) {
         stage = 1;

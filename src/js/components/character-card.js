@@ -1,18 +1,24 @@
-import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterCard({ gameId, charName, navigate }) {
   const card = document.createElement('div');
   card.className = 'character-card card-hoverable';
   
-  const sanitized = charName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-  const localPortraitUrl = `/src/images/characters/${gameId}/${sanitized}.png`;
-
   const img = document.createElement('img');
   img.alt = charName;
   img.className = 'portrait';
-  img.src = localPortraitUrl;
   
-  let stage = 0; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
+  const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
+  let stage;
+
+  if (localPortraitUrl) {
+    img.src = localPortraitUrl;
+    stage = 0; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
+  } else {
+    const filename = getWikiFilename(gameId, charName);
+    img.src = constructCdnUrl(filename, gameId);
+    stage = 1;
+  }
 
   img.onerror = function () {
     if (stage === 0) {

@@ -16,6 +16,22 @@ try {
   console.warn('Failed to load portrait cache from localStorage:', e);
 }
 
+export const KNOWN_LOCAL_PORTRAITS = {
+  ggst: ['Sol_Badguy'],
+  sf6: ['Ryu'],
+  ssbu: ['Mario'],
+  t8: ['Kazuya']
+};
+
+export function getLocalPortraitUrl(gameId, charName) {
+  const sanitized = charName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+  const list = KNOWN_LOCAL_PORTRAITS[gameId];
+  if (list && list.includes(sanitized)) {
+    return `/src/images/characters/${gameId}/${sanitized}.png`;
+  }
+  return null;
+}
+
 /**
  * Normalizes character names to match wiki filename standards.
  * @param {string} gameId

@@ -176,26 +176,23 @@ export function renderNavbar(activePage, navigateCallback) {
     }
 
     try {
-      const res = await fetch('https://api.github.com/repos/VictorBaezM/HitConfirm/commits?per_page=1');
-      if (!res.ok) throw new Error('API limits or network error');
-      const commits = await res.json();
-      if (commits && commits.length > 0) {
-        const lastCommit = commits[0];
-        const sha = lastCommit.sha.substring(0, 7);
-        const msg = lastCommit.commit.message.split('\n')[0];
-        const author = lastCommit.commit.author.name;
-        const fullMsg = lastCommit.commit.message;
-        const dateStr = lastCommit.commit.committer.date;
-
-        applyUpdateInfo(badge, sha, msg, author, fullMsg, dateStr);
+      const res = await fetch('/src/data/updates.json');
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const data = await res.json();
+      if (data && data.sha) {
+        applyUpdateInfo(badge, data.sha, data.msg, data.author, data.fullMsg, data.dateStr);
 
         // Cache the result in session storage
         sessionStorage.setItem('hc_latest_update', JSON.stringify({
-          sha, msg, author, fullMsg, dateStr
+          sha: data.sha,
+          msg: data.msg,
+          author: data.author,
+          fullMsg: data.fullMsg,
+          dateStr: data.dateStr
         }));
       }
     } catch (err) {
-      console.warn("Could not fetch latest updates:", err);
+      console.error("Failed to load local updates configuration:", err);
       applyFallback(badge);
     }
   };
