@@ -1,7 +1,47 @@
 // src/js/utils/portrait-resolver.js
 // Utility to dynamically fetch character portraits from Dustloop/Fandom Wiki.
 
-export const PLACEHOLDER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNTAgMjAwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFlMWUyNCIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTIxMjE0IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYWNjZW50IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjAwNWIiIC8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwZjBmZiIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmcpIiByeD0iOCIgLz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjYWNjZW50KSIgc3Ryb2tlLXdpZHRoPSIyIiByeD0iOCIgb3BhY2l0eT0iMC4zIiAvPgogIAogIDwhLS0gQ29udHJvbGxlciBJY29uIC0tPgogIDxwYXRoIGQ9Ik00NSw5MCBDMzUsOTAgMjUsOTggMjUsMTE1IEMyNSwxMzAgMzUsMTQ1IDUwLDE0NSBDNTgsMTQ1IDY1LDEzOCA3NSwxMzggQzg1LDEzOCA5MiwxNDUgMTAwLDE0NSBDMTE1LDE0NSAxMjUsMTMwIDEyNSwxMTUgQzEyNSw5OCAxMTUsOTAgMTA1LDkwIEw0NSw5MCBaIiBmaWxsPSIjMmQyZDM4IiAvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPgogIDxjaXJjbGUgY3g9IjYyIiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPgogIDxjaXJjbGUgY3g9IjEwMiIgY3k9IjExMCIgcj0iNCIgZmlsbD0iI2ZmMDA1YiIgLz4KICA8Y2lyY2xlIGN4PSI5MiIgY3k9IjEyMCIgcj0iNCIgZmlsbD0iIzAwZjBmZiIgLz4KICA8Y2lyY2xlIGN4PSIxMDIiIGN5PSIxMjAiIHI9IjQiIGZpbGw9IiNmZmNhMDAiIC8+CiAgCiAgPHRleHQgeD0iNzUiIHk9IjY1IiBmb250LWZhbWlseT0ibW9ub3NwYWNlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzRhNGE1YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjEiPkhJVENPTkZJUk08vdGV4dD4KICA8dGV4dCB4PSI3NSIgeT0iMTcwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM2YTZhN2EiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5PIFBPUlRSQUlUPC90ZXh0Pgo8L3N2Zz4K';
+export const PLACEHOLDER_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200" width="150" height="200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e1e24" /><stop offset="100%" stop-color="%23121214" /></linearGradient><linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="%23ff6b00" /><stop offset="100%" stop-color="%2300cbd6" /></linearGradient></defs><rect width="100%" height="100%" fill="url(%23bg)" rx="8" /><rect width="100%" height="100%" fill="none" stroke="url(%23accent)" stroke-width="2" rx="8" opacity="0.3" /><path d="M45,90 C35,90 25,98 25,115 C25,130 35,145 50,145 C58,145 65,138 75,138 C85,138 92,145 100,145 C115,145 125,130 125,115 C125,98 115,90 105,90 L45,90 Z" fill="%232d2d38" /><circle cx="48" cy="115" r="5" fill="%234a4a5a" /><circle cx="62" cy="115" r="5" fill="%234a4a5a" /><circle cx="102" cy="110" r="4" fill="%23ff6b00" /><circle cx="92" cy="120" r="4" fill="%2300cbd6" /><circle cx="102" cy="120" r="4" fill="%23ffd200" /><text x="75" y="65" font-family="monospace, sans-serif" font-size="12" font-weight="bold" fill="%234a4a5a" text-anchor="middle" letter-spacing="1">HITCONFIRM</text><text x="75" y="170" font-family="sans-serif" font-size="10" font-weight="bold" fill="%236a6a7a" text-anchor="middle">NO IMAGE</text></svg>';
+
+export const WIKI_CONFIG = {
+  ggst: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.supercombo.gg', 'https://wiki.gbl.gg'] },
+  sf6: { primary: 'https://wiki.supercombo.gg', fallbacks: ['https://www.dustloop.com/wiki', 'https://wiki.gbl.gg'] },
+  dbfz: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
+  dbfzce: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
+  gbvsr: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
+  dnfd: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
+  ssbu: { primary: 'https://www.smashwiki.com', fallbacks: ['https://www.dustloop.com/wiki'] },
+  t8: { primary: 'https://wavu.wiki', fallbacks: ['https://www.dustloop.com/wiki'] }
+};
+
+const IMAGE_CACHE_KEY = 'hitconfirm_resolved_image_cache';
+let resolvedImageCache = {};
+try {
+  const cached = localStorage.getItem(IMAGE_CACHE_KEY);
+  if (cached) {
+    resolvedImageCache = JSON.parse(cached);
+  }
+} catch (e) {
+  console.warn('Failed to load resolved image cache:', e);
+}
+
+export function saveResolvedImageUrl(originalKey, resolvedUrl) {
+  resolvedImageCache[originalKey] = resolvedUrl;
+  try {
+    localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(resolvedImageCache));
+  } catch (e) {}
+}
+
+export function getResolvedImageUrl(originalKey) {
+  return resolvedImageCache[originalKey] || null;
+}
+
+export function deleteResolvedImageUrl(originalKey) {
+  delete resolvedImageCache[originalKey];
+  try {
+    localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(resolvedImageCache));
+  } catch (e) {}
+}
 
 const PORTRAIT_CACHE_KEY = 'hitconfirm_portrait_cache';
 
@@ -247,12 +287,17 @@ function md5(str) {
  * @param {string} gameId The active game ID.
  * @returns {string} The constructed CDN URL.
  */
-export function constructCdnUrl(filename, gameId = 'ggst') {
+export function constructCdnUrl(filename, gameId = 'ggst', customBaseUrl = null) {
   if (!filename) return '';
-  const isSuperCombo = (gameId === 'sf6');
-  const baseImgUrl = isSuperCombo 
-    ? 'https://wiki.supercombo.gg/images' 
-    : 'https://www.dustloop.com/wiki/images';
+  let baseImgUrl;
+  if (customBaseUrl) {
+    baseImgUrl = customBaseUrl.endsWith('/images') ? customBaseUrl : `${customBaseUrl}/images`;
+  } else {
+    const isSuperCombo = (gameId === 'sf6');
+    baseImgUrl = isSuperCombo 
+      ? 'https://wiki.supercombo.gg/images' 
+      : 'https://www.dustloop.com/wiki/images';
+  }
 
   let wikiName = filename.replace(/\s+/g, '_');
   if (wikiName.length > 0) {

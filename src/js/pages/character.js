@@ -4,7 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -542,15 +542,26 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     if (imageFiles.length > 0) {
       const firstFile = imageFiles[0];
-      const actionUrl = constructCdnUrl(firstFile, gameId);
+      const cacheKey = `${gameId}:move:${firstFile}`;
+      const cachedResolved = getResolvedImageUrl(cacheKey);
+      
+      let actionUrl;
+      let fromCacheAttr = '';
+      if (cachedResolved) {
+        actionUrl = cachedResolved;
+        fromCacheAttr = ' data-loaded-from-cache="true"';
+      } else {
+        actionUrl = constructCdnUrl(firstFile, gameId);
+      }
       const guessesAttr = escapeHtml(imageFiles.join(';'));
+      
       imagesHtml = `
         <div class="move-image-card">
           <h5 class="move-image-card-title title-action">
             <i class="fa-solid fa-gamepad"></i> Action Frame
           </h5>
           <div class="move-image-wrapper">
-            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
+            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
           </div>
         </div>
       `;
@@ -558,8 +569,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     if (hitboxFiles.length > 0) {
       const firstFile = hitboxFiles[0];
-      const hitboxUrl = constructCdnUrl(firstFile, gameId);
+      const cacheKey = `${gameId}:move:${firstFile}`;
+      const cachedResolved = getResolvedImageUrl(cacheKey);
+      
+      let hitboxUrl;
+      let fromCacheAttr = '';
+      if (cachedResolved) {
+        hitboxUrl = cachedResolved;
+        fromCacheAttr = ' data-loaded-from-cache="true"';
+      } else {
+        hitboxUrl = constructCdnUrl(firstFile, gameId);
+      }
       const guessesAttr = escapeHtml(hitboxFiles.join(';'));
+      
       hitboxesHtml = `
         <div class="move-image-card">
           <h5 class="move-image-card-title title-hitbox">
@@ -580,7 +602,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             </span>
           </h5>
           <div class="move-image-wrapper">
-            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
+            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
           </div>
         </div>
       `;
@@ -615,39 +637,71 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// Global handler for move image load errors to lazily fall back to API query
-window.handleMoveImageError = function (imgEl, gameId) {
-  imgEl.onerror = null; // Prevent loops
-
-  const guessesStr = imgEl.getAttribute('data-guesses') || '';
-  const fileGuesses = guessesStr.split(';').map(f => f.trim()).filter(Boolean);
-  if (fileGuesses.length === 0) {
-    imgEl.src = PLACEHOLDER_SVG;
-    return;
+/// Global handler for successful move image loads
+window.handleMoveImageLoad = function (imgEl) {
+  const filename = imgEl.getAttribute('data-filename');
+  const gameId = imgEl.getAttribute('data-game');
+  if (filename && gameId) {
+    const cacheKey = `${gameId}:move:${filename}`;
+    saveResolvedImageUrl(cacheKey, imgEl.src);
   }
-
-  resolveFileUrls(fileGuesses, gameId).then(urlsMap => {
-    // Find the first resolved URL from our guesses list
-    let resolvedUrl = '';
-    for (const file of fileGuesses) {
-      const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
-      if (urlsMap[urlKey]) {
-        resolvedUrl = urlsMap[urlKey];
-        break;
-      }
-    }
-
-    if (resolvedUrl) {
-      imgEl.onerror = () => {
-        imgEl.onerror = null;
-        imgEl.src = PLACEHOLDER_SVG;
-      };
-      imgEl.src = resolvedUrl;
-    } else {
-      imgEl.src = PLACEHOLDER_SVG;
-    }
-  }).catch(() => {
-    imgEl.src = PLACEHOLDER_SVG;
-  });
 };
 
+// Global handler for move image load errors to lazily fall back to API query
+window.handleMoveImageError = function (imgEl, gameId) {
+  imgEl.onerror = null; // Prevent loops temporarily
+  
+  const filename = imgEl.getAttribute('data-filename') || '';
+  const cacheKey = `${gameId}:move:${filename}`;
+  
+  // Stale cache validation: if it failed and was loaded from cache, invalidate it and restart chain!
+  if (imgEl.getAttribute('data-loaded-from-cache') === 'true') {
+    imgEl.removeAttribute('data-loaded-from-cache');
+    deleteResolvedImageUrl(cacheKey);
+    // Restart fallback chain starting from base primary CDN URL
+    imgEl.setAttribute('data-try-idx', '0');
+    imgEl.onerror = () => window.handleMoveImageError(imgEl, gameId);
+    imgEl.src = constructCdnUrl(filename, gameId);
+    return;
+  }
+  
+  // Otherwise, proceed with the sequential fallback chain!
+  let tryIdx = parseInt(imgEl.getAttribute('data-try-idx') || '0', 10);
+  const config = WIKI_CONFIG[gameId] || { primary: 'https://www.dustloop.com/wiki', fallbacks: [] };
+  const allBases = [config.primary, ...config.fallbacks];
+  
+  tryIdx++;
+  if (tryIdx < allBases.length) {
+    imgEl.setAttribute('data-try-idx', tryIdx);
+    imgEl.onerror = () => window.handleMoveImageError(imgEl, gameId);
+    imgEl.src = constructCdnUrl(filename, gameId, allBases[tryIdx]);
+  } else {
+    // If all wiki databases failed for this filename, let's try our guesses fallback!
+    const guessesStr = imgEl.getAttribute('data-guesses') || '';
+    const fileGuesses = guessesStr.split(';').map(f => f.trim()).filter(Boolean);
+    
+    // Fall back to MediaWiki API search to resolve other guesses (Approach A final fallback)
+    resolveFileUrls(fileGuesses, gameId).then(urlsMap => {
+      let resolvedUrl = '';
+      for (const file of fileGuesses) {
+        const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+        if (urlsMap[urlKey]) {
+          resolvedUrl = urlsMap[urlKey];
+          break;
+        }
+      }
+      if (resolvedUrl) {
+        imgEl.onerror = () => {
+          imgEl.onerror = null;
+          imgEl.src = PLACEHOLDER_SVG;
+        };
+        imgEl.src = resolvedUrl;
+        saveResolvedImageUrl(cacheKey, resolvedUrl); // cache it
+      } else {
+        imgEl.src = PLACEHOLDER_SVG;
+      }
+    }).catch(() => {
+      imgEl.src = PLACEHOLDER_SVG;
+    });
+  }
+};
