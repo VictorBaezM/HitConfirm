@@ -98,44 +98,46 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   // Main Page Layout Structure
   mount.innerHTML = `
-    <!-- Page Loading Overlay -->
-    <div id="char-loading-overlay" class="char-loading-overlay">
-      <div class="loader-content">
-        <div class="spinner"></div>
-        <div class="loading-progress-container">
-          <div class="loading-progress-bar">
-            <div id="char-progress-fill" class="loading-progress-fill"></div>
-          </div>
-          <div id="char-progress-text" class="loading-progress-text">Loading character data...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="character-page char-page-container loading">
-      <button class="btn btn-secondary btn-sm" id="btn-back">← Back to Strategy Hub</button>
-      
-      <div class="character-header flex justify-between items-end gap-4 mt-6 pb-6">
-        <div class="flex items-center gap-4">
-          <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" />
-          <div>
-            <h1 class="gradient-text m-0">${charName}</h1>
-            <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
-          </div>
-        </div>
-        ${logoHtml}
-      </div>
-
-      <!-- Controls & Search -->
-      <div id="character-table-mount">
-        <!-- Will be populated dynamically by loading or drawing -->
-        <div class="spinner-container p-12 text-center">
+    <div style="position: relative; min-height: 400px; width: 100%;">
+      <!-- Page Loading Overlay -->
+      <div id="char-loading-overlay" class="char-loading-overlay">
+        <div class="loader-content">
           <div class="spinner"></div>
-          <p class="text-muted mt-2">Loading frame data from Supabase cache...</p>
+          <div class="loading-progress-container">
+            <div class="loading-progress-bar">
+              <div id="char-progress-fill" class="loading-progress-fill"></div>
+            </div>
+            <div id="char-progress-text" class="loading-progress-text">Loading character data...</div>
+          </div>
         </div>
       </div>
 
-      <div class="license-footer p-4 text-sm text-center">
-        <a href="LICENSES.txt" target="_blank" class="text-muted hover:underline">Image Credits & Licenses</a>
+      <div class="character-page char-page-container loading">
+        <button class="btn btn-secondary btn-sm" id="btn-back">← Back to Strategy Hub</button>
+        
+        <div class="character-header flex justify-between items-end gap-4 mt-6 pb-6">
+          <div class="flex items-center gap-4">
+            <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" />
+            <div>
+              <h1 class="gradient-text m-0">${charName}</h1>
+              <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
+            </div>
+          </div>
+          ${logoHtml}
+        </div>
+
+        <!-- Controls & Search -->
+        <div id="character-table-mount">
+          <!-- Will be populated dynamically by loading or drawing -->
+          <div class="spinner-container p-12 text-center">
+            <div class="spinner"></div>
+            <p class="text-muted mt-2">Loading frame data from Supabase cache...</p>
+          </div>
+        </div>
+
+        <div class="license-footer p-4 text-sm text-center">
+          <a href="LICENSES.txt" target="_blank" class="text-muted hover:underline">Image Credits & Licenses</a>
+        </div>
       </div>
     </div>
   `;
