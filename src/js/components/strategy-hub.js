@@ -9,7 +9,7 @@ export function renderStrategyHub(navigate) {
   
   // Set up the internal search and filter state
   let searchFilter = '';
-  let activeGameFilter = 'all';
+  let activeGameFilter = 'ggst';
 
   function draw() {
     mount.innerHTML = `
@@ -21,7 +21,6 @@ export function renderStrategyHub(navigate) {
         </div>
         
         <div class="game-filter-chips flex flex-wrap gap-2 justify-center">
-          <button class="btn btn-sm btn-chip ${activeGameFilter === 'all' ? 'active' : ''}" data-filter="all">All Games</button>
           ${Object.values(games).map(g => `
             <button class="btn btn-sm btn-chip ${activeGameFilter === g.id ? 'active' : ''}" data-filter="${g.id}">
               ${g.name}
@@ -30,43 +29,53 @@ export function renderStrategyHub(navigate) {
         </div>
       </div>
 
-      <!-- Game Sections List -->
-      <div class="hub-sections-container flex flex-col gap-8">
-        ${Object.values(games).map(game => {
-          // Check if this game is filtered out by game chip
-          if (activeGameFilter !== 'all' && activeGameFilter !== game.id) {
-            return '';
-          }
+      <!-- Relative container for loader overlay and sections wrapper -->
+      <div style="position: relative; min-height: 250px; width: 100%;">
+        <!-- Loading Overlay -->
+        <div id="hub-loading-overlay" class="hub-loading-overlay">
+          <div class="spinner"></div>
+        </div>
 
-          // Filter characters by search text
-          const matchingChars = (game.characters || []).filter(char => 
-            char.toLowerCase().includes(searchFilter.toLowerCase())
-          );
+        <div id="hub-sections-wrapper" class="hub-sections-wrapper loading">
+          <!-- Game Sections List -->
+          <div class="hub-sections-container flex flex-col gap-8">
+            ${Object.values(games).map(game => {
+              // Check if this game is filtered out by game chip
+              if (activeGameFilter !== game.id) {
+                return '';
+              }
 
-          // If no matching characters for this game, don't show the game section
-          if (matchingChars.length === 0) {
-            return '';
-          }
+              // Filter characters by search text
+              const matchingChars = (game.characters || []).filter(char => 
+                char.toLowerCase().includes(searchFilter.toLowerCase())
+              );
 
-          return `
-            <div class="game-section mb-6" id="section-${game.id}">
-              <div class="game-section-header flex items-center gap-3 mb-4 border-b border-color pb-2">
-                <img src="/src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />
-                <h3 class="gradient-text game-section-title m-0">${game.name}</h3>
-                <span class="character-countbadge badge badge-sm ml-auto">${matchingChars.length} characters</span>
-              </div>
-              <div class="character-grid" id="grid-${game.id}">
-                <!-- Character cards injected here -->
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
+              // If no matching characters for this game, don't show the game section
+              if (matchingChars.length === 0) {
+                return '';
+              }
 
-      <!-- Empty State -->
-      <div id="hub-empty-state" class="text-center p-8 hidden">
-        <i class="fa-solid fa-gamepad text-muted text-4xl mb-3"></i>
-        <p class="text-muted font-md">No characters match your search filter.</p>
+              return `
+                <div class="game-section mb-6" id="section-${game.id}">
+                  <div class="game-section-header flex items-center gap-3 mb-4 border-b border-color pb-2">
+                    <img src="/src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />
+                    <h3 class="gradient-text game-section-title m-0">${game.name}</h3>
+                    <span class="character-countbadge badge badge-sm ml-auto">${matchingChars.length} characters</span>
+                  </div>
+                  <div class="character-grid" id="grid-${game.id}">
+                    <!-- Character cards injected here -->
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Empty State -->
+          <div id="hub-empty-state" class="text-center p-8 hidden">
+            <i class="fa-solid fa-gamepad text-muted text-4xl mb-3"></i>
+            <p class="text-muted font-md">No characters match your search filter.</p>
+          </div>
+        </div>
       </div>
     `;
 
@@ -124,6 +133,57 @@ export function renderStrategyHub(navigate) {
         draw();
       });
     });
+
+    // Monitor portrait image loading to hide the overlay when ready
+    const portraits = mount.querySelectorAll('.character-card .portrait');
+    let loadedCount = 0;
+    const totalImages = portraits.length;
+
+    function hideLoader() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      const overlay = document.getElementById('hub-loading-overlay');
+      const wrapper = document.getElementById('hub-sections-wrapper');
+      if (overlay && wrapper) {
+        overlay.classList.add('fade-out');
+        wrapper.classList.remove('loading');
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+        }, 300);
+      }
+    }
+
+    function checkImagesLoaded() {
+      if (loadedCount >= totalImages) {
+        hideLoader();
+      }
+    }
+
+    let timeoutId = setTimeout(() => {
+      hideLoader();
+    }, 600); // 600ms safety timeout fallback
+
+    if (totalImages === 0) {
+      hideLoader();
+    } else {
+      portraits.forEach(img => {
+        if (img.complete) {
+          loadedCount++;
+        } else {
+          img.addEventListener('load', () => {
+            loadedCount++;
+            checkImagesLoaded();
+          });
+          img.addEventListener('error', () => {
+            loadedCount++;
+            checkImagesLoaded();
+          });
+        }
+      });
+      checkImagesLoaded();
+    }
   }
 
   // Optimize search: instead of full redraw (which resets scroll/focus), just update cards visibility and grids
@@ -136,7 +196,7 @@ export function renderStrategyHub(navigate) {
 
       grid.innerHTML = '';
       
-      const isGameVisible = activeGameFilter === 'all' || activeGameFilter === game.id;
+      const isGameVisible = activeGameFilter === game.id;
       const matchingChars = isGameVisible ? (game.characters || []).filter(char => 
         char.toLowerCase().includes(searchFilter.toLowerCase())
       ) : [];
@@ -170,3 +230,4 @@ export function renderStrategyHub(navigate) {
   // Initial draw
   draw();
 }
+

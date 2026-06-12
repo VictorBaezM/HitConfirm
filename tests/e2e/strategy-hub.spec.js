@@ -21,6 +21,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     // 2. Verify Strategy Hub page content
     await expect(page.locator('h1.hub-title')).toHaveText('Strategy Hub');
     await expect(page.locator('#strategy-hub-mount')).toBeVisible();
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
 
     // 3. Verify game sections exist (e.g., Guilty Gear -Strive-)
     const ggstSection = page.locator('#section-ggst');
@@ -113,8 +114,15 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     // 1. Go to Strategy Hub
     await page.click('.nav-link[data-page="hub"]');
 
-    // 2. Click a Street Fighter 6 character card (e.g., Ryu)
-    // First clear search and filter to SF6
+    // 2. Click SF6 game chip filter
+    const sf6Chip = page.locator('.btn-chip[data-filter="sf6"]');
+    await expect(sf6Chip).toBeVisible();
+    await sf6Chip.click();
+
+    // Wait for the loading overlay to hide
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
+
+    // 3. Click a Street Fighter 6 character card (e.g., Ryu)
     const searchInput = page.locator('#hub-search');
     await searchInput.fill('Ryu');
     
@@ -122,7 +130,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(ryuCard).toBeVisible();
     await ryuCard.click();
 
-    // 3. Verify the unsupported notice is rendered (Phase 2 degradation notice)
+    // 4. Verify the unsupported notice is rendered (Phase 2 degradation notice)
     await expect(page.locator('.unsupported-notice h3')).toHaveText('Phase 2 Expansion');
     await expect(page.locator('.unsupported-notice')).toContainText('coming in Phase 2');
   });
@@ -131,7 +139,15 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     // 1. Go to Strategy Hub
     await page.click('.nav-link[data-page="hub"]');
 
-    // 2. Search for DNF Duel character Grappler
+    // 2. Click DNF Duel game chip filter
+    const dnfdChip = page.locator('.btn-chip[data-filter="dnfd"]');
+    await expect(dnfdChip).toBeVisible();
+    await dnfdChip.click();
+
+    // Wait for the loading overlay to hide
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
+
+    // 3. Search for DNF Duel character Grappler
     const searchInput = page.locator('#hub-search');
     await searchInput.fill('Grappler');
 
@@ -139,11 +155,11 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(card).toBeVisible();
     await card.click();
 
-    // 3. Verify character page header
+    // 4. Verify character page header
     await expect(page.locator('.character-header h1')).toHaveText('Grappler');
     await expect(page.locator('.character-portrait-large')).toBeVisible();
 
-    // 4. Wait for frame data table to load
+    // 5. Wait for frame data table to load
     const frameTable = page.locator('#data-table-el');
     await expect(frameTable).toBeVisible();
     await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
@@ -151,6 +167,14 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
 
   test('should load Dragon Ball FighterZ character frame data successfully', async ({ page }) => {
     await page.click('.nav-link[data-page="hub"]');
+
+    const dbfzChip = page.locator('.btn-chip[data-filter="dbfz"]');
+    await expect(dbfzChip).toBeVisible();
+    await dbfzChip.click();
+
+    // Wait for the loading overlay to hide
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
+
     const searchInput = page.locator('#hub-search');
     await searchInput.fill('Goku (Super Saiyan)');
 
@@ -168,6 +192,14 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
 
   test('should load DBFZ CE character frame data successfully', async ({ page }) => {
     await page.click('.nav-link[data-page="hub"]');
+
+    const dbfzceChip = page.locator('.btn-chip[data-filter="dbfzce"]');
+    await expect(dbfzceChip).toBeVisible();
+    await dbfzceChip.click();
+
+    // Wait for the loading overlay to hide
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
+
     const searchInput = page.locator('#hub-search');
     await searchInput.fill('SS Goku');
 
@@ -185,6 +217,14 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
 
   test('should load GBVSR character frame data successfully', async ({ page }) => {
     await page.click('.nav-link[data-page="hub"]');
+
+    const gbvsrChip = page.locator('.btn-chip[data-filter="gbvsr"]');
+    await expect(gbvsrChip).toBeVisible();
+    await gbvsrChip.click();
+
+    // Wait for the loading overlay to hide
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/);
+
     const searchInput = page.locator('#hub-search');
     await searchInput.fill('Anila');
 
