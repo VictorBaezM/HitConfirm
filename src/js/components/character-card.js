@@ -1,4 +1,4 @@
-import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterCard({ gameId, charName, navigate }) {
   const card = document.createElement('div');
@@ -9,11 +9,15 @@ export function renderCharacterCard({ gameId, charName, navigate }) {
   img.className = 'portrait';
   
   const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
+  const cachedUrl = getCachedPortraitUrl(gameId, charName);
   let stage;
 
   if (localPortraitUrl) {
     img.src = localPortraitUrl;
     stage = 0; // 0: local, 1: constructed CDN, 2: API query, 3: placeholder
+  } else if (cachedUrl) {
+    img.src = cachedUrl;
+    stage = 2;
   } else {
     const filename = getWikiFilename(gameId, charName);
     img.src = constructCdnUrl(filename, gameId);

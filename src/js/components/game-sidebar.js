@@ -22,11 +22,17 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
     </div>
   `;
 
+  const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
+
   Object.values(games).forEach(function (game) {
     const isActive = activeGame === game.id ? 'active' : '';
+    const logoHtml = KNOWN_LOGOS.includes(game.id)
+      ? `<img src="src/images/logo_${game.id}.png" alt="${game.name}" class="game-logo-image" />`
+      : `<div class="game-logo-text">${game.name}</div>`;
+
     gameItemsHtml += `
       <div class="wiki-console-tab ${isActive}" data-game="${game.id}" id="sidebar-game-${game.id}" title="${game.name}">
-        <img src="src/images/logo_${game.id}.png" alt="${game.name}" class="game-logo-image" />
+        ${logoHtml}
       </div>
     `;
   });

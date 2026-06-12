@@ -27,9 +27,20 @@ export function getLocalPortraitUrl(gameId, charName) {
   const sanitized = charName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
   const list = KNOWN_LOCAL_PORTRAITS[gameId];
   if (list && list.includes(sanitized)) {
-    return `/src/images/characters/${gameId}/${sanitized}.png`;
+    return `src/images/characters/${gameId}/${sanitized}.png`;
   }
   return null;
+}
+
+/**
+ * Synchronously retrieves a cached portrait URL if it exists in the URL cache.
+ * @param {string} gameId
+ * @param {string} charName
+ * @returns {string|null}
+ */
+export function getCachedPortraitUrl(gameId, charName) {
+  const cacheKey = `${gameId}:${charName}`;
+  return urlCache[cacheKey] || null;
 }
 
 /**

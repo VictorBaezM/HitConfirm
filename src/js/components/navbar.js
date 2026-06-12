@@ -176,7 +176,7 @@ export function renderNavbar(activePage, navigateCallback) {
     }
 
     try {
-      const res = await fetch('/src/data/updates.json');
+      const res = await fetch('src/data/updates.json');
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       if (data && data.sha) {

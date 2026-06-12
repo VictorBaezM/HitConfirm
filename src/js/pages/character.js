@@ -4,7 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -12,11 +12,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   if (!mount) return;
 
   const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
+  const cachedUrl = getCachedPortraitUrl(gameId, charName);
   let portraitUrl;
   let initialStage;
   if (localPortraitUrl) {
     portraitUrl = localPortraitUrl;
     initialStage = 0;
+  } else if (cachedUrl) {
+    portraitUrl = cachedUrl;
+    initialStage = 2;
   } else {
     const filename = getWikiFilename(gameId, charName);
     portraitUrl = constructCdnUrl(filename, gameId);
@@ -25,7 +29,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
   const logoHtml = KNOWN_LOGOS.includes(gameId)
-    ? `<img src="/src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
+    ? `<img src="src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
     : `<i class="fa-solid fa-gamepad game-header-logo-large text-muted" style="font-size: 28px; width: 32px; text-align: center;"></i>`;
 
   // Page level state
