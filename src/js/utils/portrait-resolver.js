@@ -43,6 +43,14 @@ export function deleteResolvedImageUrl(originalKey) {
   } catch (e) {}
 }
 
+export function deleteCachedPortraitUrl(gameId, charName) {
+  const cacheKey = `${gameId}:${charName}`;
+  delete urlCache[cacheKey];
+  try {
+    localStorage.setItem(PORTRAIT_CACHE_KEY, JSON.stringify(urlCache));
+  } catch (e) {}
+}
+
 const PORTRAIT_CACHE_KEY = 'hitconfirm_portrait_cache';
 
 // In-memory cache loaded from localStorage if available
@@ -108,7 +116,7 @@ export function getWikiFilename(gameId, charName) {
       'Android 17': 'Android_17',
       'Android 18': 'Android_18',
       'Android 21': 'Android_21',
-      'Android 21 (Lab Coat)': 'Android_21_Lab_Coat',
+      'Android 21 (Lab Coat)': 'Android_21_(Lab_Coat)',
       'Broly (DBS)': 'DBS_Broly',
       'Gogeta (SS4)': 'SS4_Gogeta',
       'Gogeta (SSGSS)': 'SSB_Gogeta',
@@ -144,8 +152,7 @@ export function getWikiFilename(gameId, charName) {
     gbvsr: {
       'Djeeta (EX)': 'Djeeta',
       'Gran (EX)': 'Gran',
-      'Narmaya (EX)': 'Narmaya',
-      'Ladiva': 'Fastiva'
+      'Narmaya (EX)': 'Narmaya'
     }
   };
 

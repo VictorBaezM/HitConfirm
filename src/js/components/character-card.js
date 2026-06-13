@@ -1,4 +1,4 @@
-import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterCard({ gameId, charName, navigate }) {
   const card = document.createElement('div');
@@ -41,6 +41,7 @@ export function renderCharacterCard({ gameId, charName, navigate }) {
     if (img.getAttribute('data-loaded-from-cache') === 'true') {
       img.removeAttribute('data-loaded-from-cache');
       deleteResolvedImageUrl(cacheKey);
+      deleteCachedPortraitUrl(gameId, charName); // Invalidate the API cache too
       stage = 1;
       tryIdx = 0;
       img.src = constructCdnUrl(filename, gameId);
@@ -65,17 +66,20 @@ export function renderCharacterCard({ gameId, charName, navigate }) {
             img.src = url;
             saveResolvedImageUrl(cacheKey, url);
           } else {
+            deleteCachedPortraitUrl(gameId, charName); // Invalidate the cache
             stage = 3;
             img.onerror = null;
             img.src = PLACEHOLDER_SVG;
           }
         }).catch(() => {
+          deleteCachedPortraitUrl(gameId, charName); // Invalidate the cache
           stage = 3;
           img.onerror = null;
           img.src = PLACEHOLDER_SVG;
         });
       }
     } else {
+      deleteCachedPortraitUrl(gameId, charName); // Invalidate the cache
       img.onerror = null;
       img.src = PLACEHOLDER_SVG;
     }

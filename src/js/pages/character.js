@@ -4,7 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl } from '../utils/portrait-resolver.js';
+import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -194,12 +194,14 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         resolvePortraitUrl(gameId, charName).then(url => {
           headerImg.src = url;
         }).catch(() => {
+          deleteCachedPortraitUrl(gameId, charName); // Invalidate cache on failure
           stage = 3;
           headerImg.onerror = null;
           headerImg.src = PLACEHOLDER_SVG;
           checkPortraitLoaded();
         });
       } else {
+        deleteCachedPortraitUrl(gameId, charName); // Invalidate cache on failure
         headerImg.onerror = null;
         headerImg.src = PLACEHOLDER_SVG;
         checkPortraitLoaded();
