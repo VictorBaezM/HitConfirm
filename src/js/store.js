@@ -1183,20 +1183,25 @@ class Store {
       console.warn(`Supabase fetch failed for ${gameId}:`, e);
     }
 
-    // Try client-side direct Cargo API fallback for sf6 and t8
+    // Try client-side direct Cargo API fallback for sf6 and local JSON fallback for t8
     try {
       let wikiData = null;
       if (gameId === 'sf6') {
         wikiData = await fetchSuperComboCargo();
       } else if (gameId === 't8') {
-        wikiData = await fetchWavuCargo();
+        const res = await fetch('src/data/t8_cached.json');
+        if (res.ok) {
+          wikiData = await res.json();
+        } else {
+          throw new Error(`Failed to load local t8 fallback: ${res.statusText}`);
+        }
       }
       if (wikiData && wikiData.length > 0) {
         cache.set(`dustloop_${gameId}`, wikiData);
         return wikiData;
       }
     } catch (wikiErr) {
-      console.warn(`Direct Wiki Cargo fetch fallback failed for ${gameId}:`, wikiErr);
+      console.warn(`Direct Wiki Cargo / local JSON fallback failed for ${gameId}:`, wikiErr);
     }
 
     // Retrieve stale cache as last resort
@@ -1262,40 +1267,6 @@ async function fetchSuperComboCargo() {
     origin: '*'
   });
   return fetchCargoPages('https://wiki.supercombo.gg/api.php', params, (row) => row);
-}
-
-/**
- * Fetch and format Tekken 8 frame data from Wavu Wiki.
- * @returns {Promise<Array<Object>>}
- */
-async function fetchWavuCargo() {
-  const params = new URLSearchParams({
-    action: 'cargoquery',
-    tables: 'Move',
-    fields: '_pageName=page,input,name,damage,startup,image=images,block=onBlock,hit=onHit,ch',
-    format: 'json',
-    origin: '*'
-  });
-  
-  const cleanVal = (val) => (val && val.startsWith(',') ? val.slice(1) : (val || ''));
-
-  return fetchCargoPages('https://wavu.wiki/w/api.php', params, (row) => {
-    const pageMatch = String(row.page || '').match(/^(.+?)\s+movelist$/i);
-    return {
-      chara: pageMatch ? pageMatch[1] : (row.page || ''),
-      input: row.input || '',
-      name: row.name || '',
-      damage: cleanVal(row.damage),
-      guard: '--',
-      startup: cleanVal(row.startup),
-      active: '--',
-      recovery: '--',
-      onBlock: row.onBlock || '',
-      onHit: row.onHit || '',
-      images: '',
-      hitboxes: row.images || ''
-    };
-  });
 }
 
 export const store = new Store();

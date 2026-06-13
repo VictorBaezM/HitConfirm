@@ -77,7 +77,7 @@ export const KNOWN_LOCAL_PORTRAITS = {
   ggst: ['Sol_Badguy'],
   sf6: ['Ryu'],
   ssbu: ['Mario'],
-  t8: ['Kazuya']
+  t8: ['Alisa', 'Asuka', 'Azucena', 'Claudio', 'Devil_Jin', 'Dragunov', 'Eddy', 'Feng', 'Heihachi', 'Hwoarang', 'Jack8', 'Jin', 'Jun', 'Kazuya', 'King', 'Kuma', 'Lars', 'Law', 'Lee', 'Leo', 'Leroy', 'Lidia', 'Lili', 'Nina', 'Panda', 'Paul', 'Raven', 'Reina', 'Shaheen', 'Steve', 'Victor', 'Xiaoyu', 'Yoshimitsu', 'Zafina']
 };
 
 export function getLocalPortraitUrl(gameId, charName) {
