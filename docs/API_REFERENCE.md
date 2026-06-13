@@ -222,6 +222,42 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
   const filename = getWikiFilename('t8', 'Kazuya'); // 'Kazuya_portrait.png'
   ```
 
+### `getLocalPortraitUrl(gameId, charName)`
+* **Description:** Retrieves the local offline/static portrait URL for a character if it is pre-downloaded and registered in `KNOWN_LOCAL_PORTRAITS`.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier (e.g. `'t8'`).
+  * `charName` (`string`): The character's name.
+* **Returns:** `string|null` - The local relative image path or `null` if not registered.
+* **Example:**
+  ```javascript
+  import { getLocalPortraitUrl } from './portrait-resolver.js';
+  const url = getLocalPortraitUrl('t8', 'Alisa'); // 'src/images/characters/t8/Alisa.png'
+  ```
+
+### `getCachedPortraitUrl(gameId, charName)`
+* **Description:** Synchronously retrieves a resolved portrait URL from the localStorage-backed cache if it exists. Automatically invalidates the entry if it contains a placeholder or broken URL.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier.
+  * `charName` (`string`): The character's name.
+* **Returns:** `string|null` - The cached portrait URL or `null` if not cached.
+* **Example:**
+  ```javascript
+  import { getCachedPortraitUrl } from './portrait-resolver.js';
+  const url = getCachedPortraitUrl('t8', 'Kazuya');
+  ```
+
+### `deleteCachedPortraitUrl(gameId, charName)`
+* **Description:** Deletes a portrait URL from the localStorage-backed API cache (`hitconfirm_portrait_cache`).
+* **Parameters:**
+  * `gameId` (`string`): The game identifier.
+  * `charName` (`string`): The character's name.
+* **Returns:** `void`
+* **Example:**
+  ```javascript
+  import { deleteCachedPortraitUrl } from './portrait-resolver.js';
+  deleteCachedPortraitUrl('t8', 'Alisa');
+  ```
+
 ---
 
 ## 2. Core Routing & Bootstrap
@@ -491,11 +527,6 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
 * **Description:** Fetches all frame data rows for Street Fighter 6 directly from SuperCombo Wiki's Cargo API.
 * **Parameters:** None.
 * **Returns:** `Promise<Array<Object>>` - Street Fighter 6 moves dataset.
-
-### `fetchWavuCargo()`
-* **Description:** Fetches all move rows for Tekken 8 directly from Wavu Wiki's Cargo API, normalizes Tekken-specific leading commas in fields, and parses character page titles.
-* **Parameters:** None.
-* **Returns:** `Promise<Array<Object>>` - Tekken 8 moves dataset.
 
 ---
 
