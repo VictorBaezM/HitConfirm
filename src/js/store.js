@@ -50,7 +50,7 @@ const DEFAULT_GAMES = {
   ssbu: {
     id: 'ssbu',
     name: 'Super Smash Bros. Ultimate',
-    characters: ['Mario', 'Donkey Kong', 'Link', 'Samus', 'Dark Samus', 'Yoshi', 'Kirby', 'Fox', 'Pikachu', 'Luigi', 'Ness', 'Captain Falcon', 'Jigglypuff', 'Peach', 'Daisy', 'Bowser', 'Ice Climancers', 'Sheik', 'Zelda', 'Dr. Mario', 'Pichu', 'Falco', 'Marth', 'Lucina', 'Young Link', 'Ganondorf', 'Mewtwo', 'Roy', 'Chrom', 'Mr. Game & Watch', 'Meta Knight', 'Pit', 'Dark Pit', 'Zero Suit Samus', 'Wario', 'Snake', 'Ike', 'Pokemon Trainer', 'Diddy Kong', 'Lucas', 'Sonic', 'King Dedede', 'Olimar', 'Lucario', 'R.O.B.', 'Toon Link', 'Wolf', 'Villager', 'Mega Man', 'Wii Fit Trainer', 'Rosalina & Luma', 'Little Mac', 'Greninja', 'Palutena', 'Pac-Man', 'Robin', 'Shulk', 'Bowser Jr.', 'Duck Hunt', 'Ryu', 'Ken', 'Cloud', 'Corrin', 'Bayonetta', 'Inkling', 'Ridley', 'Simon', 'Richter', 'King K. Rool', 'Isabelle', 'Incineroar', 'Piranha Plant', 'Joker', 'Hero', 'Banjo & Kazooie', 'Terry', 'Byleth', 'Min Min', 'Steve', 'Sephiroth', 'Pyra/Mythra', 'Kazuya', 'Sora', 'Mii Fighter'],
+    characters: ['Mario', 'Donkey Kong', 'Link', 'Samus', 'Dark Samus', 'Yoshi', 'Kirby', 'Fox', 'Pikachu', 'Luigi', 'Ness', 'Captain Falcon', 'Jigglypuff', 'Peach', 'Daisy', 'Bowser', 'Ice Climancers', 'Sheik', 'Zelda', 'Dr. Mario', 'Pichu', 'Falco', 'Marth', 'Lucina', 'Young Link', 'Ganondorf', 'Mewtwo', 'Roy', 'Chrom', 'Mr. Game & Watch', 'Meta Knight', 'Pit', 'Dark Pit', 'Zero Suit Samus', 'Wario', 'Snake', 'Ike', 'Squirtle', 'Ivysaur', 'Charizard', 'Diddy Kong', 'Lucas', 'Sonic', 'King Dedede', 'Olimar', 'Lucario', 'R.O.B.', 'Toon Link', 'Wolf', 'Villager', 'Mega Man', 'Wii Fit Trainer', 'Rosalina & Luma', 'Little Mac', 'Greninja', 'Palutena', 'Pac-Man', 'Robin', 'Shulk', 'Bowser Jr.', 'Duck Hunt', 'Ryu', 'Ken', 'Cloud', 'Corrin', 'Bayonetta', 'Inkling', 'Ridley', 'Simon', 'Richter', 'King K. Rool', 'Isabelle', 'Incineroar', 'Piranha Plant', 'Joker', 'Hero', 'Banjo & Kazooie', 'Terry', 'Byleth', 'Min Min', 'Steve', 'Sephiroth', 'Pyra', 'Mythra', 'Kazuya', 'Sora', 'Mii Brawler', 'Mii Swordfighter', 'Mii Gunner'],
     notationType: 'smash'
   }
 };
@@ -1174,19 +1174,35 @@ class Store {
 
       if (error) throw error;
       if (data && data.data) {
-        // Check if game is unsupported
-        if (data.data._unsupported) {
+        if (!data.data._unsupported) {
+          cache.set(`dustloop_${gameId}`, data.data);
           return data.data;
         }
-        cache.set(`dustloop_${gameId}`, data.data);
-        return data.data;
       }
     } catch (e) {
-      console.warn(`Supabase fetch failed for ${gameId}, attempting stale cache:`, e);
-      // Retrieve even if stale (ignore maxAge) as fallback
-      const stale = cache.get(`dustloop_${gameId}`);
-      if (stale) return stale;
+      console.warn(`Supabase fetch failed for ${gameId}:`, e);
     }
+
+    // Try client-side direct Cargo API fallback for sf6 and t8
+    try {
+      let wikiData = null;
+      if (gameId === 'sf6') {
+        wikiData = await fetchSuperComboCargo();
+      } else if (gameId === 't8') {
+        wikiData = await fetchWavuCargo();
+      }
+      if (wikiData && wikiData.length > 0) {
+        cache.set(`dustloop_${gameId}`, wikiData);
+        return wikiData;
+      }
+    } catch (wikiErr) {
+      console.warn(`Direct Wiki Cargo fetch fallback failed for ${gameId}:`, wikiErr);
+    }
+
+    // Retrieve stale cache as last resort
+    const stale = cache.get(`dustloop_${gameId}`);
+    if (stale) return stale;
+
     return [];
   }
 
@@ -1199,6 +1215,87 @@ class Store {
   getCachedDustloopData(gameId, maxAgeMs) {
     return cache.get(`dustloop_${gameId}`, maxAgeMs);
   }
+}
+
+/**
+ * Generic helper to fetch paginated Cargo data.
+ * @param {string} apiBase
+ * @param {URLSearchParams} params
+ * @param {function} formatRow
+ * @returns {Promise<Array<Object>>}
+ */
+async function fetchCargoPages(apiBase, params, formatRow) {
+  const allRows = [];
+  let offset = 0;
+  const limit = 500;
+  params.set('limit', String(limit));
+
+  while (true) {
+    params.set('offset', String(offset));
+    const res = await fetch(`${apiBase}?${params.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const rows = json?.cargoquery ?? [];
+    if (rows.length === 0) break;
+
+    for (const row of rows) {
+      if (row.title) {
+        allRows.push(formatRow(row.title));
+      }
+    }
+    if (rows.length < limit) break;
+    offset += limit;
+  }
+  return allRows;
+}
+
+/**
+ * Fetch and format SF6 frame data from SuperCombo Wiki.
+ * @returns {Promise<Array<Object>>}
+ */
+async function fetchSuperComboCargo() {
+  const params = new URLSearchParams({
+    action: 'cargoquery',
+    tables: 'SF6_FrameData',
+    fields: 'chara,input,name,damage,guard,startup,active,recovery,hitAdv=onHit,blockAdv=onBlock,images,hitboxes',
+    format: 'json',
+    origin: '*'
+  });
+  return fetchCargoPages('https://wiki.supercombo.gg/api.php', params, (row) => row);
+}
+
+/**
+ * Fetch and format Tekken 8 frame data from Wavu Wiki.
+ * @returns {Promise<Array<Object>>}
+ */
+async function fetchWavuCargo() {
+  const params = new URLSearchParams({
+    action: 'cargoquery',
+    tables: 'Move',
+    fields: '_pageName=page,input,name,damage,startup,image=images,block=onBlock,hit=onHit,ch',
+    format: 'json',
+    origin: '*'
+  });
+  
+  const cleanVal = (val) => (val && val.startsWith(',') ? val.slice(1) : (val || ''));
+
+  return fetchCargoPages('https://wavu.wiki/w/api.php', params, (row) => {
+    const pageMatch = String(row.page || '').match(/^(.+?)\s+movelist$/i);
+    return {
+      chara: pageMatch ? pageMatch[1] : (row.page || ''),
+      input: row.input || '',
+      name: row.name || '',
+      damage: cleanVal(row.damage),
+      guard: '--',
+      startup: cleanVal(row.startup),
+      active: '--',
+      recovery: '--',
+      onBlock: row.onBlock || '',
+      onHit: row.onHit || '',
+      images: '',
+      hitboxes: row.images || ''
+    };
+  });
 }
 
 export const store = new Store();

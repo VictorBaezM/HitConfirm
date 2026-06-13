@@ -162,6 +162,66 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
   const html = parseComboToHtml('5K > 2D > 214K');
   ```
 
+### `getWikiApiUrl(gameId)`
+* **Description:** Resolves the MediaWiki API endpoint URL for the given game based on `WIKI_CONFIG`.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier (e.g. `'sf6'`, `'t8'`, `'ggst'`).
+* **Returns:** `string` - The API endpoint URL.
+* **Example:**
+  ```javascript
+  import { getWikiApiUrl } from './portrait-resolver.js';
+  const url = getWikiApiUrl('t8'); // 'https://wavu.wiki/w/api.php'
+  ```
+
+### `resolvePortraitUrl(gameId, charName)`
+* **Description:** Retrieves the character portrait image URL from the corresponding game's wiki API. Falls back to MD5-based direct CDN URL computation or local cached URLs on failure.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier (e.g. `'sf6'`).
+  * `charName` (`string`): The character's name.
+* **Returns:** `Promise<string>` - The resolved portrait image URL (or placeholder SVG if unresolved).
+* **Example:**
+  ```javascript
+  import { resolvePortraitUrl } from './portrait-resolver.js';
+  const url = await resolvePortraitUrl('sf6', 'Ryu');
+  ```
+
+### `constructCdnUrl(filename, gameId, customBaseUrl)`
+* **Description:** Computes the direct MediaWiki CDN image URL for a given filename using MD5 hashing of the filename.
+* **Parameters:**
+  * `filename` (`string`): The wiki file name (e.g. `'Ryu_Portrait.png'`).
+  * `gameId` (`string`, optional): The game identifier. Defaults to `'ggst'`.
+  * `customBaseUrl` (`string`, optional): Custom base images path override.
+* **Returns:** `string` - The constructed direct CDN URL.
+* **Example:**
+  ```javascript
+  import { constructCdnUrl } from './portrait-resolver.js';
+  const url = constructCdnUrl('SF6_Ryu_Portrait.png', 'sf6');
+  ```
+
+### `resolveFileUrls(filenames, gameId)`
+* **Description:** Resolves direct CDN URLs for a list of filenames in a single query by fetching metadata from the wiki API, falling back to hashed direct CDN URLs.
+* **Parameters:**
+  * `filenames` (`Array<string>`): List of wiki filenames.
+  * `gameId` (`string`, optional): Game identifier. Defaults to `'ggst'`.
+* **Returns:** `Promise<Object.<string, string>>` - An object mapping each filename to its resolved direct URL.
+* **Example:**
+  ```javascript
+  import { resolveFileUrls } from './portrait-resolver.js';
+  const urls = await resolveFileUrls(['FileA.png', 'FileB.png'], 'ggst');
+  ```
+
+### `getWikiFilename(gameId, charName)`
+* **Description:** Returns the standard wiki filename for a character portrait based on the game ID and custom character mappings.
+* **Parameters:**
+  * `gameId` (`string`): Game identifier.
+  * `charName` (`string`): Character name.
+* **Returns:** `string` - The wiki filename.
+* **Example:**
+  ```javascript
+  import { getWikiFilename } from './portrait-resolver.js';
+  const filename = getWikiFilename('t8', 'Kazuya'); // 'Kazuya_portrait.png'
+  ```
+
 ---
 
 ## 2. Core Routing & Bootstrap
@@ -407,6 +467,35 @@ Provides YouTube URL parsing, oEmbed title fetching, and game/character keyword 
 * **Parameters:**
   * `strategyId` (`string`): Guide ID.
 * **Returns:** `Promise<Object>` - Success status.
+
+### `Store.fetchDustloopData(gameId)`
+* **Description:** Fetches character frame data for a given game. Queries the Supabase `dustloop_cache` table first. If the cache is missing or outdated, or if the game is unsupported in Supabase, attempts direct CORS-enabled Cargo queries on client-side wiki APIs (SuperCombo Cargo for `sf6`, Wavu Cargo for `t8`) as a resilient fallback.
+* **Parameters:**
+  * `gameId` (`string`): The game identifier (e.g. `'sf6'`, `'ggst'`).
+* **Returns:** `Promise<Array<Object>>` - Array of move records.
+* **Example:**
+  ```javascript
+  import { store } from './store.js';
+  const data = await store.fetchDustloopData('sf6');
+  ```
+
+### `fetchCargoPages(apiBase, params, formatRow)`
+* **Description:** A helper function that handles MediaWiki Cargo API pagination by fetching pages of results sequentially until all rows are retrieved.
+* **Parameters:**
+  * `apiBase` (`string`): MediaWiki API endpoint URL.
+  * `params` (`URLSearchParams`): Query parameters.
+  * `formatRow` (`function`): Formatting callback applied to each Cargo result title.
+* **Returns:** `Promise<Array<Object>>` - List of formatted rows.
+
+### `fetchSuperComboCargo()`
+* **Description:** Fetches all frame data rows for Street Fighter 6 directly from SuperCombo Wiki's Cargo API.
+* **Parameters:** None.
+* **Returns:** `Promise<Array<Object>>` - Street Fighter 6 moves dataset.
+
+### `fetchWavuCargo()`
+* **Description:** Fetches all move rows for Tekken 8 directly from Wavu Wiki's Cargo API, normalizes Tekken-specific leading commas in fields, and parses character page titles.
+* **Parameters:** None.
+* **Returns:** `Promise<Array<Object>>` - Tekken 8 moves dataset.
 
 ---
 

@@ -110,7 +110,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(page.locator('h1.hub-title')).toHaveText('Strategy Hub');
   });
 
-  test('should display grace notice for Phase 2 unsupported titles', async ({ page }) => {
+  test('should load Street Fighter 6 character frame data successfully', async ({ page }) => {
     // 1. Go to Strategy Hub
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
@@ -131,9 +131,14 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(ryuCard).toBeVisible();
     await ryuCard.click();
 
-    // 4. Verify the unsupported notice is rendered (Phase 2 degradation notice)
-    await expect(page.locator('.unsupported-notice h3')).toHaveText('Phase 2 Expansion');
-    await expect(page.locator('.unsupported-notice')).toContainText('coming in Phase 2');
+    // 4. Verify character page header
+    await expect(page.locator('.character-header h1')).toHaveText('Ryu');
+    await expect(page.locator('.character-portrait-large')).toBeVisible();
+
+    // 5. Wait for frame data table to load
+    const frameTable = page.locator('#data-table-el');
+    await expect(frameTable).toBeVisible();
+    await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
   });
 
   test('should load DNF Duel character frame data successfully', async ({ page }) => {

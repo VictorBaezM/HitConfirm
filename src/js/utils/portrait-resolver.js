@@ -10,7 +10,7 @@ export const WIKI_CONFIG = {
   dbfzce: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
   gbvsr: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
   dnfd: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
-  ssbu: { primary: 'https://www.smashwiki.com', fallbacks: ['https://www.dustloop.com/wiki'] },
+  ssbu: { primary: 'https://www.ssbwiki.com', fallbacks: ['https://www.dustloop.com/wiki'] },
   t8: { primary: 'https://wavu.wiki', fallbacks: ['https://www.dustloop.com/wiki'] }
 };
 
@@ -153,6 +153,12 @@ export function getWikiFilename(gameId, charName) {
       'Djeeta (EX)': 'Djeeta',
       'Gran (EX)': 'Gran',
       'Narmaya (EX)': 'Narmaya'
+    },
+    ssbu: {
+      'Ice Climancers': 'Ice_Climbers',
+      'Mr. Game & Watch': 'Mr._Game_&_Watch',
+      'Rosalina & Luma': 'Rosalina_&_Luma',
+      'Banjo & Kazooie': 'Banjo_&_Kazooie'
     }
   };
 
@@ -177,9 +183,30 @@ export function getWikiFilename(gameId, charName) {
       return `GBVSR_${cleanName}_Portrait.png`;
     case 'dnfd':
       return `DNFD_${cleanName}_Portrait.png`;
+    case 'sf6':
+      return `SF6_${cleanName}_Portrait.png`;
+    case 't8':
+      return `${cleanName}_portrait.png`;
+    case 'ssbu':
+      return `${cleanName}_SSBU.png`;
     default:
       return `${cleanName}_Portrait.png`;
   }
+}
+
+/**
+ * Resolves the MediaWiki API URL for the given game.
+ * @param {string} gameId
+ * @returns {string}
+ */
+export function getWikiApiUrl(gameId) {
+  const config = WIKI_CONFIG[gameId];
+  if (!config) return 'https://www.dustloop.com/wiki/api.php';
+  const primary = config.primary;
+  if (primary.includes('wavu.wiki')) {
+    return 'https://wavu.wiki/w/api.php';
+  }
+  return `${primary}/api.php`;
 }
 
 /**
@@ -197,6 +224,7 @@ export async function resolvePortraitUrl(gameId, charName) {
 
   const filename = getWikiFilename(gameId, charName);
   const title = `File:${filename}`;
+  const apiUrl = getWikiApiUrl(gameId);
 
   try {
     const params = new URLSearchParams({
@@ -208,7 +236,7 @@ export async function resolvePortraitUrl(gameId, charName) {
       origin: '*' // Allow cross-origin requests
     });
 
-    const res = await fetch(`https://www.dustloop.com/wiki/api.php?${params.toString()}`);
+    const res = await fetch(`${apiUrl}?${params.toString()}`);
     if (!res.ok) throw new Error(`MediaWiki status ${res.status}`);
 
     const json = await res.json();
@@ -301,9 +329,18 @@ export function constructCdnUrl(filename, gameId = 'ggst', customBaseUrl = null)
     baseImgUrl = customBaseUrl.endsWith('/images') ? customBaseUrl : `${customBaseUrl}/images`;
   } else {
     const isSuperCombo = (gameId === 'sf6');
-    baseImgUrl = isSuperCombo 
-      ? 'https://wiki.supercombo.gg/images' 
-      : 'https://www.dustloop.com/wiki/images';
+    const isSmash = (gameId === 'ssbu');
+    const isTekken = (gameId === 't8');
+    
+    if (isSuperCombo) {
+      baseImgUrl = 'https://wiki.supercombo.gg/images';
+    } else if (isSmash) {
+      baseImgUrl = 'https://ssb.wiki.gallery/images';
+    } else if (isTekken) {
+      baseImgUrl = 'https://wavu.wiki/w/images';
+    } else {
+      baseImgUrl = 'https://www.dustloop.com/wiki/images';
+    }
   }
 
   let wikiName = filename.replace(/\s+/g, '_');
@@ -329,11 +366,7 @@ export async function resolveFileUrls(filenames, gameId = 'ggst') {
   const cleanNames = filenames.filter(Boolean).map(f => f.trim());
   if (cleanNames.length === 0) return {};
 
-  const isSuperCombo = (gameId === 'sf6');
-  const baseApiUrl = isSuperCombo 
-    ? 'https://wiki.supercombo.gg/api.php' 
-    : 'https://www.dustloop.com/wiki/api.php';
-
+  const baseApiUrl = getWikiApiUrl(gameId);
   const result = {};
 
   // 1. Generate direct MD5 CDN URL fallbacks for all files
