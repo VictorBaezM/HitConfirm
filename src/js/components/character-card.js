@@ -7,6 +7,7 @@ export function renderCharacterCard({ gameId, charName, navigate }) {
   const img = document.createElement('img');
   img.alt = charName;
   img.className = 'portrait';
+  img.referrerPolicy = 'no-referrer';
   
   const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
   const cacheKey = `${gameId}:portrait:${charName}`;

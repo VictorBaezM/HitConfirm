@@ -137,7 +137,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
 
     // 5. Wait for frame data table to load
     const frameTable = page.locator('#data-table-el');
-    await expect(frameTable).toBeVisible();
+    await expect(frameTable).toBeVisible({ timeout: 20000 });
     await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
   });
 

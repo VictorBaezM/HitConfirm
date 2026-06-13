@@ -117,7 +117,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         
         <div class="character-header flex justify-between items-end gap-4 mt-6 pb-6">
           <div class="flex items-center gap-4">
-            <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" />
+            <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" referrerpolicy="no-referrer" />
             <div>
               <h1 class="gradient-text m-0">${charName}</h1>
               <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
@@ -599,6 +599,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         let tryIdx = 0;
 
         const img = new Image();
+        img.referrerPolicy = 'no-referrer';
 
         function tryNextBase() {
           if (tryIdx < allBases.length) {
@@ -618,6 +619,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
               if (resolvedUrl) {
                 const apiImg = new Image();
+                apiImg.referrerPolicy = 'no-referrer';
                 apiImg.onload = () => {
                   saveResolvedImageUrl(cacheKey, resolvedUrl);
                   resolve(resolvedUrl);
@@ -655,6 +657,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         const cachedResolved = getResolvedImageUrl(cacheKey);
         if (cachedResolved) {
           const img = new Image();
+          img.referrerPolicy = 'no-referrer';
           img.onload = () => resolve(cachedResolved);
           img.onerror = () => {
             deleteResolvedImageUrl(cacheKey);
@@ -762,7 +765,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <i class="fa-solid fa-gamepad"></i> Action Frame
           </h5>
           <div class="move-image-wrapper">
-            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
+            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
           </div>
         </div>
       `;
@@ -803,7 +806,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             </span>
           </h5>
           <div class="move-image-wrapper">
-            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" />
+            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
           </div>
         </div>
       `;

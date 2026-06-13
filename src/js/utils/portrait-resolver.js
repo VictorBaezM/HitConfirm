@@ -27,6 +27,9 @@ try {
 }
 
 export function saveResolvedImageUrl(originalKey, resolvedUrl) {
+  if (!resolvedUrl || resolvedUrl.startsWith('data:image/svg+xml') || resolvedUrl.includes('placeholder')) {
+    return;
+  }
   resolvedImageCache[originalKey] = resolvedUrl;
   try {
     localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(resolvedImageCache));
@@ -34,7 +37,12 @@ export function saveResolvedImageUrl(originalKey, resolvedUrl) {
 }
 
 export function getResolvedImageUrl(originalKey) {
-  return resolvedImageCache[originalKey] || null;
+  const val = resolvedImageCache[originalKey];
+  if (val && (val.startsWith('data:image/svg+xml') || val.includes('placeholder'))) {
+    deleteResolvedImageUrl(originalKey);
+    return null;
+  }
+  return val || null;
 }
 
 export function deleteResolvedImageUrl(originalKey) {
@@ -89,7 +97,12 @@ export function getLocalPortraitUrl(gameId, charName) {
  */
 export function getCachedPortraitUrl(gameId, charName) {
   const cacheKey = `${gameId}:${charName}`;
-  return urlCache[cacheKey] || null;
+  const val = urlCache[cacheKey];
+  if (val && (val.startsWith('data:image/svg+xml') || val.includes('placeholder'))) {
+    deleteCachedPortraitUrl(gameId, charName);
+    return null;
+  }
+  return val || null;
 }
 
 /**
