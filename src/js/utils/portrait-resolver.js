@@ -1,5 +1,6 @@
 // src/js/utils/portrait-resolver.js
 // Utility to dynamically fetch character portraits from Dustloop/Fandom Wiki.
+import { md5 } from './md5.js';
 
 export const PLACEHOLDER_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200" width="150" height="200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e1e24" /><stop offset="100%" stop-color="%23121214" /></linearGradient><linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="%23ff6b00" /><stop offset="100%" stop-color="%2300cbd6" /></linearGradient></defs><rect width="100%" height="100%" fill="url(%23bg)" rx="8" /><rect width="100%" height="100%" fill="none" stroke="url(%23accent)" stroke-width="2" rx="8" opacity="0.3" /><path d="M45,90 C35,90 25,98 25,115 C25,130 35,145 50,145 C58,145 65,138 75,138 C85,138 92,145 100,145 C115,145 125,130 125,115 C125,98 115,90 105,90 L45,90 Z" fill="%232d2d38" /><circle cx="48" cy="115" r="5" fill="%234a4a5a" /><circle cx="62" cy="115" r="5" fill="%234a4a5a" /><circle cx="102" cy="110" r="4" fill="%23ff6b00" /><circle cx="92" cy="120" r="4" fill="%2300cbd6" /><circle cx="102" cy="120" r="4" fill="%23ffd200" /><text x="75" y="65" font-family="monospace, sans-serif" font-size="12" font-weight="bold" fill="%234a4a5a" text-anchor="middle" letter-spacing="1">HITCONFIRM</text><text x="75" y="170" font-family="sans-serif" font-size="10" font-weight="bold" fill="%236a6a7a" text-anchor="middle">NO IMAGE</text></svg>';
 
@@ -263,58 +264,7 @@ export async function resolvePortraitUrl(gameId, charName) {
   return PLACEHOLDER_SVG;
 }
 
-// Compact MD5 implementation for MediaWiki filename hashing path calculation
-function md5(str) {
-  var k = [], i = 0;
-  for (; i < 64; ) k[i] = 0 | (Math.abs(Math.sin(++i)) * 4294967296);
-  var s = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
-  var h = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476];
-  var words = [];
-  var strLen = str.length;
-  for (i = 0; i < strLen; i++) words[i >> 2] |= (str.charCodeAt(i) & 0xff) << ((i % 4) * 8);
-  words[strLen >> 2] |= 0x80 << ((strLen % 4) * 8);
-  var wordsLen = ((strLen + 8) >> 6) * 16 + 14;
-  words[wordsLen] = strLen * 8;
-  for (var j = 0; j < wordsLen; j += 16) {
-    var a = h[0], b = h[1], c = h[2], d = h[3];
-    for (i = 0; i < 64; i++) {
-      var f, g;
-      if (i < 16) {
-        f = (b & c) | (~b & d);
-        g = i;
-      } else if (i < 32) {
-        f = (d & b) | (~d & c);
-        g = (5 * i + 1) % 16;
-      } else if (i < 48) {
-        f = b ^ c ^ d;
-        g = (3 * i + 5) % 16;
-      } else {
-        f = c ^ (b | ~d);
-        g = (7 * i) % 16;
-      }
-      var temp = d;
-      d = c;
-      c = b;
-      b = b + RotateLeft(a + f + k[i] + (words[j + g] || 0), s[(i >> 4) * 4 + (i % 4)]);
-      a = temp;
-    }
-    h[0] = (h[0] + a) | 0;
-    h[1] = (h[1] + b) | 0;
-    h[2] = (h[2] + c) | 0;
-    h[3] = (h[3] + d) | 0;
-  }
-  function RotateLeft(lValue, iShiftBits) {
-    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
-  }
-  var res = "";
-  for (i = 0; i < 4; i++) {
-    for (var n = 0; n < 4; n++) {
-      var val = (h[i] >> (n * 8)) & 0xff;
-      res += (val < 16 ? "0" : "") + val.toString(16);
-    }
-  }
-  return res;
-}
+
 
 /**
  * Constructs the direct MediaWiki MD5-hashed CDN URL for a given filename.
