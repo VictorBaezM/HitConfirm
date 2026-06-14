@@ -116,7 +116,6 @@ function parseComboStep(stepStr) {
   }
 
   // 3. Process remaining action button codes
-  // We can look for buttons (P, K, S, HS, D, LP, MP, HP, LK, MK, HK, etc.)
   let remaining = trimmed.toLowerCase();
   
   // Special prefixes like 'c.' or 'f.' in Guilty Gear (close/far slash)
@@ -130,14 +129,36 @@ function parseComboStep(stepStr) {
   const buttonKeys = Object.keys(BUTTON_CLASSES).sort(function (a, b) { return b.length - a.length; });
   
   while (remaining.length > 0) {
+    if (remaining.startsWith(' ')) {
+      remaining = remaining.trimStart();
+      continue;
+    }
+    if (remaining.startsWith('.') || remaining.startsWith('+') || remaining.startsWith(',') || remaining.startsWith('>')) {
+      remaining = remaining.substring(1);
+      continue;
+    }
+
+    // Check directions dynamically inside the loop
+    let loopDirMatched = false;
+    for (const dirKey of ['d/f', 'd/b', 'u/f', 'u/b', 'f', 'b', 'd', 'u']) {
+      if (remaining.startsWith(dirKey)) {
+        const arrow = DIRECTION_ARROWS[dirKey];
+        html += `<span class="combo-dir" title="Direction ${dirKey}">${arrow}</span>`;
+        remaining = remaining.substring(dirKey.length);
+        loopDirMatched = true;
+        break;
+      }
+    }
+    if (loopDirMatched) {
+      parsedAny = true;
+      continue;
+    }
+
     let abbrevMatched = false;
     for (const abbrev of ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch']) {
       if (remaining.startsWith(abbrev)) {
         html += `<span class="combo-custom-action">${abbrev.toUpperCase()}</span>`;
         remaining = remaining.substring(abbrev.length);
-        if (remaining.startsWith('+')) {
-          remaining = remaining.substring(1);
-        }
         abbrevMatched = true;
         break;
       }
@@ -153,23 +174,23 @@ function parseComboStep(stepStr) {
         const btnClass = BUTTON_CLASSES[btnKey];
         html += `<span class="combo-btn ${btnClass}">${btnKey.toUpperCase()}</span>`;
         remaining = remaining.substring(btnKey.length);
-        
-        // Skip '+' between buttons
-        if (remaining.startsWith('+')) {
-          remaining = remaining.substring(1);
-        }
-        
         buttonMatched = true;
-        parsedAny = true;
         break;
       }
     }
 
     if (!buttonMatched) {
-      // If we can't parse a specific letter, just output it as custom text inside the step bubble
-      const char = remaining.charAt(0).toUpperCase();
-      html += `<span class="combo-custom-action">${char}</span>`;
-      remaining = remaining.substring(1);
+      // Try to match a letters-only word (like "throw", "grab", "pummel", etc.)
+      const wordMatch = remaining.match(/^[a-z]+/i);
+      if (wordMatch) {
+        const word = wordMatch[0];
+        html += `<span class="combo-custom-action">${word.toUpperCase()}</span>`;
+        remaining = remaining.substring(word.length);
+      } else {
+        const char = remaining.charAt(0).toUpperCase();
+        html += `<span class="combo-custom-action">${char}</span>`;
+        remaining = remaining.substring(1);
+      }
       parsedAny = true;
     }
   }

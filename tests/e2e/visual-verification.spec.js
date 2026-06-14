@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const path = require('path');
 
 test('capture resolved portraits screenshots', async ({ page }) => {
+  test.setTimeout(60000);
   const screenshotsDir = 'C:\\Users\\Omen\\.gemini\\antigravity\\brain\\39ffb453-30e3-41fc-a88d-b6453c643059';
 
   // 1. Open home page

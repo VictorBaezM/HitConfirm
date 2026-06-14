@@ -2,6 +2,7 @@
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
 import { hideGameSidebar } from '../components/game-sidebar.js';
+import { parseComboToHtml } from '../utils/combo-parser.js';
 
 /**
  * Renders the Strategy Hub page, containing directories of matchup strategy articles,
@@ -126,12 +127,12 @@ export function renderStrategyPage(navigateCallback) {
     if (!tbody) return;
 
     const data = [
-      { game: 'sf6', char: 'Ken', move: 'Medium Dragonlash (623MK)', block: '+1', punish: 'Interrupt startup (22f)' },
-      { game: 'sf6', char: 'Ryu', move: 'Heavy Donkey Kick (236HK)', block: '-14', punish: 'Standard cr.MK Link' },
-      { game: 't8', char: 'Reina', move: 'Sentai low sweep (SEN 3)', block: '-12', punish: 'i12 ws Twin Pistons (ws4,4)' },
-      { game: 't8', char: 'Yoshimitsu', move: 'Flash (d+1+4)', block: '-15', punish: 'Block & launch (u/f+4)' },
-      { game: 'ggst', char: 'Sol Badguy', move: 'Fafnir (41236HS)', block: '+2', punish: 'Faultless defend to push back' },
-      { game: 'ggst', char: 'Ky Kiske', move: 'Stun Dipper (236K)', block: '-15', punish: 'Far S > 2S or full launch punch' }
+      { game: 'sf6', char: 'Ken', moveName: 'Medium Dragonlash', moveInput: '623MK', block: '+1', punishDesc: 'Interrupt startup (22f)', punishInput: '5LP' },
+      { game: 'sf6', char: 'Ryu', moveName: 'Heavy Donkey Kick', moveInput: '236HK', block: '-14', punishDesc: 'Link cr.MK into combos', punishInput: '2MK' },
+      { game: 't8', char: 'Reina', moveName: 'Sentai low sweep', moveInput: 'SEN 3', block: '-12', punishDesc: 'ws Twin Pistons', punishInput: 'ws4,4' },
+      { game: 't8', char: 'Yoshimitsu', moveName: 'Flash', moveInput: 'd+1+4', block: '-15', punishDesc: 'Block & launch', punishInput: 'u/f+4' },
+      { game: 'ggst', char: 'Sol Badguy', moveName: 'Fafnir', moveInput: '41236HS', block: '+2', punishDesc: 'Faultless defend to push back', punishInput: '' },
+      { game: 'ggst', char: 'Ky Kiske', moveName: 'Stun Dipper', moveInput: '236K', block: '-15', punishDesc: 'Launch punish', punishInput: 'f.S > 2S' }
     ];
 
     const filtered = selectedGame === 'all' ? data : data.filter(function (d) { return d.game === selectedGame; });
@@ -144,11 +145,27 @@ export function renderStrategyPage(navigateCallback) {
     tbody.innerHTML = filtered.map(function (d) {
       return `
         <tr class="strategy-matrix-tr">
-          <td class="strategy-matrix-td-game">${d.game}</td>
+          <td class="strategy-matrix-td-game">${d.game.toUpperCase()}</td>
           <td class="strategy-matrix-td-char">${d.char}</td>
-          <td class="strategy-matrix-td-move">${d.move}</td>
+          <td class="strategy-matrix-td-move">
+            <div class="strategy-matrix-move-container">
+              <span class="strategy-matrix-move-name" style="font-weight: 500;">${d.moveName}</span>
+              <div class="strategy-matrix-move-input" style="margin-top: 4px;">
+                ${parseComboToHtml(d.moveInput)}
+              </div>
+            </div>
+          </td>
           <td class="strategy-matrix-td-block" style="color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
-          <td class="strategy-matrix-td-punish">${d.punish}</td>
+          <td class="strategy-matrix-td-punish">
+            <div class="strategy-matrix-punish-container">
+              <span class="strategy-matrix-punish-desc">${d.punishDesc}</span>
+              ${d.punishInput ? `
+                <div class="strategy-matrix-punish-input" style="margin-top: 4px;">
+                  ${parseComboToHtml(d.punishInput)}
+                </div>
+              ` : ''}
+            </div>
+          </td>
         </tr>
       `;
     }).join('');

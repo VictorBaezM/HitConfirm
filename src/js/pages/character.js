@@ -5,6 +5,82 @@
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
 import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
+import { parseComboToHtml } from '../utils/combo-parser.js';
+
+function normalizeSf6Command(input) {
+  if (!input) return '';
+  let normalized = input.trim();
+  normalized = normalized
+    .replace(/Down-Forward/gi, '3')
+    .replace(/Down-Backward/gi, '1')
+    .replace(/Up-Forward/gi, '9')
+    .replace(/Up-Backward/gi, '7')
+    .replace(/Standing/gi, '5')
+    .replace(/Crouching/gi, '2')
+    .replace(/Forward/gi, '6')
+    .replace(/Back/gi, '4')
+    .replace(/Down/gi, '2')
+    .replace(/Up/gi, '8')
+    .replace(/Jump/gi, 'j.')
+    .replace(/Light Punch/gi, 'LP')
+    .replace(/Medium Punch/gi, 'MP')
+    .replace(/Heavy Punch/gi, 'HP')
+    .replace(/Light Kick/gi, 'LK')
+    .replace(/Medium Kick/gi, 'MK')
+    .replace(/Heavy Kick/gi, 'HK')
+    .replace(/\s*\+\s*/g, '')
+    .replace(/\s*,\s*/g, ' > ');
+  return normalized;
+}
+
+function normalizeSmashCommand(input) {
+  if (!input) return '';
+  let normalized = input.trim();
+  normalized = normalized
+    .replace(/Neutral Special/gi, '5B')
+    .replace(/Side Special/gi, '6B')
+    .replace(/Up Special/gi, '8B')
+    .replace(/Down Special/gi, '2B')
+    .replace(/Neutral Attack/gi, '5A')
+    .replace(/Neutral A/gi, '5A')
+    .replace(/Forward Tilt/gi, '6A')
+    .replace(/Up Tilt/gi, '8A')
+    .replace(/Down Tilt/gi, '2A')
+    .replace(/Forward Smash/gi, '6A')
+    .replace(/Up Smash/gi, '8A')
+    .replace(/Down Smash/gi, '2A')
+    .replace(/Neutral Air/gi, 'j.5A')
+    .replace(/Forward Air/gi, 'j.6A')
+    .replace(/Back Air/gi, 'j.4A')
+    .replace(/Up Air/gi, 'j.8A')
+    .replace(/Down Air/gi, 'j.2A')
+    .replace(/Forward Throw/gi, '6Throw')
+    .replace(/Back Throw/gi, '4Throw')
+    .replace(/Up Throw/gi, '8Throw')
+    .replace(/Down Throw/gi, '2Throw');
+  return normalized;
+}
+
+function isCommandNotation(str, gameId) {
+  if (!str) return false;
+  if (/[0-9]/.test(str)) return true;
+  const lower = str.toLowerCase();
+  if (lower.includes('d/f') || lower.includes('d/b') || lower.includes('u/f') || lower.includes('u/b') || 
+      lower.includes('ws') || lower.includes('wr') || lower.includes('fc') || lower.includes('ss') ||
+      lower.includes('ch')) {
+    return true;
+  }
+  if (gameId === 'sf6') {
+    return /lp|mp|hp|lk|mk|hk|di|dr/i.test(str);
+  }
+  if (['ggst', 'dbfz', 'dbfzce', 'gbvsr', 'dnfd'].includes(gameId)) {
+    return /p|k|s|hs|d/i.test(str);
+  }
+  if (gameId === 'ssbu') {
+    return /a|b|x|y|throw|grab|pummel/i.test(str);
+  }
+  return false;
+}
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
@@ -431,6 +507,24 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           if (['onBlock', 'onHit'].includes(field)) {
             return `<td class="frame-data-td">${formatAdvantageBadge(cleanVal)}</td>`;
           }
+          
+          if (field === 'input') {
+            let notationStr = cleanVal;
+            if (gameId === 'sf6') {
+              notationStr = normalizeSf6Command(cleanVal);
+            } else if (gameId === 'ssbu') {
+              notationStr = normalizeSmashCommand(cleanVal);
+            }
+            
+            const equalsName = row.name && notationStr.toLowerCase() === row.name.toLowerCase();
+            
+            if (equalsName || !notationStr.trim() || !isCommandNotation(notationStr, gameId)) {
+              return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
+            }
+            
+            return `<td class="frame-data-td">${parseComboToHtml(notationStr)}</td>`;
+          }
+          
           return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
         }).join('');
         
