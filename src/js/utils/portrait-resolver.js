@@ -287,6 +287,9 @@ export async function resolvePortraitUrl(gameId, charName) {
  */
 export function constructCdnUrl(filename, gameId = 'ggst', customBaseUrl = null) {
   if (!filename) return '';
+  if (filename.startsWith('http://') || filename.startsWith('https://')) {
+    return filename;
+  }
   let baseImgUrl;
   if (customBaseUrl) {
     baseImgUrl = customBaseUrl.endsWith('/images') ? customBaseUrl : `${customBaseUrl}/images`;

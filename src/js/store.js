@@ -1187,7 +1187,12 @@ class Store {
     try {
       let wikiData = null;
       if (gameId === 'sf6') {
-        wikiData = await fetchSuperComboCargo();
+        const res = await fetch('src/data/sf6_cached.json');
+        if (res.ok) {
+          wikiData = await res.json();
+        } else {
+          throw new Error(`Failed to load local sf6 fallback: ${res.statusText}`);
+        }
       } else if (gameId === 't8') {
         const res = await fetch('src/data/t8_cached.json');
         if (res.ok) {

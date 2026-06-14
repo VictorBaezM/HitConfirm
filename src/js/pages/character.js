@@ -500,6 +500,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   }
 
   // Background preloader for all character moves
+  // Background preloader for all character moves
   function preloadCharacterMoveImages(characterRows, gameId) {
     const filesToPreload = [];
     const seenFiles = new Set();
@@ -508,8 +509,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       const imagesStr = move.images || '';
       const hitboxesStr = move.hitboxes || '';
 
-      let imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
-      let hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+      let imageFiles;
+      if (imagesStr.includes('http://') || imagesStr.includes('https://') || imagesStr.toLowerCase().includes('.mp4')) {
+        imageFiles = imagesStr.split(/[;,]+/).map(f => f.trim()).filter(Boolean);
+      } else {
+        imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+      }
+
+      let hitboxFiles;
+      if (hitboxesStr.includes('http://') || hitboxesStr.includes('https://') || hitboxesStr.toLowerCase().includes('.mp4')) {
+        hitboxFiles = hitboxesStr.split(/[;,]+/).map(f => f.trim()).filter(Boolean);
+      } else {
+        hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+      }
 
       // Guess files if Cargo is empty
       if (move.input) {
@@ -594,59 +606,130 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     function runFallbackResolution(filename, guesses, cacheKey) {
       return new Promise((resolve) => {
+        let resolved = false;
+        const timeout = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve(PLACEHOLDER_SVG);
+          }
+        }, 5000);
+
+        const onDone = (val) => {
+          clearTimeout(timeout);
+          if (!resolved) {
+            resolved = true;
+            resolve(val);
+          }
+        };
+
         const config = WIKI_CONFIG[gameId] || { primary: 'https://www.dustloop.com/wiki', fallbacks: [] };
         const allBases = [config.primary, ...config.fallbacks];
         let tryIdx = 0;
 
-        const img = new Image();
-        img.referrerPolicy = 'no-referrer';
+        const isVideo = filename.toLowerCase().endsWith('.mp4');
 
-        function tryNextBase() {
-          if (tryIdx < allBases.length) {
-            const currentBase = allBases[tryIdx];
-            tryIdx++;
-            img.src = constructCdnUrl(filename, gameId, currentBase);
-          } else {
-            resolveFileUrls(guesses, gameId).then(urlsMap => {
-              let resolvedUrl = '';
-              for (const file of guesses) {
-                const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
-                if (urlsMap[urlKey]) {
-                  resolvedUrl = urlsMap[urlKey];
-                  break;
+        if (isVideo) {
+          const video = document.createElement('video');
+          video.muted = true;
+          video.playsinline = true;
+
+          function tryNextBase() {
+            if (tryIdx < allBases.length) {
+              const currentBase = allBases[tryIdx];
+              tryIdx++;
+              video.src = constructCdnUrl(filename, gameId, currentBase);
+            } else {
+              resolveFileUrls(guesses, gameId).then(urlsMap => {
+                let resolvedUrl = '';
+                for (const file of guesses) {
+                  const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+                  if (urlsMap[urlKey]) {
+                    resolvedUrl = urlsMap[urlKey];
+                    break;
+                  }
                 }
-              }
-
-              if (resolvedUrl) {
-                const apiImg = new Image();
-                apiImg.referrerPolicy = 'no-referrer';
-                apiImg.onload = () => {
-                  saveResolvedImageUrl(cacheKey, resolvedUrl);
-                  resolve(resolvedUrl);
-                };
-                apiImg.onerror = () => {
-                  resolve(PLACEHOLDER_SVG);
-                };
-                apiImg.src = resolvedUrl;
-              } else {
-                resolve(PLACEHOLDER_SVG);
-              }
-            }).catch(() => {
-              resolve(PLACEHOLDER_SVG);
-            });
+                if (resolvedUrl) {
+                  const apiVideo = document.createElement('video');
+                  apiVideo.muted = true;
+                  apiVideo.playsinline = true;
+                  apiVideo.onloadedmetadata = () => {
+                    saveResolvedImageUrl(cacheKey, resolvedUrl);
+                    onDone(resolvedUrl);
+                  };
+                  apiVideo.onerror = () => {
+                    onDone(PLACEHOLDER_SVG);
+                  };
+                  apiVideo.src = resolvedUrl;
+                } else {
+                  onDone(PLACEHOLDER_SVG);
+                }
+              }).catch(() => {
+                onDone(PLACEHOLDER_SVG);
+              });
+            }
           }
-        }
 
-        img.onload = () => {
-          saveResolvedImageUrl(cacheKey, img.src);
-          resolve(img.src);
-        };
+          video.onloadedmetadata = () => {
+            saveResolvedImageUrl(cacheKey, video.src);
+            onDone(video.src);
+          };
 
-        img.onerror = () => {
+          video.onerror = () => {
+            tryNextBase();
+          };
+
           tryNextBase();
-        };
+        } else {
+          const img = new Image();
+          img.referrerPolicy = 'no-referrer';
 
-        tryNextBase();
+          function tryNextBase() {
+            if (tryIdx < allBases.length) {
+              const currentBase = allBases[tryIdx];
+              tryIdx++;
+              img.src = constructCdnUrl(filename, gameId, currentBase);
+            } else {
+              resolveFileUrls(guesses, gameId).then(urlsMap => {
+                let resolvedUrl = '';
+                for (const file of guesses) {
+                  const urlKey = file.toLowerCase().replace(/[\s_]/g, '');
+                  if (urlsMap[urlKey]) {
+                    resolvedUrl = urlsMap[urlKey];
+                    break;
+                  }
+                }
+
+                if (resolvedUrl) {
+                  const apiImg = new Image();
+                  apiImg.referrerPolicy = 'no-referrer';
+                  apiImg.onload = () => {
+                    saveResolvedImageUrl(cacheKey, resolvedUrl);
+                    onDone(resolvedUrl);
+                  };
+                  apiImg.onerror = () => {
+                    onDone(PLACEHOLDER_SVG);
+                  };
+                  apiImg.src = resolvedUrl;
+                } else {
+                  onDone(PLACEHOLDER_SVG);
+                }
+              }).catch(() => {
+                onDone(PLACEHOLDER_SVG);
+              });
+            }
+          }
+
+          img.onload = () => {
+            saveResolvedImageUrl(cacheKey, img.src);
+            onDone(img.src);
+          };
+
+          img.onerror = () => {
+            tryNextBase();
+          };
+
+          tryNextBase();
+        }
       });
     }
 
@@ -654,20 +737,48 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       const { filename, guesses, cacheKey } = fileItem;
 
       return new Promise((resolve) => {
+        let resolved = false;
+        const timeout = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve(PLACEHOLDER_SVG);
+          }
+        }, 5000);
+
+        const onDone = (val) => {
+          clearTimeout(timeout);
+          if (!resolved) {
+            resolved = true;
+            resolve(val);
+          }
+        };
+
         const cachedResolved = getResolvedImageUrl(cacheKey);
         if (cachedResolved) {
-          const img = new Image();
-          img.referrerPolicy = 'no-referrer';
-          img.onload = () => resolve(cachedResolved);
-          img.onerror = () => {
-            deleteResolvedImageUrl(cacheKey);
-            resolve(runFallbackResolution(filename, guesses, cacheKey));
-          };
-          img.src = cachedResolved;
+          if (filename.toLowerCase().endsWith('.mp4')) {
+            const video = document.createElement('video');
+            video.muted = true;
+            video.playsinline = true;
+            video.onloadedmetadata = () => onDone(cachedResolved);
+            video.onerror = () => {
+              deleteResolvedImageUrl(cacheKey);
+              runFallbackResolution(filename, guesses, cacheKey).then(onDone);
+            };
+            video.src = cachedResolved;
+          } else {
+            const img = new Image();
+            img.referrerPolicy = 'no-referrer';
+            img.onload = () => onDone(cachedResolved);
+            img.onerror = () => {
+              deleteResolvedImageUrl(cacheKey);
+              runFallbackResolution(filename, guesses, cacheKey).then(onDone);
+            };
+            img.src = cachedResolved;
+          }
           return;
         }
 
-        resolve(runFallbackResolution(filename, guesses, cacheKey));
+        runFallbackResolution(filename, guesses, cacheKey).then(onDone);
       });
     }
 
@@ -692,6 +803,55 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     Promise.all(workers);
   }
 
+  // Extract a static video frame at 0.1s and paint it to canvas. If CORS or paint errors, fall back to a paused video.
+  function extractVideoFrame(videoUrl, containerEl) {
+    const video = document.createElement('video');
+    video.src = videoUrl;
+    video.muted = true;
+    video.playsinline = true;
+    video.crossOrigin = 'anonymous';
+
+    const timeout = setTimeout(() => {
+      video.onerror = null;
+      video.onseeked = null;
+      containerEl.innerHTML = `<img src="${PLACEHOLDER_SVG}" alt="Placeholder" class="move-details-img" />`;
+    }, 6000);
+
+    video.onerror = () => {
+      clearTimeout(timeout);
+      containerEl.innerHTML = `<img src="${PLACEHOLDER_SVG}" alt="Placeholder" class="move-details-img" />`;
+    };
+
+    video.onloadedmetadata = () => {
+      video.currentTime = 0.1;
+    };
+
+    video.onseeked = () => {
+      clearTimeout(timeout);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'move-details-img move-details-canvas';
+        canvas.width = video.videoWidth || 400;
+        canvas.height = video.videoHeight || 300;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        containerEl.innerHTML = '';
+        containerEl.appendChild(canvas);
+      } catch (e) {
+        console.warn('Canvas video frame extraction failed (cross-origin). Falling back to auto-paused video:', e);
+        containerEl.innerHTML = `
+          <video src="${videoUrl}" class="move-details-video" muted playsinline style="width: 100%; height: auto; border-radius: 4px; display: block;" referrerpolicy="no-referrer"></video>
+        `;
+        const fallbackVideo = containerEl.querySelector('video');
+        if (fallbackVideo) {
+          fallbackVideo.currentTime = 0.1;
+        }
+      }
+    };
+
+    video.load();
+  }
+
   // Helper to load move images synchronously using constructed direct CDN URLs
   function loadMoveImages(move, index) {
     const contentContainer = document.getElementById(`details-content-${index}`);
@@ -702,8 +862,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     const imagesStr = move.images || '';
     const hitboxesStr = move.hitboxes || '';
 
-    let imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
-    let hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+    let imageFiles;
+    if (imagesStr.includes('http://') || imagesStr.includes('https://') || imagesStr.toLowerCase().includes('.mp4')) {
+      imageFiles = imagesStr.split(/[;,]+/).map(f => f.trim()).filter(Boolean);
+    } else {
+      imageFiles = imagesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+    }
+
+    let hitboxFiles;
+    if (hitboxesStr.includes('http://') || hitboxesStr.includes('https://') || hitboxesStr.toLowerCase().includes('.mp4')) {
+      hitboxFiles = hitboxesStr.split(/[;,]+/).map(f => f.trim()).filter(Boolean);
+    } else {
+      hitboxFiles = hitboxesStr.split(/[;,\\/]+/).map(f => f.trim()).filter(Boolean);
+    }
 
     // Guess fallback files if data is missing from Cargo
     if (move.input) {
@@ -746,6 +917,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     if (imageFiles.length > 0) {
       const firstFile = imageFiles[0];
+      const isVideo = firstFile.toLowerCase().endsWith('.mp4');
       const cacheKey = `${gameId}:move:${firstFile}`;
       const cachedResolved = getResolvedImageUrl(cacheKey);
       
@@ -759,20 +931,36 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }
       const guessesAttr = escapeHtml(imageFiles.join(';'));
       
-      imagesHtml = `
-        <div class="move-image-card">
-          <h5 class="move-image-card-title title-action">
-            <i class="fa-solid fa-gamepad"></i> Action Frame
-          </h5>
-          <div class="move-image-wrapper">
-            <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
+      if (isVideo) {
+        imagesHtml = `
+          <div class="move-image-card">
+            <h5 class="move-image-card-title title-action">
+              <i class="fa-solid fa-gamepad"></i> Action Frame
+            </h5>
+            <div class="move-image-wrapper" id="action-video-container-${index}">
+              <div class="loading-video-frame text-muted p-2" style="font-size: 0.9rem;">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Extracting frame...
+              </div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        imagesHtml = `
+          <div class="move-image-card">
+            <h5 class="move-image-card-title title-action">
+              <i class="fa-solid fa-gamepad"></i> Action Frame
+            </h5>
+            <div class="move-image-wrapper">
+              <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
+            </div>
+          </div>
+        `;
+      }
     }
 
     if (hitboxFiles.length > 0) {
       const firstFile = hitboxFiles[0];
+      const isVideo = firstFile.toLowerCase().endsWith('.mp4');
       const cacheKey = `${gameId}:move:${firstFile}`;
       const cachedResolved = getResolvedImageUrl(cacheKey);
       
@@ -786,30 +974,45 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }
       const guessesAttr = escapeHtml(hitboxFiles.join(';'));
       
-      hitboxesHtml = `
-        <div class="move-image-card">
-          <h5 class="move-image-card-title title-hitbox">
-            <span>
-              <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
-            </span>
-            <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
-              <i class="fa-solid fa-circle-question"></i>
-              <div class="hitbox-tooltip">
-                <div class="tooltip-title">Box Color Guide</div>
-                <ul>
-                  <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
-                  <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
-                  <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
-                  <li><strong style="color: #ffffff;">White / Absence (Invincibility):</strong> Immune to hits. Represented by white/dashed boxes or the complete disappearance of blue hurtboxes.</li>
-                </ul>
-              </div>
-            </span>
-          </h5>
-          <div class="move-image-wrapper">
-            <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
+      if (isVideo) {
+        hitboxesHtml = `
+          <div class="move-image-card">
+            <h5 class="move-image-card-title title-hitbox">
+              <span>
+                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+              </span>
+            </h5>
+            <div class="move-image-wrapper">
+              <video src="${hitboxUrl}" autoplay loop muted playsinline class="move-details-video" referrerpolicy="no-referrer" style="width: 100%; height: auto; border-radius: 4px; display: block;" onerror="window.handleMoveVideoError && window.handleMoveVideoError(this);"></video>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        hitboxesHtml = `
+          <div class="move-image-card">
+            <h5 class="move-image-card-title title-hitbox">
+              <span>
+                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+              </span>
+              <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
+                <i class="fa-solid fa-circle-question"></i>
+                <div class="hitbox-tooltip">
+                  <div class="tooltip-title">Box Color Guide</div>
+                  <ul>
+                    <li><strong style="color: #ff4a4a;">Red (Hitbox):</strong> Active strike area. Deals damage/hitstun on contact.</li>
+                    <li><strong style="color: #00f0ff;">Blue/Cyan (Hurtbox):</strong> Vulnerable area. Contact here registers as getting hit.</li>
+                    <li><strong style="color: #ffd200;">Yellow/Green (Pushbox):</strong> Physical collision boundary. Prevents walking through.</li>
+                    <li><strong style="color: #ffffff;">White / Absence (Invincibility):</strong> Immune to hits. Represented by white/dashed boxes or the complete disappearance of blue hurtboxes.</li>
+                  </ul>
+                </div>
+              </span>
+            </h5>
+            <div class="move-image-wrapper">
+              <img src="${hitboxUrl}" alt="Hitbox Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
+            </div>
+          </div>
+        `;
+      }
     }
 
     contentContainer.innerHTML = `
@@ -819,6 +1022,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       </div>
     `;
     contentContainer.setAttribute('data-loaded', 'true');
+
+    // Run video frame extraction if needed
+    if (imageFiles.length > 0 && imageFiles[0].toLowerCase().endsWith('.mp4')) {
+      const firstFile = imageFiles[0];
+      const cacheKey = `${gameId}:move:${firstFile}`;
+      const cachedResolved = getResolvedImageUrl(cacheKey);
+      const actionUrl = cachedResolved || constructCdnUrl(firstFile, gameId);
+      
+      const wrapper = document.getElementById(`action-video-container-${index}`);
+      if (wrapper) {
+        extractVideoFrame(actionUrl, wrapper);
+      }
+    }
   }
 }
 
@@ -840,6 +1056,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// Global handler for video load errors
+window.handleMoveVideoError = function (videoEl) {
+  videoEl.onerror = null;
+  const parent = videoEl.parentElement;
+  if (parent) {
+    parent.innerHTML = `<img src="${PLACEHOLDER_SVG}" alt="Placeholder" class="move-details-img" />`;
+  }
+};
 
 /// Global handler for successful move image loads
 window.handleMoveImageLoad = function (imgEl) {
