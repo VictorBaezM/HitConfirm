@@ -25,6 +25,15 @@ test.describe('Graphical Move Notation E2E Verification', () => {
     const punishSequence = cheatSheetTable.locator('.strategy-matrix-td-punish .combo-sequence').first();
     await expect(punishSequence).toBeVisible();
 
+    // Verify Ky Kiske row motion inputs (236K -> ↓↘→ + K)
+    const kyRow = cheatSheetTable.locator('tr:has-text("Ky Kiske")');
+    await expect(kyRow).toBeVisible();
+    await expect(kyRow.locator('.combo-dir:has-text("↓")').first()).toBeVisible();
+    await expect(kyRow.locator('.combo-dir:has-text("↘")').first()).toBeVisible();
+    await expect(kyRow.locator('.combo-dir:has-text("→")').first()).toBeVisible();
+    await expect(kyRow.locator('.combo-btn:has-text("K")').first()).toBeVisible();
+    console.log('Ky Kiske 236K motion sequence renders successfully in strategy matrix.');
+
     // 3. Navigate to Character Select Hub
     const hubLink = page.locator('.nav-link[data-page="hub"]');
     await expect(hubLink).toBeVisible();
@@ -54,13 +63,26 @@ test.describe('Graphical Move Notation E2E Verification', () => {
     await expect(ryuSearch).toBeVisible();
     await ryuSearch.fill('Standing Light Punch');
     
-    const ryuRow = ryuTable.locator('.clickable-row:has-text("Standing Light Punch")');
+    const ryuRow = ryuTable.locator('.clickable-row:has-text("Standing Light Punch")').first();
     await expect(ryuRow).toBeVisible();
 
     // The 'Command' column should render visual combo sequence buttons (normalized Standing Light Punch -> 5LP)
     const ryuCommandCell = ryuRow.locator('td.frame-data-td .combo-sequence');
     await expect(ryuCommandCell).toBeVisible();
+    await expect(ryuRow.locator('.combo-dir:has-text("•")')).toBeVisible();
+    await expect(ryuRow.locator('.combo-btn:has-text("LP")')).toBeVisible();
     console.log('Ryu Standing Light Punch renders visual buttons successfully.');
+
+
+    // Verify Jump Light Punch (Jump Light Punch -> j.LP -> ↑ + LP)
+    await ryuSearch.fill('Jump Light Punch');
+    const jumpLpRow = ryuTable.locator('.clickable-row:has-text("Jump Light Punch")').first();
+    await expect(jumpLpRow).toBeVisible();
+    const jumpLpCmd = jumpLpRow.locator('td.frame-data-td .combo-sequence');
+    await expect(jumpLpCmd).toBeVisible();
+    await expect(jumpLpRow.locator('.combo-dir:has-text("↑")')).toBeVisible();
+    await expect(jumpLpRow.locator('.combo-btn:has-text("LP")')).toBeVisible();
+    console.log('Ryu Jump Light Punch (j.LP) renders successfully with up arrow.');
 
     // 4. Navigate back to Character Select Hub to verify Tekken 8 Kazuya
     await hubLink.click();

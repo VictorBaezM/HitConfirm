@@ -76,34 +76,73 @@ function parseComboStep(stepStr) {
   let html = `<div class="combo-step">`;
   let parsedAny = false;
 
-  // 1. Check for specific motion inputs (like 236, 214) at the start
-  for (const [num, label] of Object.entries(MOTIONS)) {
+  const directionKeys = Object.keys(DIRECTION_ARROWS).sort(function (a, b) { return b.length - a.length; });
+  const buttonKeys = Object.keys(BUTTON_CLASSES).sort(function (a, b) { return b.length - a.length; });
+
+  // 1. Check for jump prefix at the very start of the step
+  let hasJumpPrefix = false;
+  if (trimmed.toLowerCase().startsWith('j.')) {
+    trimmed = trimmed.substring(2);
+    hasJumpPrefix = true;
+  } else if (trimmed.toLowerCase().startsWith('j') && trimmed.length > 1 && /^[0-9pksda-z]/i.test(trimmed.charAt(1))) {
+    const isWord = /^[a-z]{3,}/i.test(trimmed);
+    if (!isWord) {
+      trimmed = trimmed.substring(1);
+      hasJumpPrefix = true;
+    }
+  }
+
+  if (hasJumpPrefix) {
+    const arrow = DIRECTION_ARROWS['8']; // ↑
+    html += `<span class="combo-dir" title="Jump">${arrow}</span>`;
+    parsedAny = true;
+  }
+
+  // 2. Check for specific motion inputs (like 236, 214) at the start and render as arrow sequences
+  for (const num of Object.keys(MOTIONS)) {
     if (trimmed.startsWith(num)) {
-      html += `<span class="combo-motion">${label}</span>`;
+      for (const char of num) {
+        const arrow = DIRECTION_ARROWS[char];
+        html += `<span class="combo-dir" title="Direction ${char}">${arrow}</span>`;
+      }
       trimmed = trimmed.substring(num.length);
       parsedAny = true;
       break;
     }
   }
 
-  // 2. Check for directional inputs/modifers
-  // Sort keys by length descending to match longer strings first (like 'd/f' before 'd')
-  const directionKeys = Object.keys(DIRECTION_ARROWS).sort(function (a, b) { return b.length - a.length; });
-  
-  // We can loop to parse directions and modifiers (+ signs, etc.)
+  // 3. Check for directional inputs/modifiers/charges
   let matchedDir = true;
   while (matchedDir && trimmed.length > 0) {
     matchedDir = false;
+
+    // Check for charge inputs (e.g., [4] or [2])
+    if (trimmed.startsWith('[')) {
+      const closeIndex = trimmed.indexOf(']');
+      if (closeIndex !== -1) {
+        const chargeDir = trimmed.substring(1, closeIndex).toLowerCase();
+        const arrow = DIRECTION_ARROWS[chargeDir] || chargeDir.toUpperCase();
+        html += `<span class="combo-dir combo-charge" title="Charge ${chargeDir}">[${arrow}]</span>`;
+        trimmed = trimmed.substring(closeIndex + 1);
+
+        if (trimmed.startsWith('+')) {
+          trimmed = trimmed.substring(1);
+        }
+
+        parsedAny = true;
+        matchedDir = true;
+        continue;
+      }
+    }
+
     for (const dirKey of directionKeys) {
       if (trimmed.toLowerCase().startsWith(dirKey) && 
-          // Ensure we don't accidentally consume numbers meant for Tekken buttons if it's not a sole direction
           !(dirKey === '1' || dirKey === '2' || dirKey === '3' || dirKey === '4' ? trimmed.length === 1 : false)) {
         
         const arrow = DIRECTION_ARROWS[dirKey];
         html += `<span class="combo-dir" title="Direction ${dirKey}">${arrow}</span>`;
         trimmed = trimmed.substring(dirKey.length);
         
-        // Skip '+' symbols if they separate directions from buttons (e.g. d/f+2)
         if (trimmed.startsWith('+')) {
           trimmed = trimmed.substring(1);
         }
@@ -115,19 +154,15 @@ function parseComboStep(stepStr) {
     }
   }
 
-  // 3. Process remaining action button codes
+  // 4. Process remaining action button codes
   let remaining = trimmed.toLowerCase();
   
-  // Special prefixes like 'c.' or 'f.' in Guilty Gear (close/far slash)
   if (remaining.startsWith('c.') || remaining.startsWith('f.')) {
     const prefix = remaining.substring(0, 2);
     html += `<span class="text-muted builder-pad-empty-text">${prefix}</span>`;
     remaining = remaining.substring(2);
   }
 
-  // Look for matchable buttons in the remaining string
-  const buttonKeys = Object.keys(BUTTON_CLASSES).sort(function (a, b) { return b.length - a.length; });
-  
   while (remaining.length > 0) {
     if (remaining.startsWith(' ')) {
       remaining = remaining.trimStart();
@@ -136,6 +171,19 @@ function parseComboStep(stepStr) {
     if (remaining.startsWith('.') || remaining.startsWith('+') || remaining.startsWith(',') || remaining.startsWith('>')) {
       remaining = remaining.substring(1);
       continue;
+    }
+
+    // Check charge inputs inside loop
+    if (remaining.startsWith('[')) {
+      const closeIndex = remaining.indexOf(']');
+      if (closeIndex !== -1) {
+        const chargeDir = remaining.substring(1, closeIndex).toLowerCase();
+        const arrow = DIRECTION_ARROWS[chargeDir] || chargeDir.toUpperCase();
+        html += `<span class="combo-dir combo-charge" title="Charge ${chargeDir}">[${arrow}]</span>`;
+        remaining = remaining.substring(closeIndex + 1);
+        parsedAny = true;
+        continue;
+      }
     }
 
     // Check directions dynamically inside the loop
@@ -180,7 +228,6 @@ function parseComboStep(stepStr) {
     }
 
     if (!buttonMatched) {
-      // Try to match a letters-only word (like "throw", "grab", "pummel", etc.)
       const wordMatch = remaining.match(/^[a-z]+/i);
       if (wordMatch) {
         const word = wordMatch[0];
@@ -195,7 +242,6 @@ function parseComboStep(stepStr) {
     }
   }
 
-  // Fallback if we couldn't parse anything
   if (!parsedAny) {
     return `<span class="combo-text-fallback">${stepStr}</span>`;
   }
