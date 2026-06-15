@@ -2,6 +2,7 @@
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
 import { hideGameSidebar } from '../components/game-sidebar.js';
+import { parseComboToHtml } from '../utils/combo-parser.js';
 
 /**
  * Renders the Strategy Hub page, containing directories of matchup strategy articles,
@@ -74,6 +75,9 @@ export function renderStrategyPage(navigateCallback) {
               </tbody>
             </table>
           </div>
+          <div class="strategy-credit-note">
+            Notation translations powered by the <a href="https://ygg-m.github.io/fg-input-translator/" target="_blank" rel="noopener noreferrer">Fighting Game Input Translator</a> by Ygor Goulart
+          </div>
         </div>
 
         <!-- Guides Catalog List -->
@@ -142,11 +146,18 @@ export function renderStrategyPage(navigateCallback) {
     }
 
     tbody.innerHTML = filtered.map(function (d) {
+      const match = d.move.match(/^(.*?)\(([^)]+)\)$/);
+      let moveHtml = escapeHtml(d.move);
+      if (match) {
+        const moveName = match[1];
+        const notation = match[2];
+        moveHtml = `${escapeHtml(moveName)} (${parseComboToHtml(notation, d.game)})`;
+      }
       return `
         <tr class="strategy-matrix-tr">
-          <td class="strategy-matrix-td-game">${d.game}</td>
+          <td class="strategy-matrix-td-game">${d.game.toUpperCase()}</td>
           <td class="strategy-matrix-td-char">${d.char}</td>
-          <td class="strategy-matrix-td-move">${d.move}</td>
+          <td class="strategy-matrix-td-move">${moveHtml}</td>
           <td class="strategy-matrix-td-block" style="color: ${d.block.startsWith('+') ? 'var(--color-success)' : 'var(--color-danger)'}">${d.block}</td>
           <td class="strategy-matrix-td-punish">${d.punish}</td>
         </tr>
