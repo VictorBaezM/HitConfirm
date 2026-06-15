@@ -238,3 +238,289 @@ export function renderNotationHtml(notationString) {
     </div>
   `;
 }
+
+// Directional emojis mapping (numpad direction standard P1)
+const DIRECTION_EMOJIS = {
+  '1': '↙️',
+  '2': '⬇️',
+  '3': '↘️',
+  '4': '⬅️',
+  '5': '🟡',
+  '6': '➡️',
+  '7': '↖️',
+  '8': '⬆️',
+  '9': '↗️',
+  'd/f': '↘️',
+  'd/b': '↙️',
+  'u/f': '↗️',
+  'u/b': '↖️',
+  'f': '➡️',
+  'b': '⬅️',
+  'd': '⬇️',
+  'u': '⬆️',
+  'db': '↙️',
+  'df': '↘️',
+  'ub': '↖️',
+  'uf': '↗️'
+};
+
+const MOTION_EMOJIS = {
+  '1632143': '↙️⬅️↙️⬇️↘️➡️↘️',
+  '3412361': '↘️➡️↘️⬇️↙️⬅️↙️',
+  '41236987': '⬅️↙️⬇️↘️➡️↗️⬆️↖️',
+  '4268': '⬅️↙️⬇️↘️➡️↗️⬆️↖️',
+  '63214789': '➡️↘️⬇️↙️⬅️↖️⬆️↗️',
+  '6248': '➡️↘️⬇️↙️⬅️↖️⬆️↗️',
+  '41236': '⬅️↙️⬇️↘️➡️',
+  '426': '⬅️↙️⬇️↘️➡️',
+  'hcf': '⬅️↙️⬇️↘️➡️',
+  '63214': '➡️↘️⬇️↙️⬅️',
+  '624': '➡️↘️⬇️↙️⬅️',
+  'hcb': '➡️↘️⬇️↙️⬅️',
+  '236': '⬇️↘️➡️',
+  'qcf': '⬇️↘️➡️',
+  '214': '⬇️↙️⬅️',
+  'qcb': '⬇️↙️⬅️',
+  '698': '➡️↗️⬆️',
+  '478': '⬅️↖️⬆️',
+  '632': '➡️↘️⬇️',
+  '412': '⬅️↙️⬇️',
+  '896': '⬆️↗️➡️',
+  '874': '⬆️↖️⬅️',
+  '623': '➡️⬇️↘️',
+  'dp': '➡️⬇️↘️',
+  '421': '⬅️⬇️↙️',
+  'rdp': '⬅️⬇️↙️'
+};
+
+const STATE_PREFIXES = {
+  'j.': 'j.',
+  'jc.': 'jc.',
+  'ch.': 'ch.',
+  'cr.': 'cr.',
+  's.': 's.',
+  'st.': 'st.',
+  'c.': 'c.',
+  'cl.': 'c.',
+  'f.': 'f.',
+  'ws.': 'ws.',
+  'ws': 'ws.'
+};
+
+const DELIMITER_MAP = {
+  '>': ' > ',
+  '->': ' > ',
+  ',': ' , ',
+  'xx': ' xx ',
+  '~': ' ~ '
+};
+
+function normalizeCommunitySlang(str, gameId) {
+  let res = str.toLowerCase();
+  
+  // 1. Spacing around plus signs
+  res = res.replace(/\s*\+\s*/g, '+');
+
+  // 2. SF/2D button slang combinations involving "forward" (medium kick)
+  res = res.replace(/\b(?:crouching|crouch|cr)\s+forward\b/g, 'cr.MK');
+  res = res.replace(/\b(?:standing|stand|st|s)\s+forward\b/g, 's.MK');
+  
+  // 3. Diagonal and cardinal direction words (game-aware mapping)
+  if (gameId === 't8') {
+    res = res.replace(/\bdown[- ]forward\b/g, 'df');
+    res = res.replace(/\bdown[- ]back\b/g, 'db');
+    res = res.replace(/\bup[- ]forward\b/g, 'uf');
+    res = res.replace(/\bup[- ]back\b/g, 'ub');
+    res = res.replace(/\bdownforward\b/g, 'df');
+    res = res.replace(/\bdownback\b/g, 'db');
+    res = res.replace(/\bupforward\b/g, 'uf');
+    res = res.replace(/\bupback\b/g, 'ub');
+    
+    res = res.replace(/\bneutral\b/g, '5');
+    res = res.replace(/\b(?:forward|fwd)\b/g, 'f');
+    res = res.replace(/\bback\b/g, 'b');
+    res = res.replace(/\bdown\b/g, 'd');
+    res = res.replace(/\bup\b/g, 'u');
+  } else {
+    res = res.replace(/\bdown[- ]forward\b/g, '3');
+    res = res.replace(/\bdown[- ]back\b/g, '1');
+    res = res.replace(/\bup[- ]forward\b/g, '9');
+    res = res.replace(/\bup[- ]back\b/g, '7');
+    res = res.replace(/\bdownforward\b/g, '3');
+    res = res.replace(/\bdownback\b/g, '1');
+    res = res.replace(/\bupforward\b/g, '9');
+    res = res.replace(/\bupback\b/g, '7');
+    
+    res = res.replace(/\bneutral\b/g, '5');
+    res = res.replace(/\b(?:forward|fwd)\b/g, '6');
+    res = res.replace(/\bback\b/g, '4');
+    res = res.replace(/\bdown\b/g, '2');
+    res = res.replace(/\bup\b/g, '8');
+  }
+
+  // 4. Positional & State Slang with negative lookahead to prevent double dots
+  res = res.replace(/\b(?:crouching|crouch|cr|low)\b(?!\.)/g, 'cr.');
+  res = res.replace(/\b(?:standing|stand|st|s)\b(?!\.)/g, 's.');
+  res = res.replace(/\b(?:jumping|jump|j|air)\b(?!\.)/g, 'j.');
+  res = res.replace(/\b(?:while standing|ws)\b(?!\.)/g, 'ws.');
+
+  // 5. Button Strengths & Synonyms (ordered to map full phrases before single terms)
+  res = res.replace(/\bmedium\s+punch\b/g, 'MP');
+  res = res.replace(/\bmedium\s+kick\b/g, 'MK');
+  res = res.replace(/\blight\s+punch\b/g, 'LP');
+  res = res.replace(/\blight\s+kick\b/g, 'LK');
+  res = res.replace(/\bheavy\s+punch\b/g, 'HP');
+  res = res.replace(/\bheavy\s+kick\b/g, 'HK');
+
+  res = res.replace(/\bjab\b/g, 'LP');
+  res = res.replace(/\bshort\b/g, 'LK');
+  res = res.replace(/\bstrong\b/g, 'MP');
+  res = res.replace(/\bfierce\b/g, 'HP');
+  res = res.replace(/\broundhouse\b/g, 'HK');
+  res = res.replace(/\brh\b/g, 'HK');
+
+  res = res.replace(/\bmedium\b/g, 'M');
+  res = res.replace(/\bmed\b/g, 'M');
+  res = res.replace(/\blight\b/g, 'L');
+  res = res.replace(/\bheavy\b/g, 'H');
+  res = res.replace(/\bpunch\b/g, 'P');
+  res = res.replace(/\bkick\b/g, 'K');
+
+  return res;
+}
+
+function translateStepToEmoji(stepStr, gameId) {
+  let trimmed = stepStr.trim();
+  if (!trimmed) return '';
+
+  let prefixHtml = '';
+  
+  for (const [key, value] of Object.entries(STATE_PREFIXES)) {
+    const escKey = key.replace(/\./g, '\\.');
+    const regex = new RegExp('^' + escKey, 'i');
+    if (regex.test(trimmed)) {
+      prefixHtml += value;
+      trimmed = trimmed.replace(regex, '');
+      break;
+    }
+  }
+
+  let remaining = trimmed.trim();
+  let motionHtml = '';
+  let dirHtml = '';
+  let buttonHtml = '';
+
+  let matchedCharge = true;
+  while (matchedCharge) {
+    matchedCharge = false;
+    const chargeMatch = remaining.match(/^\[([1-9]|[a-z/]+)\]/i);
+    if (chargeMatch) {
+      const inner = chargeMatch[1].toLowerCase();
+      const arrow = DIRECTION_EMOJIS[inner] || inner.toUpperCase();
+      dirHtml += `[${arrow}] `;
+      remaining = remaining.substring(chargeMatch[0].length).trim();
+      matchedCharge = true;
+    }
+  }
+
+  let matchedRelease = true;
+  while (matchedRelease) {
+    matchedRelease = false;
+    const releaseMatch = remaining.match(/^\]([a-z0-9])\[/i);
+    if (releaseMatch) {
+      const inner = releaseMatch[1].toLowerCase();
+      const arrow = DIRECTION_EMOJIS[inner];
+      const display = arrow || inner.toUpperCase();
+      dirHtml += `]${display}[ `;
+      remaining = remaining.substring(releaseMatch[0].length).trim();
+      matchedRelease = true;
+    }
+  }
+
+  if (gameId !== 't8') {
+    for (const [num, emoji] of Object.entries(MOTION_EMOJIS)) {
+      const regex = new RegExp('^' + num, 'i');
+      if (regex.test(remaining)) {
+        motionHtml += emoji;
+        remaining = remaining.replace(regex, '').trim();
+        break;
+      }
+    }
+  }
+
+  const directionKeys = Object.keys(DIRECTION_EMOJIS).sort((a, b) => b.length - a.length);
+  let matchedDir = true;
+  while (matchedDir && remaining.length > 0) {
+    matchedDir = false;
+    for (const dirKey of directionKeys) {
+      if (gameId === 't8' && ['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(dirKey)) {
+        continue;
+      }
+      // Only restrict single-letter directions (d, f, b, u) in non-Tekken games.
+      // Two-letter direction keys like 'df', 'db', 'uf', 'ub' can be safely processed in any game.
+      const isLetterDir = ['d', 'f', 'b', 'u'].includes(dirKey);
+      if (isLetterDir && gameId !== 't8') {
+        continue;
+      }
+      
+      const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/'), 'i');
+      if (regex.test(remaining)) {
+        if (!(dirKey === '1' || dirKey === '2' || dirKey === '3' || dirKey === '4' ? remaining.length === 1 : false)) {
+          dirHtml += DIRECTION_EMOJIS[dirKey];
+          remaining = remaining.replace(regex, '').trim();
+          matchedDir = true;
+          break;
+        }
+      }
+    }
+    if (remaining.startsWith('+')) {
+      remaining = remaining.substring(1).trim();
+      matchedDir = true;
+    }
+  }
+
+  if (remaining.length > 0) {
+    if (remaining.startsWith('+')) {
+      remaining = remaining.substring(1).trim();
+    }
+    buttonHtml = remaining.toUpperCase();
+  }
+
+  dirHtml = dirHtml.trim();
+
+  let parts = [];
+  if (prefixHtml) parts.push(prefixHtml);
+  
+  let motionAndDir = '';
+  if (motionHtml) motionAndDir += motionHtml;
+  if (dirHtml) motionAndDir += (motionHtml ? ' ' : '') + dirHtml;
+  if (motionAndDir) parts.push(motionAndDir);
+  
+  if (buttonHtml) parts.push(buttonHtml);
+
+  return parts.join(' ');
+}
+
+export function translateNotationToEmoji(notationStr, gameId) {
+  if (!notationStr) return '';
+
+  const normalizedSlang = normalizeCommunitySlang(notationStr, gameId);
+
+  const regex = /(\s*(?:>|->|xx|~|,)\s*)/g;
+  const tokens = normalizedSlang.split(regex);
+
+  let resultStr = '';
+  tokens.forEach(token => {
+    const trimmedToken = token.trim();
+    if (!trimmedToken) return;
+
+    if (['>', '->', 'xx', '~', ','].includes(trimmedToken)) {
+      const displayDelim = DELIMITER_MAP[trimmedToken] || trimmedToken;
+      resultStr += displayDelim;
+    } else {
+      resultStr += translateStepToEmoji(trimmedToken, gameId);
+    }
+  });
+
+  return resultStr.trim();
+}
