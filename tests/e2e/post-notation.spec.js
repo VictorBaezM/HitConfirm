@@ -128,7 +128,7 @@ test('submitting post with combo notation renders it visually in timeline', asyn
   await expect(sequence).toBeVisible();
   await expect(sequence).toContainText('•HP');
   await expect(sequence).toContainText('➔');
-  await expect(sequence).toContainText('↓↘→KK');
+  await expect(sequence).toContainText('QCFKK');
   await expect(sequence).toContainText('WS');
 });
 
@@ -172,7 +172,7 @@ test('sharing a combo from builder page automatically creates feed post with vis
   // Verify that the combo sequence is parsed and rendered visually
   const sequence = newPost.locator('.wiki-combo-sequence');
   await expect(sequence).toBeVisible();
-  await expect(sequence).toContainText('↓↘→P');
+  await expect(sequence).toContainText('QCFP');
   await expect(sequence).toContainText('➔');
   await expect(sequence).toContainText('•P');
 });

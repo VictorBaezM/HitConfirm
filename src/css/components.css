@@ -814,17 +814,6 @@
   color: var(--color-secondary); /* Cyber Cyan */
 }
 
-/* Charge input direction (e.g. [←]) */
-.combo-dir.combo-charge {
-  background: rgba(255, 107, 0, 0.12);
-  border: 1px solid var(--color-primary);
-  border-radius: 2px;
-  padding: 1px 4px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--color-primary);
-}
-
 /* Action Button Bubble */
 .combo-btn {
   display: inline-flex;
