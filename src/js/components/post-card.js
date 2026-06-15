@@ -117,7 +117,7 @@ export function renderPostCard(post, navigateCallback) {
     
     ${videoHtml}
     
-    ${renderNotationHtml(notation, post.game)}
+    ${renderNotationHtml(notation)}
 
     <div class="wiki-post-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">

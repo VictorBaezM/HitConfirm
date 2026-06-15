@@ -72,7 +72,7 @@ export function renderComboCard(combo, navigateCallback) {
     </div>
 
     <!-- Visual Combo Rendering -->
-    ${renderNotationHtml(combo.notation, combo.game)}
+    ${renderNotationHtml(combo.notation)}
 
     <!-- Frame stats table -->
     <table class="wiki-frame-table">

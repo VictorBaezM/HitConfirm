@@ -389,10 +389,7 @@ export function renderBuilderPage(navigateCallback) {
       return;
     }
 
-    const gameSel = document.getElementById('builder-game-select');
-    const gameId = gameSel ? gameSel.value : '';
-
-    previewMount.innerHTML = parseComboToHtml(notationString, gameId);
+    previewMount.innerHTML = parseComboToHtml(notationString);
     if (manualInput) {
       manualInput.value = notationString;
     }
@@ -726,9 +723,7 @@ export function renderBuilderPage(navigateCallback) {
     
     const previewMount = document.getElementById('builder-live-preview');
     if (previewMount) {
-      const gameSel = document.getElementById('builder-game-select');
-      const gameId = gameSel ? gameSel.value : '';
-      previewMount.innerHTML = parseComboToHtml(val, gameId);
+      previewMount.innerHTML = parseComboToHtml(val);
     }
   });
 
