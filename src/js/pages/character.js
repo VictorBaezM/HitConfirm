@@ -4,7 +4,7 @@
 
 import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
-import { translateNotationToEmoji } from '../utils/combo-parser.js';
+import { parseStrategyHubNotationToHtml } from '../utils/combo-parser.js';
 import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
@@ -433,8 +433,8 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             return `<td class="frame-data-td">${formatAdvantageBadge(cleanVal)}</td>`;
           }
           if (field === 'input') {
-            const emojiVal = translateNotationToEmoji(cleanVal, gameId);
-            return `<td class="frame-data-td font-mono" style="font-size: 1.05rem; white-space: nowrap;">${escapeHtml(emojiVal)}</td>`;
+            const visualHtml = parseStrategyHubNotationToHtml(cleanVal, gameId);
+            return `<td class="frame-data-td" style="white-space: nowrap; vertical-align: middle;">${visualHtml}</td>`;
           }
           return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
         }).join('');
