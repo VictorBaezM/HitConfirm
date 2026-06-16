@@ -831,55 +831,18 @@ function renderJoystickSvg(animId, title = '') {
 }
 
 function renderDirectionElement(numDirection, titleStr) {
-  const arrow = DIRECTION_ARROWS[numDirection] || numDirection;
   return `
-    <span class="notation-text combo-dir" title="${escapeHtml(titleStr)}">${arrow}</span>
+    <span class="notation-text combo-dir" title="${escapeHtml(titleStr)}">${numDirection}</span>
     <span class="notation-joystick joystick-wrapper">${renderJoystickSvg(numDirection, titleStr)}</span>
   `.trim();
 }
 
 function renderMotionElement(motionId, titleStr) {
+  const standardMotions = ['236', '214', '623', '421', '41236', '63214'];
   let textHtml = '';
-  if (motionId === '236') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 3">↘</span>
-      <span class="notation-text combo-dir" title="Direction 6">→</span>
-    `;
-  } else if (motionId === '214') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 1">↙</span>
-      <span class="notation-text combo-dir" title="Direction 4">←</span>
-    `;
-  } else if (motionId === '623') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 6">→</span>
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 3">↘</span>
-    `;
-  } else if (motionId === '421') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 4">←</span>
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 1">↙</span>
-    `;
-  } else if (motionId === '41236') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 4">←</span>
-      <span class="notation-text combo-dir" title="Direction 1">↙</span>
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 3">↘</span>
-      <span class="notation-text combo-dir" title="Direction 6">→</span>
-    `;
-  } else if (motionId === '63214') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Direction 6">→</span>
-      <span class="notation-text combo-dir" title="Direction 3">↘</span>
-      <span class="notation-text combo-dir" title="Direction 2">↓</span>
-      <span class="notation-text combo-dir" title="Direction 1">↙</span>
-      <span class="notation-text combo-dir" title="Direction 4">←</span>
-    `;
+  
+  if (standardMotions.includes(motionId)) {
+    textHtml = `<span class="notation-text combo-dir" title="${titleStr}">${motionId}</span>`;
   } else if (motionId === 'c46') {
     textHtml = `
       <span class="notation-text combo-dir" title="Charge [4]">[←]</span>
@@ -932,7 +895,7 @@ function parseStrategyHubStep(stepStr, gameId) {
 
     // 1. State Prefixes
     const prefixRules = [
-      { key: 'j.', html: '<span class="combo-dir" title="Jump">↑</span>' },
+      { key: 'j.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">j.</span>' },
       { key: 'jc.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">jc.</span>' },
       { key: 'cr.', html: '<span class="combo-dir" title="Crouch">↓</span>' },
       { key: 'st.', html: '<span class="combo-dir" title="Stand">•</span>' },

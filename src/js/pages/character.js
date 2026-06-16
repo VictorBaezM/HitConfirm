@@ -318,12 +318,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <div id="preloader-fill" class="preloader-fill"></div>
           </div>
         </div>
-        <div class="notation-toggle-wrapper">
-          <span class="toggle-label">Joystick Guides</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-joystick-notation" />
-            <span class="slider round"></span>
-          </label>
+        <!-- Joystick toggle UI removed -->
         </div>
       </div>
 
@@ -342,29 +337,6 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value;
         renderRows(characterRows);
-      });
-    }
-
-    // Attach notation toggle listener with local storage preference load/save
-    const toggleCheckbox = document.getElementById('toggle-joystick-notation');
-    const pageContainer = mount.querySelector('.character-page');
-    if (toggleCheckbox && pageContainer) {
-      const preferJoysticks = localStorage.getItem('prefer-joystick-notation') === 'true';
-      toggleCheckbox.checked = preferJoysticks;
-      if (preferJoysticks) {
-        pageContainer.classList.add('show-joysticks');
-      } else {
-        pageContainer.classList.remove('show-joysticks');
-      }
-
-      toggleCheckbox.addEventListener('change', (e) => {
-        const isChecked = e.target.checked;
-        localStorage.setItem('prefer-joystick-notation', isChecked);
-        if (isChecked) {
-          pageContainer.classList.add('show-joysticks');
-        } else {
-          pageContainer.classList.remove('show-joysticks');
-        }
       });
     }
 
