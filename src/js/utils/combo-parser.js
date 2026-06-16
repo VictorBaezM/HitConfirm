@@ -526,187 +526,165 @@ export function translateNotationToEmoji(notationStr, gameId) {
 }
 
 function parseStrategyHubStep(stepStr, gameId) {
-  let trimmed = escapeHtml(stepStr.trim());
-  if (!trimmed) return '';
+  let remaining = escapeHtml(stepStr.trim());
+  if (!remaining) return '';
 
   let html = `<div class="combo-step">`;
   let parsedAny = false;
 
-  // 1. Process state prefixes and translate to direction arrows
-  let prefixHtml = '';
-  let checkPrefix = true;
-  while (checkPrefix) {
-    checkPrefix = false;
-    if (trimmed.toLowerCase().startsWith('j.')) {
-      prefixHtml += `<span class="combo-dir" title="Jump">↑</span>`;
-      trimmed = trimmed.substring(2).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('jc.')) {
-      prefixHtml += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">jc.</span>`;
-      trimmed = trimmed.substring(3).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('cr.')) {
-      prefixHtml += `<span class="combo-dir" title="Crouch">↓</span>`;
-      trimmed = trimmed.substring(3).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('st.')) {
-      prefixHtml += `<span class="combo-dir" title="Stand">•</span>`;
-      trimmed = trimmed.substring(3).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('s.')) {
-      prefixHtml += `<span class="combo-dir" title="Stand">•</span>`;
-      trimmed = trimmed.substring(2).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('ws.')) {
-      prefixHtml += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">WS</span>`;
-      trimmed = trimmed.substring(3).trim();
-      parsedAny = true;
-      checkPrefix = true;
-    } else if (trimmed.toLowerCase().startsWith('ch.')) {
-      prefixHtml += `<span class="text-danger" style="font-size: 0.75rem; font-weight: bold; margin-right: 0.2rem;">CH</span>`;
-      trimmed = trimmed.substring(3).trim();
-      parsedAny = true;
-      checkPrefix = true;
+  while (remaining.length > 0) {
+    if (remaining.startsWith(' ')) {
+      remaining = remaining.trim();
+      continue;
     }
-  }
 
-  html += prefixHtml;
+    if (remaining.startsWith('+')) {
+      remaining = remaining.substring(1).trim();
+      continue;
+    }
 
-  // 2. Check for bracketed charge/hold inputs
-  let matchedCharge = true;
-  while (matchedCharge) {
-    matchedCharge = false;
-    const chargeMatch = trimmed.match(/^\[([1-9]|[a-z/]+)\]/i);
+    let matched = false;
+
+    // 1. State Prefixes
+    const prefixRules = [
+      { key: 'j.', html: '<span class="combo-dir" title="Jump">↑</span>' },
+      { key: 'jc.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">jc.</span>' },
+      { key: 'cr.', html: '<span class="combo-dir" title="Crouch">↓</span>' },
+      { key: 'st.', html: '<span class="combo-dir" title="Stand">•</span>' },
+      { key: 's.', html: '<span class="combo-dir" title="Stand">•</span>' },
+      { key: 'ws.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">WS</span>' },
+      { key: 'ch.', html: '<span class="text-danger" style="font-size: 0.75rem; font-weight: bold; margin-right: 0.2rem;">CH</span>' }
+    ];
+
+    for (const rule of prefixRules) {
+      const regex = new RegExp('^' + rule.key.replace(/\./g, '\\.'), 'i');
+      if (regex.test(remaining)) {
+        html += rule.html;
+        remaining = remaining.replace(regex, '').trim();
+        parsedAny = true;
+        matched = true;
+        break;
+      }
+    }
+    if (matched) continue;
+
+    // 2. Bracketed Charge/Hold
+    const chargeMatch = remaining.match(/^\[([1-9]|[a-z/]+)\]/i);
     if (chargeMatch) {
       const inner = chargeMatch[1].toLowerCase();
       const arrow = DIRECTION_ARROWS[inner] || inner.toUpperCase();
       html += `<span class="combo-dir" title="Charge [${inner}]">[${arrow}]</span>`;
-      trimmed = trimmed.substring(chargeMatch[0].length).trim();
+      remaining = remaining.substring(chargeMatch[0].length).trim();
       parsedAny = true;
-      matchedCharge = true;
-      if (trimmed.startsWith('+')) trimmed = trimmed.substring(1).trim();
+      if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
+      continue;
     }
-  }
 
-  // 3. Check for release inputs
-  let matchedRelease = true;
-  while (matchedRelease) {
-    matchedRelease = false;
-    const releaseMatch = trimmed.match(/^\]([a-z0-9])\[/i);
+    // 3. Bracketed Release
+    const releaseMatch = remaining.match(/^\]([a-z0-9])\[/i);
     if (releaseMatch) {
       const inner = releaseMatch[1].toLowerCase();
       const arrow = DIRECTION_ARROWS[inner];
       const display = arrow || inner.toUpperCase();
       html += `<span class="combo-dir" title="Release ]${inner}[">]${display}[</span>`;
-      trimmed = trimmed.substring(releaseMatch[0].length).trim();
+      remaining = remaining.substring(releaseMatch[0].length).trim();
       parsedAny = true;
-      matchedRelease = true;
-      if (trimmed.startsWith('+')) trimmed = trimmed.substring(1).trim();
+      if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
+      continue;
     }
-  }
 
-  // 4. Direction arrows loop
-  const directionKeys = Object.keys(DIRECTION_ARROWS).sort((a, b) => b.length - a.length);
-  let matchedDir = true;
-  while (matchedDir && trimmed.length > 0) {
-    matchedDir = false;
-    for (const dirKey of directionKeys) {
-      if (gameId === 't8' && ['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(dirKey)) {
-        continue;
-      }
-      const isLetterDir = ['d', 'f', 'b', 'u'].includes(dirKey);
-      if (isLetterDir && gameId !== 't8') {
-        continue;
-      }
-      
-      const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/'), 'i');
-      if (regex.test(trimmed)) {
-        if (!(dirKey === '1' || dirKey === '2' || dirKey === '3' || dirKey === '4' ? trimmed.length === 1 : false)) {
-          const arrow = DIRECTION_ARROWS[dirKey];
-          html += `<span class="combo-dir" title="Direction ${dirKey}">${arrow}</span>`;
-          trimmed = trimmed.substring(dirKey.length).trim();
-          parsedAny = true;
-          matchedDir = true;
-          
-          if (trimmed.startsWith('+')) {
-            trimmed = trimmed.substring(1).trim();
-          }
-          break;
-        }
-      }
-    }
-    if (trimmed.startsWith('+')) {
-      trimmed = trimmed.substring(1).trim();
-      matchedDir = true;
-    }
-  }
-
-  // 5. Button codes
-  let remaining = trimmed.toLowerCase();
-  
-  if (remaining.startsWith('c.') || remaining.startsWith('f.')) {
-    const prefix = remaining.substring(0, 2);
-    html += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.1rem;">${prefix}</span>`;
-    remaining = remaining.substring(2);
-  }
-
-  // Filter valid buttons by game context to prevent overlap conflicts
-  let activeButtons = Object.keys(BUTTON_CLASSES);
-  if (gameId === 't8') {
-    activeButtons = ['1', '2', '3', '4'];
-  } else if (gameId === 'sf6') {
-    activeButtons = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'p', 'k'];
-  } else if (gameId === 'ggst') {
-    activeButtons = ['p', 'k', 's', 'hs', 'd'];
-  }
-  const buttonKeys = activeButtons.sort((a, b) => b.length - a.length);
-  
-  while (remaining.length > 0) {
-    let abbrevMatched = false;
-    for (const abbrev of ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch', 'sen']) {
-      if (remaining.startsWith(abbrev)) {
-        html += `<span class="combo-custom-action">${abbrev.toUpperCase()}</span>`;
-        remaining = remaining.substring(abbrev.length).trim();
-        if (remaining.startsWith('+')) {
-          remaining = remaining.substring(1).trim();
-        }
-        abbrevMatched = true;
-        break;
-      }
-    }
-    if (abbrevMatched) {
+    // 4. Proximity prefixes like c. or f. (GGST close/far)
+    if (remaining.toLowerCase().startsWith('c.') || remaining.toLowerCase().startsWith('f.')) {
+      const prefix = remaining.substring(0, 2).toLowerCase();
+      html += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.1rem;">${prefix}</span>`;
+      remaining = remaining.substring(2).trim();
       parsedAny = true;
       continue;
     }
 
-    let buttonMatched = false;
-    for (const btnKey of buttonKeys) {
-      if (remaining.startsWith(btnKey)) {
-        const btnClass = BUTTON_CLASSES[btnKey];
-        html += `<span class="combo-btn ${btnClass}">${btnKey.toUpperCase()}</span>`;
-        remaining = remaining.substring(btnKey.length).trim();
-        
-        if (remaining.startsWith('+')) {
-          remaining = remaining.substring(1).trim();
-        }
-        
-        buttonMatched = true;
+    // 5. Known abbreviations/stances (case-insensitive)
+    const abbrevs = ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch', 'sen'];
+    for (const abbrev of abbrevs) {
+      const regex = new RegExp('^' + abbrev + '\\b', 'i');
+      if (regex.test(remaining)) {
+        html += `<span class="combo-custom-action">${abbrev.toUpperCase()}</span>`;
+        remaining = remaining.replace(regex, '').trim();
         parsedAny = true;
+        matched = true;
         break;
       }
     }
+    if (matched) continue;
 
-    if (!buttonMatched) {
-      const char = remaining.charAt(0).toUpperCase();
-      html += `<span class="combo-custom-action">${char}</span>`;
-      remaining = remaining.substring(1).trim();
-      parsedAny = true;
+    // 6. Game-Specific Active Buttons
+    let activeButtons = Object.keys(BUTTON_CLASSES);
+    if (gameId === 't8') {
+      activeButtons = ['1', '2', '3', '4'];
+    } else if (gameId === 'sf6') {
+      activeButtons = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'p', 'k'];
+    } else if (gameId === 'ggst') {
+      activeButtons = ['p', 'k', 's', 'hs', 'd'];
     }
+    const buttonKeys = activeButtons.sort((a, b) => b.length - a.length);
+
+    for (const btnKey of buttonKeys) {
+      const regex = new RegExp('^' + btnKey + '\\b', 'i');
+      if (regex.test(remaining)) {
+        const btnClass = BUTTON_CLASSES[btnKey];
+        html += `<span class="combo-btn ${btnClass}">${btnKey.toUpperCase()}</span>`;
+        remaining = remaining.replace(regex, '').trim();
+        parsedAny = true;
+        matched = true;
+        break;
+      }
+    }
+    if (matched) continue;
+
+    // 7. Direction letters in Tekken
+    if (gameId === 't8') {
+      const t8DirKeys = ['d/f', 'd/b', 'u/f', 'u/b', 'db', 'df', 'ub', 'uf', 'd', 'f', 'b', 'u'];
+      for (const dirKey of t8DirKeys) {
+        const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/'), 'i');
+        if (regex.test(remaining)) {
+          const arrow = DIRECTION_ARROWS[dirKey];
+          html += `<span class="combo-dir" title="Direction ${dirKey}">${arrow}</span>`;
+          remaining = remaining.replace(regex, '').trim();
+          parsedAny = true;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) continue;
+    }
+
+    // 8. Numpad directions for non-Tekken games (digits 1-9)
+    if (gameId !== 't8') {
+      const numMatch = remaining.match(/^[1-9]/);
+      if (numMatch) {
+        const digit = numMatch[0];
+        const arrow = DIRECTION_ARROWS[digit];
+        html += `<span class="combo-dir" title="Direction ${digit}">${arrow}</span>`;
+        remaining = remaining.substring(1).trim();
+        parsedAny = true;
+        continue;
+      }
+    }
+
+    // 9. Standard words (alphabetic sequence)
+    const wordMatch = remaining.match(/^[a-z]+/i);
+    if (wordMatch) {
+      const word = wordMatch[0];
+      html += `<span class="combo-custom-action">${word.toUpperCase()}</span>`;
+      remaining = remaining.substring(word.length).trim();
+      parsedAny = true;
+      continue;
+    }
+
+    // 10. Fallback for single symbol/character
+    const char = remaining.charAt(0);
+    html += `<span class="combo-custom-action">${char.toUpperCase()}</span>`;
+    remaining = remaining.substring(1).trim();
+    parsedAny = true;
   }
 
   if (!parsedAny) {
