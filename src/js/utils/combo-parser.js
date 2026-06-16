@@ -531,6 +531,79 @@ if (typeof document !== 'undefined') {
     const styleEl = document.createElement('style');
     styleEl.id = 'joystick-animations-css';
     styleEl.textContent = `
+      /* Notation visibility toggling rules */
+      .combo-sequence .notation-joystick {
+        display: none !important;
+      }
+      .combo-sequence .notation-text {
+        display: inline-flex !important;
+      }
+      .show-joysticks .combo-sequence .notation-joystick {
+        display: inline-flex !important;
+      }
+      .show-joysticks .combo-sequence .notation-text {
+        display: none !important;
+      }
+
+      /* Switch UI Toggle Styles */
+      .notation-toggle-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        background: rgba(30, 30, 32, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: var(--text-secondary);
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 38px;
+        height: 20px;
+        margin-bottom: 0;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #3a3a3c;
+        transition: .3s;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
+        background-color: #aeaeae;
+        transition: .3s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--color-primary, #ff9f0a);
+      }
+      input:checked + .slider:before {
+        transform: translateX(18px);
+        background-color: #fff;
+        box-shadow: 0 0 8px var(--color-primary, #ff9f0a);
+      }
+
       .joystick-container {
         display: inline-flex;
         align-items: center;
@@ -757,6 +830,74 @@ function renderJoystickSvg(animId, title = '') {
   `.trim();
 }
 
+function renderDirectionElement(numDirection, titleStr) {
+  const arrow = DIRECTION_ARROWS[numDirection] || numDirection;
+  return `
+    <span class="notation-text combo-dir" title="${escapeHtml(titleStr)}">${arrow}</span>
+    <span class="notation-joystick joystick-wrapper">${renderJoystickSvg(numDirection, titleStr)}</span>
+  `.trim();
+}
+
+function renderMotionElement(motionId, titleStr) {
+  let textHtml = '';
+  if (motionId === '236') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 3">↘</span>
+      <span class="notation-text combo-dir" title="Direction 6">→</span>
+    `;
+  } else if (motionId === '214') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 1">↙</span>
+      <span class="notation-text combo-dir" title="Direction 4">←</span>
+    `;
+  } else if (motionId === '623') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 6">→</span>
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 3">↘</span>
+    `;
+  } else if (motionId === '421') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 4">←</span>
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 1">↙</span>
+    `;
+  } else if (motionId === '41236') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 4">←</span>
+      <span class="notation-text combo-dir" title="Direction 1">↙</span>
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 3">↘</span>
+      <span class="notation-text combo-dir" title="Direction 6">→</span>
+    `;
+  } else if (motionId === '63214') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Direction 6">→</span>
+      <span class="notation-text combo-dir" title="Direction 3">↘</span>
+      <span class="notation-text combo-dir" title="Direction 2">↓</span>
+      <span class="notation-text combo-dir" title="Direction 1">↙</span>
+      <span class="notation-text combo-dir" title="Direction 4">←</span>
+    `;
+  } else if (motionId === 'c46') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Charge [4]">[←]</span>
+      <span class="notation-text combo-dir" title="Direction 6">→</span>
+    `;
+  } else if (motionId === 'c28') {
+    textHtml = `
+      <span class="notation-text combo-dir" title="Charge [2]">[↓]</span>
+      <span class="notation-text combo-dir" title="Direction 8">↑</span>
+    `;
+  }
+  
+  return `
+    ${textHtml.trim()}
+    <span class="notation-joystick joystick-wrapper">${renderJoystickSvg(motionId, titleStr)}</span>
+  `.trim();
+}
+
 function parseStrategyHubStep(stepStr, gameId) {
   let remaining = escapeHtml(stepStr.trim());
   if (!remaining) return '';
@@ -829,7 +970,7 @@ function parseStrategyHubStep(stepStr, gameId) {
         title = 'Charge Down, Up';
       }
       if (animId) {
-        html += renderJoystickSvg(animId, title);
+        html += renderMotionElement(animId, title);
         remaining = remaining.substring(complexChargeMatch[0].length).trim();
         parsedAny = true;
         if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
@@ -843,12 +984,19 @@ function parseStrategyHubStep(stepStr, gameId) {
       const inner = chargeMatch[1].toLowerCase();
       const innerNum = DIR_MAP[inner] || inner;
       const title = `Charge [${inner.toUpperCase()}]`;
+      const arrow = DIRECTION_ARROWS[innerNum] || inner.toUpperCase();
+      
+      let joystickPart = '';
       if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(innerNum)) {
-        html += renderJoystickSvg(`hold-${innerNum}`, title);
+        joystickPart = renderJoystickSvg(`hold-${innerNum}`, title);
       } else {
-        const arrow = DIRECTION_ARROWS[inner] || inner.toUpperCase();
-        html += `<span class="combo-dir" title="${title}">[${arrow}]</span>`;
+        joystickPart = `<span class="combo-dir" title="${title}">[${arrow}]</span>`;
       }
+      
+      html += `
+        <span class="notation-text combo-dir" title="${title}">[${arrow}]</span>
+        <span class="notation-joystick joystick-wrapper">${joystickPart}</span>
+      `;
       remaining = remaining.substring(chargeMatch[0].length).trim();
       parsedAny = true;
       if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
@@ -885,7 +1033,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       for (const num of motionKeys) {
         if (remaining.startsWith(num)) {
           const label = MOTIONS[num];
-          html += renderJoystickSvg(num, `${label} (${num})`);
+          html += renderMotionElement(num, `${label} (${num})`);
           remaining = remaining.substring(num.length).trim();
           parsedAny = true;
           matched = true;
@@ -939,7 +1087,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/') + '(?![a-z])', 'i');
       if (regex.test(remaining)) {
         const numDirection = DIR_MAP[dirKey.toLowerCase()];
-        html += renderJoystickSvg(numDirection, `Direction ${dirKey.toUpperCase()} (${numDirection})`);
+        html += renderDirectionElement(numDirection, `Direction ${dirKey.toUpperCase()} (${numDirection})`);
         remaining = remaining.replace(regex, '').trim();
         parsedAny = true;
         matched = true;
@@ -953,7 +1101,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       const numMatch = remaining.match(/^[1-9]/);
       if (numMatch) {
         const digit = numMatch[0];
-        html += renderJoystickSvg(digit, `Direction ${digit}`);
+        html += renderDirectionElement(digit, `Direction ${digit}`);
         remaining = remaining.substring(1).trim();
         parsedAny = true;
         continue;
