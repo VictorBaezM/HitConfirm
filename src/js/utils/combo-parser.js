@@ -525,12 +525,256 @@ export function translateNotationToEmoji(notationStr, gameId) {
   return resultStr.trim();
 }
 
+// Inject joystick animations into document head at runtime
+if (typeof document !== 'undefined') {
+  if (!document.getElementById('joystick-animations-css')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'joystick-animations-css';
+    styleEl.textContent = `
+      .joystick-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: rgba(30, 30, 32, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        vertical-align: middle;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(255, 255, 255, 0.05);
+        margin-right: 0.15rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .joystick-svg {
+        width: 24px;
+        height: 24px;
+        display: block;
+      }
+      .joystick-gate {
+        stroke: rgba(255, 255, 255, 0.22);
+        stroke-width: 1.5;
+        fill: rgba(10, 10, 12, 0.5);
+      }
+      .joystick-center {
+        fill: rgba(255, 255, 255, 0.15);
+      }
+      .joystick-dustcover {
+        fill: #151517;
+        stroke: rgba(255, 255, 255, 0.18);
+        stroke-width: 0.8;
+      }
+      .joystick-lever {
+        transform-origin: 16px 16px;
+      }
+      @keyframes joystick-dir-1 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(-7px, 7px); } }
+      @keyframes joystick-dir-2 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(0, 10px); } }
+      @keyframes joystick-dir-3 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(7px, 7px); } }
+      @keyframes joystick-dir-4 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(-10px, 0); } }
+      @keyframes joystick-dir-6 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(10px, 0); } }
+      @keyframes joystick-dir-7 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(-7px, -7px); } }
+      @keyframes joystick-dir-8 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(0, -10px); } }
+      @keyframes joystick-dir-9 { 0%, 100% { transform: translate(0, 0); } 25%, 75% { transform: translate(7px, -7px); } }
+      .joystick-anim-1 .joystick-lever { animation: joystick-dir-1 2s infinite ease-in-out; }
+      .joystick-anim-2 .joystick-lever { animation: joystick-dir-2 2s infinite ease-in-out; }
+      .joystick-anim-3 .joystick-lever { animation: joystick-dir-3 2s infinite ease-in-out; }
+      .joystick-anim-4 .joystick-lever { animation: joystick-dir-4 2s infinite ease-in-out; }
+      .joystick-anim-6 .joystick-lever { animation: joystick-dir-6 2s infinite ease-in-out; }
+      .joystick-anim-7 .joystick-lever { animation: joystick-dir-7 2s infinite ease-in-out; }
+      .joystick-anim-8 .joystick-lever { animation: joystick-dir-8 2s infinite ease-in-out; }
+      .joystick-anim-9 .joystick-lever { animation: joystick-dir-9 2s infinite ease-in-out; }
+      .joystick-anim-hold-1 .joystick-lever { transform: translate(-7px, 7px); }
+      .joystick-anim-hold-2 .joystick-lever { transform: translate(0, 10px); }
+      .joystick-anim-hold-3 .joystick-lever { transform: translate(7px, 7px); }
+      .joystick-anim-hold-4 .joystick-lever { transform: translate(-10px, 0); }
+      @keyframes joystick-motion-236 {
+        0%, 100% { transform: translate(0, 0); }
+        20% { transform: translate(0, 10px); }
+        45% { transform: translate(7px, 7px); }
+        70%, 85% { transform: translate(10px, 0); }
+      }
+      @keyframes joystick-motion-214 {
+        0%, 100% { transform: translate(0, 0); }
+        20% { transform: translate(0, 10px); }
+        45% { transform: translate(-7px, 7px); }
+        70%, 85% { transform: translate(-10px, 0); }
+      }
+      @keyframes joystick-motion-623 {
+        0%, 100% { transform: translate(0, 0); }
+        20% { transform: translate(10px, 0); }
+        45% { transform: translate(0, 10px); }
+        70%, 85% { transform: translate(7px, 7px); }
+      }
+      @keyframes joystick-motion-421 {
+        0%, 100% { transform: translate(0, 0); }
+        20% { transform: translate(-10px, 0); }
+        45% { transform: translate(0, 10px); }
+        70%, 85% { transform: translate(-7px, 7px); }
+      }
+      @keyframes joystick-motion-41236 {
+        0%, 100% { transform: translate(0, 0); }
+        15% { transform: translate(-10px, 0); }
+        30% { transform: translate(-7px, 7px); }
+        45% { transform: translate(0, 10px); }
+        60% { transform: translate(7px, 7px); }
+        75%, 90% { transform: translate(10px, 0); }
+      }
+      @keyframes joystick-motion-63214 {
+        0%, 100% { transform: translate(0, 0); }
+        15% { transform: translate(10px, 0); }
+        30% { transform: translate(7px, 7px); }
+        45% { transform: translate(0, 10px); }
+        60% { transform: translate(-7px, 7px); }
+        75%, 90% { transform: translate(-10px, 0); }
+      }
+      @keyframes joystick-motion-c46 {
+        0%, 45% { transform: translate(-10px, 0); }
+        55%, 80% { transform: translate(10px, 0); }
+        90%, 100% { transform: translate(0, 0); }
+      }
+      @keyframes joystick-motion-c28 {
+        0%, 45% { transform: translate(0, 10px); }
+        55%, 80% { transform: translate(0, -10px); }
+        90%, 100% { transform: translate(0, 0); }
+      }
+      .joystick-anim-236 .joystick-lever { animation: joystick-motion-236 1.8s infinite ease-in-out; }
+      .joystick-anim-214 .joystick-lever { animation: joystick-motion-214 1.8s infinite ease-in-out; }
+      .joystick-anim-623 .joystick-lever { animation: joystick-motion-623 1.8s infinite ease-in-out; }
+      .joystick-anim-421 .joystick-lever { animation: joystick-motion-421 1.8s infinite ease-in-out; }
+      .joystick-anim-41236 .joystick-lever { animation: joystick-motion-41236 2.2s infinite ease-in-out; }
+      .joystick-anim-63214 .joystick-lever { animation: joystick-motion-63214 2.2s infinite ease-in-out; }
+      .joystick-anim-c46 .joystick-lever { animation: joystick-motion-c46 2.2s infinite ease-in-out; }
+      .joystick-anim-c28 .joystick-lever { animation: joystick-motion-c28 2.2s infinite ease-in-out; }
+      @keyframes joystick-charge-pulsate {
+        0%, 100% { opacity: 0.35; transform: scale(1); }
+        50% { opacity: 0.75; transform: scale(1.25); }
+      }
+      .joystick-charge-area-pulsate {
+        animation: joystick-charge-pulsate 1.5s infinite ease-in-out;
+        transform-origin: center;
+      }
+    `;
+    document.head.appendChild(styleEl);
+  }
+}
+
+function renderJoystickSvg(animId, title = '') {
+  let pathHtml = '';
+  let chargeIndicator = '';
+  
+  if (animId === '236') {
+    pathHtml = `
+      <path d="M16 26 A 10 10 0 0 0 26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId === '214') {
+    pathHtml = `
+      <path d="M16 26 A 10 10 0 0 1 6 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M8 13 L5 16 L8 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId === '623') {
+    pathHtml = `
+      <path d="M26 16 L16 26 L23 23" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
+      <path d="M20 23 L23 23 L23 20" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
+    `;
+  } else if (animId === '421') {
+    pathHtml = `
+      <path d="M6 16 L16 26 L9 23" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
+      <path d="M12 23 L9 23 L9 20" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
+    `;
+  } else if (animId === '41236') {
+    pathHtml = `
+      <path d="M6 16 A 10 10 0 0 0 26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId === '63214') {
+    pathHtml = `
+      <path d="M26 16 A 10 10 0 0 1 6 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M8 13 L5 16 L8 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId === 'c46') {
+    chargeIndicator = `<circle cx="6" cy="16" r="4.5" fill="rgba(0, 132, 255, 0.25)" stroke="rgba(0, 132, 255, 0.5)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+    pathHtml = `
+      <path d="M6 16 L26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId === 'c28') {
+    chargeIndicator = `<circle cx="16" cy="26" r="4.5" fill="rgba(0, 132, 255, 0.25)" stroke="rgba(0, 132, 255, 0.5)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+    pathHtml = `
+      <path d="M16 26 L16 6" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="M13 9 L16 6 L19 9" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  } else if (animId.startsWith('hold-')) {
+    const holdDir = animId.substring(5);
+    let cx = 16, cy = 16;
+    if (holdDir === '4') { cx = 6; cy = 16; }
+    else if (holdDir === '2') { cx = 16; cy = 26; }
+    else if (holdDir === '1') { cx = 9; cy = 23; }
+    else if (holdDir === '3') { cx = 23; cy = 23; }
+    chargeIndicator = `<circle cx="${cx}" cy="${cy}" r="4.5" fill="rgba(0, 132, 255, 0.3)" stroke="rgba(0, 132, 255, 0.6)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+  }
+
+  let dirGuide = '';
+  if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(animId)) {
+    let x2 = 16, y2 = 16;
+    if (animId === '6') x2 = 26;
+    if (animId === '4') x2 = 6;
+    if (animId === '2') y2 = 26;
+    if (animId === '8') y2 = 6;
+    if (animId === '1') { x2 = 9; y2 = 23; }
+    if (animId === '3') { x2 = 23; y2 = 23; }
+    if (animId === '7') { x2 = 9; y2 = 9; }
+    if (animId === '9') { x2 = 23; y2 = 9; }
+    dirGuide = `<line x1="16" y1="16" x2="${x2}" y2="${y2}" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" stroke-dasharray="1.5,1.5" />`;
+  }
+
+  return `
+    <div class="joystick-container" title="${escapeHtml(title)}">
+      <svg class="joystick-svg joystick-anim-${animId}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="balltop-grad" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#ff9f0a" />
+            <stop offset="60%" stop-color="#ff3b30" />
+            <stop offset="100%" stop-color="#8e0000" />
+          </radialGradient>
+          <radialGradient id="balltop-grad-hold" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#0a84ff" />
+            <stop offset="60%" stop-color="#0066cc" />
+            <stop offset="100%" stop-color="#003366" />
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="16" r="12" class="joystick-gate" />
+        <circle cx="16" cy="16" r="2.5" class="joystick-center" />
+        ${dirGuide}
+        ${chargeIndicator}
+        ${pathHtml}
+        <g class="joystick-lever">
+          <circle cx="16" cy="16" r="7" class="joystick-dustcover" />
+          <circle cx="16" cy="16" r="5" fill="url(#${animId.startsWith('hold-') ? 'balltop-grad-hold' : 'balltop-grad'})" />
+        </g>
+      </svg>
+    </div>
+  `.trim();
+}
+
 function parseStrategyHubStep(stepStr, gameId) {
   let remaining = escapeHtml(stepStr.trim());
   if (!remaining) return '';
 
   let html = `<div class="combo-step">`;
   let parsedAny = false;
+
+  const DIR_MAP = {
+    '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+    'db': '1', 'd/b': '1',
+    'd': '2',
+    'df': '3', 'd/f': '3',
+    'b': '4',
+    'f': '6',
+    'ub': '7', 'u/b': '7',
+    'u': '8',
+    'uf': '9', 'u/f': '9'
+  };
 
   while (remaining.length > 0) {
     if (remaining.startsWith(' ')) {
@@ -568,32 +812,65 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 2. Bracketed Charge/Hold
+    // 2. Complex charge motions (e.g. [4]6 or [2]8)
+    const complexChargeMatch = remaining.match(/^\[(4|2|db|d\/b|d)\]\s*(6|8|f|u)(?![0-9])/i);
+    if (complexChargeMatch) {
+      const holdRaw = complexChargeMatch[1].toLowerCase();
+      const releaseRaw = complexChargeMatch[2].toLowerCase();
+      const holdNum = DIR_MAP[holdRaw];
+      const releaseNum = DIR_MAP[releaseRaw];
+      let animId = '';
+      let title = '';
+      if (holdNum === '4' && releaseNum === '6') {
+        animId = 'c46';
+        title = 'Charge Back, Forward';
+      } else if (holdNum === '2' && releaseNum === '8') {
+        animId = 'c28';
+        title = 'Charge Down, Up';
+      }
+      if (animId) {
+        html += renderJoystickSvg(animId, title);
+        remaining = remaining.substring(complexChargeMatch[0].length).trim();
+        parsedAny = true;
+        if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
+        continue;
+      }
+    }
+
+    // 3. Bracketed Charge/Hold (single, e.g. [4])
     const chargeMatch = remaining.match(/^\[([1-9]|[a-z/]+)\]/i);
     if (chargeMatch) {
       const inner = chargeMatch[1].toLowerCase();
-      const arrow = DIRECTION_ARROWS[inner] || inner.toUpperCase();
-      html += `<span class="combo-dir" title="Charge [${inner}]">[${arrow}]</span>`;
+      const innerNum = DIR_MAP[inner] || inner;
+      const title = `Charge [${inner.toUpperCase()}]`;
+      if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(innerNum)) {
+        html += renderJoystickSvg(`hold-${innerNum}`, title);
+      } else {
+        const arrow = DIRECTION_ARROWS[inner] || inner.toUpperCase();
+        html += `<span class="combo-dir" title="${title}">[${arrow}]</span>`;
+      }
       remaining = remaining.substring(chargeMatch[0].length).trim();
       parsedAny = true;
       if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
       continue;
     }
 
-    // 3. Bracketed Release
+    // 4. Bracketed Release (single, e.g. ]4[)
     const releaseMatch = remaining.match(/^\]([a-z0-9])\[/i);
     if (releaseMatch) {
       const inner = releaseMatch[1].toLowerCase();
-      const arrow = DIRECTION_ARROWS[inner];
+      const innerNum = DIR_MAP[inner] || inner;
+      const title = `Release ]${inner.toUpperCase()}[`;
+      const arrow = DIRECTION_ARROWS[innerNum];
       const display = arrow || inner.toUpperCase();
-      html += `<span class="combo-dir" title="Release ]${inner}[">]${display}[</span>`;
+      html += `<span class="combo-dir" title="${title}">]${display}[</span>`;
       remaining = remaining.substring(releaseMatch[0].length).trim();
       parsedAny = true;
       if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
       continue;
     }
 
-    // 4. Proximity prefixes like c. or f. (GGST close/far)
+    // 5. Proximity prefixes like c. or f. (GGST close/far)
     if (remaining.toLowerCase().startsWith('c.') || remaining.toLowerCase().startsWith('f.')) {
       const prefix = remaining.substring(0, 2).toLowerCase();
       html += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.1rem;">${prefix}</span>`;
@@ -602,7 +879,23 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
-    // 5. Known abbreviations/stances (case-insensitive)
+    // 6. Complex Motion Inputs (non-Tekken)
+    if (gameId !== 't8') {
+      const motionKeys = Object.keys(MOTIONS).sort((a, b) => b.length - a.length);
+      for (const num of motionKeys) {
+        if (remaining.startsWith(num)) {
+          const label = MOTIONS[num];
+          html += renderJoystickSvg(num, `${label} (${num})`);
+          remaining = remaining.substring(num.length).trim();
+          parsedAny = true;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) continue;
+    }
+
+    // 7. Known abbreviations/stances (case-insensitive)
     const abbrevs = ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch', 'sen'];
     for (const abbrev of abbrevs) {
       const regex = new RegExp('^' + abbrev + '\\b', 'i');
@@ -616,7 +909,7 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 6. Game-Specific Active Buttons
+    // 8. Game-Specific Active Buttons
     let activeButtons = Object.keys(BUTTON_CLASSES);
     if (gameId === 't8') {
       activeButtons = ['1', '2', '3', '4'];
@@ -640,37 +933,34 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 7. Direction letters in Tekken
-    if (gameId === 't8') {
-      const t8DirKeys = ['d/f', 'd/b', 'u/f', 'u/b', 'db', 'df', 'ub', 'uf', 'd', 'f', 'b', 'u'];
-      for (const dirKey of t8DirKeys) {
-        const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/'), 'i');
-        if (regex.test(remaining)) {
-          const arrow = DIRECTION_ARROWS[dirKey];
-          html += `<span class="combo-dir" title="Direction ${dirKey}">${arrow}</span>`;
-          remaining = remaining.replace(regex, '').trim();
-          parsedAny = true;
-          matched = true;
-          break;
-        }
+    // 9. Diagonal/Cardinal directions (d/f, db, etc.)
+    const dirKeys = ['d/f', 'd/b', 'u/f', 'u/b', 'db', 'df', 'ub', 'uf', 'd', 'f', 'b', 'u'];
+    for (const dirKey of dirKeys) {
+      const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/') + '(?![a-z])', 'i');
+      if (regex.test(remaining)) {
+        const numDirection = DIR_MAP[dirKey.toLowerCase()];
+        html += renderJoystickSvg(numDirection, `Direction ${dirKey.toUpperCase()} (${numDirection})`);
+        remaining = remaining.replace(regex, '').trim();
+        parsedAny = true;
+        matched = true;
+        break;
       }
-      if (matched) continue;
     }
+    if (matched) continue;
 
-    // 8. Numpad directions for non-Tekken games (digits 1-9)
+    // 10. Numpad directions for non-Tekken games (digits 1-9)
     if (gameId !== 't8') {
       const numMatch = remaining.match(/^[1-9]/);
       if (numMatch) {
         const digit = numMatch[0];
-        const arrow = DIRECTION_ARROWS[digit];
-        html += `<span class="combo-dir" title="Direction ${digit}">${arrow}</span>`;
+        html += renderJoystickSvg(digit, `Direction ${digit}`);
         remaining = remaining.substring(1).trim();
         parsedAny = true;
         continue;
       }
     }
 
-    // 9. Standard words (alphabetic sequence)
+    // 11. Standard words (alphabetic sequence)
     const wordMatch = remaining.match(/^[a-z]+/i);
     if (wordMatch) {
       const word = wordMatch[0];
@@ -680,7 +970,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
-    // 10. Fallback for single symbol/character
+    // 12. Fallback for single symbol/character
     const char = remaining.charAt(0);
     html += `<span class="combo-custom-action">${char.toUpperCase()}</span>`;
     remaining = remaining.substring(1).trim();
