@@ -879,6 +879,10 @@ function parseStrategyHubStep(stepStr, gameId) {
     'u': '8',
     'uf': '9', 'u/f': '9'
   };
+  // For Guilty Gear, treat 'D' as Dust button, not down direction
+  if (gameId === 'ggst') {
+    delete DIR_MAP['d'];
+  }
 
   while (remaining.length > 0) {
     if (remaining.startsWith(' ')) {
@@ -892,6 +896,17 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
 
     let matched = false;
+
+    // 1a. Combined jump prefix (e.g., j.H, j.K) – treat as one token
+    const jumpCombinedMatch = remaining.match(/^j\.[A-Za-z]+/i);
+    if (jumpCombinedMatch) {
+      const token = jumpCombinedMatch[0];
+      html += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">${token}</span>`;
+      remaining = remaining.substring(token.length).trim();
+      parsedAny = true;
+      matched = true;
+      continue;
+    }
 
     // 1. State Prefixes
     const prefixRules = [
