@@ -850,6 +850,7 @@
 .combo-btn.btn-s  { background: #3cb85c; color: #fff; } /* GG Slash: Green */
 .combo-btn.btn-hs { background: #eab420; color: #121214; } /* GG Heavy Slash: Yellow/Gold */
 .combo-btn.btn-d  { background: #8e44ad; color: #fff; } /* GG Dust: Purple */
+.combo-btn.btn-u  { background: #e67e22; color: #fff; } /* GBVSR Unique: Orange */
 
 /* SF Buttons */
 .combo-btn.btn-lp { background: #ee5253; color: #fff; }

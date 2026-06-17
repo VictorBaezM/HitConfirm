@@ -41,6 +41,7 @@ const BUTTON_CLASSES = {
   's': 'btn-s',
   'hs': 'btn-hs',
   'd': 'btn-d',
+  'u': 'btn-u',
   
   // Street Fighter
   'lp': 'btn-lp',
@@ -883,8 +884,8 @@ function parseStrategyHubStep(stepStr, gameId) {
   if (gameId === 'ggst') {
     delete DIR_MAP['d'];
   }
-  // For Granblue (GBV/GBVS), treat 'U' as Ultimate button, not up direction
-  if (gameId === 'gbv' || gameId === 'gbvs') {
+  // For Granblue (GBVSR), treat 'U' as Unique/Ultimate button, not up direction
+  if (gameId === 'gbvsr') {
     delete DIR_MAP['u'];
   }
 
@@ -1047,6 +1048,8 @@ function parseStrategyHubStep(stepStr, gameId) {
       activeButtons = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'p', 'k'];
     } else if (gameId === 'ggst') {
       activeButtons = ['p', 'k', 's', 'hs', 'd'];
+    } else if (gameId === 'gbvsr') {
+      activeButtons = ['p', 'k', 's', 'hs', 'u'];
     }
     const buttonKeys = activeButtons.sort((a, b) => b.length - a.length);
 
