@@ -851,6 +851,9 @@
 .combo-btn.btn-hs { background: #eab420; color: #121214; } /* GG Heavy Slash: Yellow/Gold */
 .combo-btn.btn-d  { background: #8e44ad; color: #fff; } /* GG Dust: Purple */
 .combo-btn.btn-u  { background: #e67e22; color: #fff; } /* GBVSR Unique: Orange */
+.combo-btn.btn-l  { background: #54a0ff; color: #fff; } /* GBVSR Light: Blue */
+.combo-btn.btn-m  { background: #f6b93b; color: #121214; } /* GBVSR Medium: Yellow */
+.combo-btn.btn-h  { background: #ee5253; color: #fff; } /* GBVSR Heavy: Red */
 
 /* SF Buttons */
 .combo-btn.btn-lp { background: #ee5253; color: #fff; }

@@ -42,6 +42,11 @@ const BUTTON_CLASSES = {
   'hs': 'btn-hs',
   'd': 'btn-d',
   'u': 'btn-u',
+
+  // Granblue
+  'l': 'btn-l',
+  'm': 'btn-m',
+  'h': 'btn-h',
   
   // Street Fighter
   'lp': 'btn-lp',
@@ -1049,19 +1054,26 @@ function parseStrategyHubStep(stepStr, gameId) {
     } else if (gameId === 'ggst') {
       activeButtons = ['p', 'k', 's', 'hs', 'd'];
     } else if (gameId === 'gbvsr') {
-      activeButtons = ['p', 'k', 's', 'hs', 'u'];
+      activeButtons = ['l', 'm', 'h', 'u'];
     }
     const buttonKeys = activeButtons.sort((a, b) => b.length - a.length);
 
     for (const btnKey of buttonKeys) {
-      const regex = new RegExp('^' + btnKey + '\\b', 'i');
+      const regex = new RegExp('^' + btnKey, 'i');
       if (regex.test(remaining)) {
-        const btnClass = BUTTON_CLASSES[btnKey];
-        html += `<span class="combo-btn ${btnClass}">${btnKey.toUpperCase()}</span>`;
-        remaining = remaining.replace(regex, '').trim();
-        parsedAny = true;
-        matched = true;
-        break;
+        // Check what follows: allow if next char is another button start, digit, symbol, space, or end
+        const afterBtn = remaining.substring(btnKey.length);
+        const nextChar = afterBtn.length > 0 ? afterBtn[0] : '';
+        const isValidEnd = nextChar === '' || /[\d\s+>~,.\-\[\]\(\)]/.test(nextChar) ||
+          buttonKeys.some(bk => afterBtn.toLowerCase().startsWith(bk));
+        if (isValidEnd) {
+          const btnClass = BUTTON_CLASSES[btnKey];
+          html += `<span class="combo-btn ${btnClass}">${btnKey.toUpperCase()}</span>`;
+          remaining = remaining.substring(btnKey.length).trim();
+          parsedAny = true;
+          matched = true;
+          break;
+        }
       }
     }
     if (matched) continue;
@@ -1086,6 +1098,12 @@ function parseStrategyHubStep(stepStr, gameId) {
       const numMatch = remaining.match(/^[1-9]/);
       if (numMatch) {
         const digit = numMatch[0];
+        // Skip neutral '5' — it's implied when no direction precedes a button
+        if (digit === '5') {
+          remaining = remaining.substring(1).trim();
+          parsedAny = true;
+          continue;
+        }
         html += renderDirectionElement(digit, `Direction ${digit}`);
         remaining = remaining.substring(1).trim();
         parsedAny = true;
