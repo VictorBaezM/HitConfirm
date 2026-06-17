@@ -967,25 +967,35 @@ function parseStrategyHubStep(stepStr, gameId) {
       }
     }
 
-    // 3. Bracketed Charge/Hold (single, e.g. [4])
+    // 3. Bracketed Charge/Hold (single, e.g. [4] or [D] for Dust)
     const chargeMatch = remaining.match(/^\[([1-9]|[a-z/]+)\]/i);
     if (chargeMatch) {
       const inner = chargeMatch[1].toLowerCase();
       const innerNum = DIR_MAP[inner] || inner;
-      const title = `Charge [${inner.toUpperCase()}]`;
-      const arrow = DIRECTION_ARROWS[innerNum] || inner.toUpperCase();
       
-      let joystickPart = '';
-      if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(innerNum)) {
-        joystickPart = renderJoystickSvg(`hold-${innerNum}`, title);
+      // Check if this is actually a held button (e.g. [D] for Dust in GGST)
+      const isButtonHold = !DIR_MAP[inner] && BUTTON_CLASSES[inner];
+      
+      if (isButtonHold) {
+        // Render as a held button press
+        const btnClass = BUTTON_CLASSES[inner];
+        html += `<span class="combo-btn ${btnClass}" title="Hold ${inner.toUpperCase()}">[${inner.toUpperCase()}]</span>`;
       } else {
-        joystickPart = `<span class="combo-dir" title="${title}">[${arrow}]</span>`;
+        const title = `Charge [${inner.toUpperCase()}]`;
+        const arrow = DIRECTION_ARROWS[innerNum] || inner.toUpperCase();
+        
+        let joystickPart = '';
+        if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(innerNum)) {
+          joystickPart = renderJoystickSvg(`hold-${innerNum}`, title);
+        } else {
+          joystickPart = `<span class="combo-dir" title="${title}">[${arrow}]</span>`;
+        }
+        
+        html += `
+          <span class="notation-text combo-dir" title="${title}">[${arrow}]</span>
+          <span class="notation-joystick joystick-wrapper">${joystickPart}</span>
+        `;
       }
-      
-      html += `
-        <span class="notation-text combo-dir" title="${title}">[${arrow}]</span>
-        <span class="notation-joystick joystick-wrapper">${joystickPart}</span>
-      `;
       remaining = remaining.substring(chargeMatch[0].length).trim();
       parsedAny = true;
       if (remaining.startsWith('+')) remaining = remaining.substring(1).trim();
