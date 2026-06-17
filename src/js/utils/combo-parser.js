@@ -883,6 +883,10 @@ function parseStrategyHubStep(stepStr, gameId) {
   if (gameId === 'ggst') {
     delete DIR_MAP['d'];
   }
+  // For Granblue (GBV/GBVS), treat 'U' as Ultimate button, not up direction
+  if (gameId === 'gbv' || gameId === 'gbvs') {
+    delete DIR_MAP['u'];
+  }
 
   while (remaining.length > 0) {
     if (remaining.startsWith(' ')) {
