@@ -901,6 +901,7 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
 
     if (remaining.startsWith('+')) {
+      html += `<span class="combo-plus">+</span>`;
       remaining = remaining.substring(1).trim();
       continue;
     }
