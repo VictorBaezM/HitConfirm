@@ -7,11 +7,44 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
 
   const games = store.getGames();
   
-  // Set up the internal search and filter state
+  // Set up the internal search, filter, and pagination state
   let searchFilter = '';
   let activeGameFilter = initialGameFilter;
+  let currentPage = 1;
+  const itemsPerPage = 16;
 
   function draw() {
+    // 1. Gather all matching characters
+    const allMatching = [];
+    Object.values(games).forEach(game => {
+      if (activeGameFilter !== 'all' && activeGameFilter !== game.id) return;
+      const matching = (game.characters || []).filter(char => 
+        char.toLowerCase().includes(searchFilter.toLowerCase())
+      );
+      matching.forEach(char => {
+        allMatching.push({ gameId: game.id, charName: char });
+      });
+    });
+
+    const totalItems = allMatching.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const pageItems = allMatching.slice(startIndex, endIndex);
+
+    // Group current page items by gameId
+    const itemsByGame = {};
+    pageItems.forEach(item => {
+      if (!itemsByGame[item.gameId]) {
+        itemsByGame[item.gameId] = [];
+      }
+      itemsByGame[item.gameId].push(item.charName);
+    });
+
     mount.innerHTML = `
       <!-- Filters and Search Bar Container -->
       <div class="hub-controls flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
@@ -40,20 +73,8 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
           <!-- Game Sections List -->
           <div class="hub-sections-container flex flex-col gap-8">
             ${Object.values(games).map(game => {
-              // Check if this game is filtered out by game selector
-              if (activeGameFilter !== 'all' && activeGameFilter !== game.id) {
-                return '';
-              }
-
-              // Filter characters by search text
-              const matchingChars = (game.characters || []).filter(char => 
-                char.toLowerCase().includes(searchFilter.toLowerCase())
-              );
-
-              // If no matching characters for this game, don't show the game section
-              if (matchingChars.length === 0) {
-                return '';
-              }
+              const sectionChars = itemsByGame[game.id] || [];
+              if (sectionChars.length === 0) return '';
 
               const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
               const logoHtml = KNOWN_LOGOS.includes(game.id)
@@ -65,7 +86,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
                   <div class="game-section-header flex items-center gap-3 mb-4 border-b border-color pb-2">
                     ${logoHtml}
                     <h3 class="gradient-text game-section-title m-0">${game.name}</h3>
-                    <span class="character-countbadge badge badge-sm ml-auto">${matchingChars.length} characters</span>
+                    <span class="character-countbadge badge badge-sm ml-auto">${sectionChars.length} characters</span>
                   </div>
                   <div class="character-grid" id="grid-${game.id}">
                     <!-- Character cards injected here -->
@@ -82,6 +103,19 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
           </div>
         </div>
       </div>
+
+      <!-- Pagination Controls -->
+      <div class="hub-pagination flex justify-center items-center gap-4 mt-8 ${totalPages <= 1 ? 'hidden' : ''}">
+        <button class="btn btn-sm btn-primary" id="btn-prev-page" ${currentPage === 1 ? 'disabled' : ''}>
+          <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+        </button>
+        <span class="text-muted font-mono text-sm" id="page-indicator">
+          Page ${currentPage} of ${totalPages}
+        </span>
+        <button class="btn btn-sm btn-primary" id="btn-next-page" ${currentPage === totalPages ? 'disabled' : ''}>
+          Next <i class="fa-solid fa-chevron-right ml-1"></i>
+        </button>
+      </div>
     `;
 
     // Inject character cards into the grids
@@ -90,11 +124,8 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       const grid = document.getElementById(`grid-${game.id}`);
       if (!grid) return;
 
-      const matchingChars = (game.characters || []).filter(char => 
-        char.toLowerCase().includes(searchFilter.toLowerCase())
-      );
-
-      matchingChars.forEach(char => {
+      const sectionChars = itemsByGame[game.id] || [];
+      sectionChars.forEach(char => {
         totalVisible++;
         const card = renderCharacterCard({
           gameId: game.id,
@@ -120,8 +151,8 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         searchFilter = e.target.value;
-        // Re-draw grids based on search filter
-        updateGridsOnly();
+        currentPage = 1; // Reset to page 1 on search filter change
+        draw();
       });
       // Focus on input end when rendering
       searchInput.focus();
@@ -130,7 +161,27 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       searchInput.value = val;
     }
 
-    // Chip event listeners removed (now using left game selector sidebar)
+    // Attach pagination button listeners
+    const prevBtn = document.getElementById('btn-prev-page');
+    const nextBtn = document.getElementById('btn-next-page');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          window.scrollTo(0, 0);
+          draw();
+        }
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          window.scrollTo(0, 0);
+          draw();
+        }
+      });
+    }
 
     // Monitor portrait image loading to hide the overlay when ready
     const portraits = mount.querySelectorAll('.character-card .portrait');
@@ -200,55 +251,14 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
     }
   }
 
-  // Optimize search: instead of full redraw (which resets scroll/focus), just update cards visibility and grids
-  function updateGridsOnly() {
-    let totalVisible = 0;
-    Object.values(games).forEach(game => {
-      const section = document.getElementById(`section-${game.id}`);
-      const grid = document.getElementById(`grid-${game.id}`);
-      if (!grid || !section) return;
-
-      grid.innerHTML = '';
-      
-      const isGameVisible = activeGameFilter === 'all' || activeGameFilter === game.id;
-      const matchingChars = isGameVisible ? (game.characters || []).filter(char => 
-        char.toLowerCase().includes(searchFilter.toLowerCase())
-      ) : [];
-
-      if (matchingChars.length === 0) {
-        section.classList.add('hidden');
-      } else {
-        section.classList.remove('hidden');
-        matchingChars.forEach(char => {
-          totalVisible++;
-          const card = renderCharacterCard({
-            gameId: game.id,
-            charName: char,
-            navigate
-          });
-          grid.appendChild(card);
-        });
-      }
-    });
-
-    const emptyState = document.getElementById('hub-empty-state');
-    if (emptyState) {
-      if (totalVisible === 0) {
-        emptyState.classList.remove('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-      }
-    }
-  }
-
   // Initial draw
   draw();
 
   return {
     setGameFilter(gameId) {
       activeGameFilter = gameId;
+      currentPage = 1; // Reset to page 1 on game selection change
       draw();
     }
   };
 }
-

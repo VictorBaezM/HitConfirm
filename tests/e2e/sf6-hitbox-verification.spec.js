@@ -18,6 +18,11 @@ test.describe('Street Fighter 6 Hitbox E2E Verification', () => {
     await sf6Chip.click();
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
+    // Search for Ryu to bring him to the first page of paginated results
+    const searchInput = page.locator('#hub-search');
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('Ryu');
+
     const ryuCard = page.locator('.character-card:has-text("Ryu")');
     await expect(ryuCard).toBeVisible();
     await ryuCard.click();

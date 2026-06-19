@@ -249,4 +249,50 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await expect(frameTable).toBeVisible();
     await expect(frameTable.locator('.frame-data-th:has-text("Move")')).toBeVisible();
   });
+
+  test('should support paginating character cards', async ({ page }) => {
+    // 1. Go to Strategy Hub
+    await page.click('.nav-link[data-page="hub"]');
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 2. Select Guilty Gear Strive (which has 33 characters)
+    const ggstTab = page.locator('#sidebar-game-ggst');
+    await expect(ggstTab).toBeVisible();
+    await ggstTab.click();
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 3. Verify page 1 shows 16 characters and indicator says Page 1 of 3
+    const cardsOnPage1 = page.locator('.character-card');
+    await expect(cardsOnPage1).toHaveCount(16);
+    await expect(page.locator('#page-indicator')).toHaveText('Page 1 of 3');
+
+    // 4. Click Next Page
+    const nextBtn = page.locator('#btn-next-page');
+    await expect(nextBtn).toBeVisible();
+    await nextBtn.click();
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 5. Verify page 2 shows 16 characters and indicator says Page 2 of 3
+    const cardsOnPage2 = page.locator('.character-card');
+    await expect(cardsOnPage2).toHaveCount(16);
+    await expect(page.locator('#page-indicator')).toHaveText('Page 2 of 3');
+
+    // 6. Click Next Page again
+    await nextBtn.click();
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 7. Verify page 3 shows 1 character (33 - 32 = 1) and indicator says Page 3 of 3
+    const cardsOnPage3 = page.locator('.character-card');
+    await expect(cardsOnPage3).toHaveCount(1);
+    await expect(page.locator('#page-indicator')).toHaveText('Page 3 of 3');
+
+    // 8. Click Prev Page
+    const prevBtn = page.locator('#btn-prev-page');
+    await expect(prevBtn).toBeVisible();
+    await prevBtn.click();
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 9. Verify page 2 shows 16 characters and indicator says Page 2 of 3
+    await expect(page.locator('#page-indicator')).toHaveText('Page 2 of 3');
+  });
 });
