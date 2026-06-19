@@ -13,7 +13,7 @@ test.describe('Street Fighter 6 Hitbox E2E Verification', () => {
     // Click on Ryu card under Street Fighter 6
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
     
-    const sf6Chip = page.locator('.btn-chip[data-filter="sf6"]');
+    const sf6Chip = page.locator('#sidebar-game-sf6');
     await expect(sf6Chip).toBeVisible();
     await sf6Chip.click();
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });

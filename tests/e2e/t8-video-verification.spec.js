@@ -13,7 +13,7 @@ test.describe('Tekken 8 Video E2E Verification', () => {
     // Click on Kazuya card under Tekken 8
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
     
-    const t8Chip = page.locator('.btn-chip[data-filter="t8"]');
+    const t8Chip = page.locator('#sidebar-game-t8');
     await expect(t8Chip).toBeVisible();
     await t8Chip.click();
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });

@@ -115,8 +115,8 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
-    // 2. Click SF6 game chip filter
-    const sf6Chip = page.locator('.btn-chip[data-filter="sf6"]');
+    // 2. Click SF6 game selector
+    const sf6Chip = page.locator('#sidebar-game-sf6');
     await expect(sf6Chip).toBeVisible();
     await sf6Chip.click();
 
@@ -146,8 +146,8 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
-    // 2. Click DNF Duel game chip filter
-    const dnfdChip = page.locator('.btn-chip[data-filter="dnfd"]');
+    // 2. Click DNF Duel game selector
+    const dnfdChip = page.locator('#sidebar-game-dnfd');
     await expect(dnfdChip).toBeVisible();
     await dnfdChip.click();
 
@@ -176,7 +176,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
-    const dbfzChip = page.locator('.btn-chip[data-filter="dbfz"]');
+    const dbfzChip = page.locator('#sidebar-game-dbfz');
     await expect(dbfzChip).toBeVisible();
     await dbfzChip.click();
 
@@ -202,7 +202,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
-    const dbfzceChip = page.locator('.btn-chip[data-filter="dbfzce"]');
+    const dbfzceChip = page.locator('#sidebar-game-dbfzce');
     await expect(dbfzceChip).toBeVisible();
     await dbfzceChip.click();
 
@@ -228,7 +228,7 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     await page.click('.nav-link[data-page="hub"]');
     await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
 
-    const gbvsrChip = page.locator('.btn-chip[data-filter="gbvsr"]');
+    const gbvsrChip = page.locator('#sidebar-game-gbvsr');
     await expect(gbvsrChip).toBeVisible();
     await gbvsrChip.click();
 

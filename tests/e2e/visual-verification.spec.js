@@ -22,7 +22,7 @@ test('capture resolved portraits screenshots', async ({ page }) => {
   // ----------------------------------------------------
   // Capture Tekken 8 portraits
   // ----------------------------------------------------
-  const t8Chip = page.locator('.btn-chip[data-filter="t8"]');
+  const t8Chip = page.locator('#sidebar-game-t8');
   await expect(t8Chip).toBeVisible();
   await t8Chip.click();
   await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
@@ -38,7 +38,7 @@ test('capture resolved portraits screenshots', async ({ page }) => {
   // ----------------------------------------------------
   // Capture Street Fighter 6 portraits
   // ----------------------------------------------------
-  const sf6Chip = page.locator('.btn-chip[data-filter="sf6"]');
+  const sf6Chip = page.locator('#sidebar-game-sf6');
   await expect(sf6Chip).toBeVisible();
   await sf6Chip.click();
   await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
@@ -51,7 +51,7 @@ test('capture resolved portraits screenshots', async ({ page }) => {
   // ----------------------------------------------------
   // Capture Smash Ultimate portraits
   // ----------------------------------------------------
-  const ssbuChip = page.locator('.btn-chip[data-filter="ssbu"]');
+  const ssbuChip = page.locator('#sidebar-game-ssbu');
   await expect(ssbuChip).toBeVisible();
   await ssbuChip.click();
   await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
@@ -64,7 +64,7 @@ test('capture resolved portraits screenshots', async ({ page }) => {
   // ----------------------------------------------------
   // Capture Guilty Gear Strive portraits
   // ----------------------------------------------------
-  const ggstChip = page.locator('.btn-chip[data-filter="ggst"]');
+  const ggstChip = page.locator('#sidebar-game-ggst');
   await expect(ggstChip).toBeVisible();
   await ggstChip.click();
   await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });

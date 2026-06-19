@@ -1,7 +1,7 @@
 import { renderCharacterCard } from './character-card.js';
 import store from '../store.js';
 
-export function renderStrategyHub(navigate) {
+export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
   const mount = document.getElementById('strategy-hub-mount');
   if (!mount) return;
 
@@ -9,7 +9,7 @@ export function renderStrategyHub(navigate) {
   
   // Set up the internal search and filter state
   let searchFilter = '';
-  let activeGameFilter = 'ggst';
+  let activeGameFilter = initialGameFilter;
 
   function draw() {
     mount.innerHTML = `
@@ -18,14 +18,6 @@ export function renderStrategyHub(navigate) {
         <div class="search-wrapper w-full md:w-72 relative">
           <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
           <input type="text" id="hub-search" class="form-input pl-10 w-full" placeholder="Search characters..." value="${searchFilter}" />
-        </div>
-        
-        <div class="game-filter-chips flex flex-wrap gap-2 justify-center">
-          ${Object.values(games).map(g => `
-            <button class="btn btn-sm btn-chip ${activeGameFilter === g.id ? 'active' : ''}" data-filter="${g.id}">
-              ${g.name}
-            </button>
-          `).join('')}
         </div>
       </div>
 
@@ -48,8 +40,8 @@ export function renderStrategyHub(navigate) {
           <!-- Game Sections List -->
           <div class="hub-sections-container flex flex-col gap-8">
             ${Object.values(games).map(game => {
-              // Check if this game is filtered out by game chip
-              if (activeGameFilter !== game.id) {
+              // Check if this game is filtered out by game selector
+              if (activeGameFilter !== 'all' && activeGameFilter !== game.id) {
                 return '';
               }
 
@@ -138,14 +130,7 @@ export function renderStrategyHub(navigate) {
       searchInput.value = val;
     }
 
-    // Attach chip event listeners
-    const chips = mount.querySelectorAll('.game-filter-chips .btn-chip');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        activeGameFilter = chip.getAttribute('data-filter');
-        draw();
-      });
-    });
+    // Chip event listeners removed (now using left game selector sidebar)
 
     // Monitor portrait image loading to hide the overlay when ready
     const portraits = mount.querySelectorAll('.character-card .portrait');
@@ -225,7 +210,7 @@ export function renderStrategyHub(navigate) {
 
       grid.innerHTML = '';
       
-      const isGameVisible = activeGameFilter === game.id;
+      const isGameVisible = activeGameFilter === 'all' || activeGameFilter === game.id;
       const matchingChars = isGameVisible ? (game.characters || []).filter(char => 
         char.toLowerCase().includes(searchFilter.toLowerCase())
       ) : [];
@@ -258,5 +243,12 @@ export function renderStrategyHub(navigate) {
 
   // Initial draw
   draw();
+
+  return {
+    setGameFilter(gameId) {
+      activeGameFilter = gameId;
+      draw();
+    }
+  };
 }
 

@@ -4,14 +4,14 @@
  * @param {function} navigateCallback - SPA router navigation function.
  */
 import { renderStrategyHub } from '../components/strategy-hub.js';
-import { hideGameSidebar } from '../components/game-sidebar.js';
+import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
 
 export function renderHubPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  hideGameSidebar();
-  mount.className = 'has-right-sidebar';
+  showGameSidebar();
+  mount.className = 'has-game-sidebar';
 
   // Simple layout: header + hub container + licensing footer
   mount.innerHTML = `
@@ -25,6 +25,24 @@ export function renderHubPage(navigateCallback) {
     </div>
   `;
 
+  let activeGame = 'ggst';
+
   // Render the grid of character cards
-  renderStrategyHub(navigateCallback);
+  const hubController = renderStrategyHub(navigateCallback, activeGame);
+
+  // Initialize left game sidebar
+  function initHubSidebar(gameId) {
+    renderGameSidebar({
+      activeGame: gameId,
+      onGameChange: function (selectedId) {
+        activeGame = selectedId;
+        if (hubController && hubController.setGameFilter) {
+          hubController.setGameFilter(selectedId);
+        }
+        initHubSidebar(selectedId);
+      }
+    });
+  }
+
+  initHubSidebar(activeGame);
 }
