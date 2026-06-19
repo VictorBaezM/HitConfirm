@@ -96,8 +96,21 @@ table, th, td {
 }
 .dojo-notations-list {
   list-style: none;
-  gap: 30px;
+  
+  gap: 15px;
 }
+p {
+  margin-bottom: 16px;
+}
+
+#btn-back{
+  margin-bottom: 20px;
+}
+
+#dojo-create-combo-btn{
+  margin-bottom: 20px;
+}
+
 .strategy-matrix-tr{
   text-align: center;
   font-size: 14px;
@@ -167,7 +180,7 @@ main {
 /* Layout Page Grid Variations */
 @media (min-width: 992px) {
   main.has-right-sidebar {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr;
   }
   
   main.has-game-sidebar {

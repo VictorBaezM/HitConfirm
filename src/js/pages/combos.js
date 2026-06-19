@@ -40,9 +40,8 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
       <!-- Dojo Tab Toggle -->
       <div class="tabs dojo-tabs-wrapper">
-        <div class="tab active" id="dojo-tab-all">Browse Dojo</div>
-        <div class="tab" id="dojo-tab-following">Following Dojo</div>
-        <div class="tab" id="dojo-tab-strategy">Strategy Hub</div>
+        <div class="game-chip tab active" id="dojo-tab-all">Browse Dojo</div>
+        <div class="game-chip tab" id="dojo-tab-following">Following Dojo</div>
       </div>
 
       <!-- Filters Panel -->
@@ -50,7 +49,6 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         <div class="dojo-filters-grid">
           <!-- Search box -->
           <div class="dojo-search-relative">
-            <i class="fa-solid fa-magnifying-glass dojo-search-icon"></i>
             <input type="text" id="dojo-search-char" class="form-input dojo-search-field" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." value="" />
           </div>
 
@@ -84,16 +82,6 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
     <!-- Dojo Sidebar (Right) -->
     <div id="dojo-sidebar" class="flex flex-col gap-6">
-      <div class="card dojo-sidebar-card">
-        <h3 class="dojo-sidebar-heading">
-          <i class="fa-solid fa-circle-question dojo-sidebar-heading-qicon"></i> Reading Notations
-        </h3>
-        <ul class="dojo-notations-list">
-          <li><strong>Anime (GG):</strong> Numpad directions (e.g., 236 = QCF) and buttons: <strong>P</strong> (Punch), <strong>K</strong> (Kick), <strong>S</strong> (Slash), <strong>HS</strong> (Heavy), <strong>D</strong> (Dust).</li>
-          <li><strong>SF6:</strong> Classic directions (2MK = cr.MK) and buttons: <strong>LP/LK</strong>, <strong>MP/MK</strong>, <strong>HP/HK</strong>.</li>
-          <li><strong>Tekken:</strong> Buttons <strong>1</strong> (LP), <strong>2</strong> (RP), <strong>3</strong> (LK), <strong>4</strong> (RK) with arrow directions.</li>
-        </ul>
-      </div>
 
       <div class="card dojo-sidebar-card">
         <h3 class="dojo-sidebar-heading">
@@ -257,7 +245,6 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
   // Attach Dojo Tab listeners
   const tabAll = document.getElementById('dojo-tab-all');
   const tabFollowing = document.getElementById('dojo-tab-following');
-  const tabStrategy = document.getElementById('dojo-tab-strategy');
   
   tabAll.addEventListener('click', function () {
     tabAll.classList.add('active');
@@ -273,10 +260,6 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     tabStrategy.classList.remove('active');
     activeDojoTab = 'following';
     drawList();
-  });
-
-  tabStrategy.addEventListener('click', function () {
-    navigateCallback('hub');
   });
 
   // Attach filter event handlers

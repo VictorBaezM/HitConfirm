@@ -51,31 +51,6 @@ export function renderStrategyPage(navigateCallback) {
           }).join('')}
         </div>
 
-        <!-- Frame Punish Cheat Sheet (Dynamic Matchup Matrix Widget) -->
-        <div class="card strategy-matrix-card">
-          <h3 class="strategy-matrix-title">
-            <i class="fa-solid fa-table-list"></i> Matchup Punish Directory
-          </h3>
-          <div class="strategy-matrix-desc">Quick frame reference notes for key matchups.</div>
-          
-          <div class="strategy-matrix-table-wrapper">
-            <table class="strategy-matrix-table">
-              <thead>
-                <tr class="strategy-matrix-thead-row">
-                  <th class="strategy-matrix-th">Game</th>
-                  <th class="strategy-matrix-th">Character</th>
-                  <th class="strategy-matrix-th">Move Name</th>
-                  <th class="strategy-matrix-th">On Block</th>
-                  <th class="strategy-matrix-th-optimal">Optimal Punish</th>
-                </tr>
-              </thead>
-              <tbody id="cheat-sheet-tbody">
-                <!-- Injected row filters -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         <!-- Guides Catalog List -->
         <h3 class="strategy-guides-heading">
           Guides Directory
@@ -226,8 +201,8 @@ export function renderStrategyPage(navigateCallback) {
       </div>
 
       <h2 class="strategy-viewer-title">${escapeHtml(activeGuide.title)}</h2>
-      <div class="strategy-viewer-author">
-        Written by <strong>${escapeHtml(activeGuide.author)}</strong>
+      <div class="strategy-guide-item-author">
+       <strong>${escapeHtml(activeGuide.author)}</strong>
       </div>
 
       <div class="strategy-content strategy-viewer-content">
@@ -241,7 +216,6 @@ export function renderStrategyPage(navigateCallback) {
           </button>
           <span class="guide-upvote-count strategy-viewer-upvote-count">${activeGuide.upvotes} 🔥</span>
         </div>
-        <span class="strategy-viewer-footer-tag">Shared with HitConfirm Dojo</span>
       </div>
     `;
 

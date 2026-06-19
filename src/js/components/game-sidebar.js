@@ -22,7 +22,7 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
     </div>
   `;
 
-  const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
+  const KNOWN_LOGOS = ['ggst', 'sf6','dnfd','gbvsr','dbfzce','dbfz', 'ssbu', 't8'];
 
   Object.values(games).forEach(function (game) {
     const isActive = activeGame === game.id ? 'active' : '';

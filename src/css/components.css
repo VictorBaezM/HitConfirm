@@ -182,7 +182,7 @@
 }
 
 .wiki-console-tab {
-  background: var(--bg-canvas);
+  background: #000000;
   border: 1px solid var(--border-color);
   width: 100px;
   height: 54px;
@@ -196,6 +196,16 @@
 }
 
 .wiki-console-tab:hover {
+  background: #000000;
+}
+
+.wiki-console-tab:active {
+  background: #000000;
+}
+
+
+
+.wiki-console-tab:hover {
   border-color: var(--color-primary);
 }
 
@@ -207,12 +217,12 @@
 #sidebar-game-sf6 { background: #000000; }
 #sidebar-game-t8 { background: #000000; }
 #sidebar-game-ggst { background: #000000; }
-#sidebar-game-ssbu { background: #f9f8f9; }
+#sidebar-game-ssbu { background: #000000; }
 
 #sidebar-game-sf6:hover, #sidebar-game-sf6.active { background: #000000; }
 #sidebar-game-t8:hover, #sidebar-game-t8.active { background: #000000; }
 #sidebar-game-ggst:hover, #sidebar-game-ggst.active { background: #000000; }
-#sidebar-game-ssbu:hover, #sidebar-game-ssbu.active { background: #f9f8f9; }
+#sidebar-game-ssbu:hover, #sidebar-game-ssbu.active { background: #000000; }
 
 .wiki-console-tab .game-logo-image {
   width: 100%;
@@ -332,6 +342,11 @@
   border-color: var(--color-secondary);
 }
 
+.wiki-char-badge{
+  border-color: rgb(255, 160, 92);
+  color:rgb(255, 160, 92);
+}
+
 .wiki-badge-sf6, .badge-sf6, .game-resource-btn-sf6 { border-color: #ff6b00; color: #ff6b00; }
 .wiki-badge-t8, .badge-t8, .game-resource-btn-t8 { border-color: #00cbd6; color: #00cbd6; }
 .wiki-badge-ggst, .badge-ggst, .game-resource-btn-ggst { border-color: #ff005b; color: #ff005b; }
@@ -406,6 +421,10 @@
 
 .form-input:focus, .form-textarea:focus, .form-select:focus {
   border-color: var(--color-primary);
+}
+
+.post-video-input {
+  padding-left: 32px;
 }
 
 .form-textarea {

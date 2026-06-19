@@ -332,65 +332,50 @@ function normalizeCommunitySlang(str, gameId) {
   res = res.replace(/\b(?:standing|stand|st|s)\s+forward\b/g, 's.MK');
   
   // 3. Diagonal and cardinal direction words (game-aware mapping)
-  if (gameId === 't8') {
-    res = res.replace(/\bdown[- ]forward\b/g, 'df');
-    res = res.replace(/\bdown[- ]back\b/g, 'db');
-    res = res.replace(/\bup[- ]forward\b/g, 'uf');
-    res = res.replace(/\bup[- ]back\b/g, 'ub');
-    res = res.replace(/\bdownforward\b/g, 'df');
-    res = res.replace(/\bdownback\b/g, 'db');
-    res = res.replace(/\bupforward\b/g, 'uf');
-    res = res.replace(/\bupback\b/g, 'ub');
-    
-    res = res.replace(/\bneutral\b/g, '5');
-    res = res.replace(/\b(?:forward|fwd)\b/g, 'f');
-    res = res.replace(/\bback\b/g, 'b');
-    res = res.replace(/\bdown\b/g, 'd');
-    res = res.replace(/\bup\b/g, 'u');
-  } else {
-    res = res.replace(/\bdown[- ]forward\b/g, '3');
-    res = res.replace(/\bdown[- ]back\b/g, '1');
-    res = res.replace(/\bup[- ]forward\b/g, '9');
-    res = res.replace(/\bup[- ]back\b/g, '7');
-    res = res.replace(/\bdownforward\b/g, '3');
-    res = res.replace(/\bdownback\b/g, '1');
-    res = res.replace(/\bupforward\b/g, '9');
-    res = res.replace(/\bupback\b/g, '7');
-    
-    res = res.replace(/\bneutral\b/g, '5');
-    res = res.replace(/\b(?:forward|fwd)\b/g, '6');
-    res = res.replace(/\bback\b/g, '4');
-    res = res.replace(/\bdown\b/g, '2');
-    res = res.replace(/\bup\b/g, '8');
+  const useLetter = gameId === 't8';
+  const dirWords = [
+    [/\bdown[- ]forward\b/g, useLetter ? 'df' : '3'],
+    [/\bdown[- ]back\b/g,    useLetter ? 'db' : '1'],
+    [/\bup[- ]forward\b/g,   useLetter ? 'uf' : '9'],
+    [/\bup[- ]back\b/g,      useLetter ? 'ub' : '7'],
+    [/\bdownforward\b/g,     useLetter ? 'df' : '3'],
+    [/\bdownback\b/g,        useLetter ? 'db' : '1'],
+    [/\bupforward\b/g,       useLetter ? 'uf' : '9'],
+    [/\bupback\b/g,          useLetter ? 'ub' : '7'],
+    [/\bneutral\b/g,         '5'],
+    [/\b(?:forward|fwd)\b/g, useLetter ? 'f' : '6'],
+    [/\bback\b/g,            useLetter ? 'b' : '4'],
+    [/\bdown\b/g,            useLetter ? 'd' : '2'],
+    [/\bup\b/g,              useLetter ? 'u' : '8']
+  ];
+  for (const [pattern, replacement] of dirWords) {
+    res = res.replace(pattern, replacement);
   }
 
   // 4. Positional & State Slang with negative lookahead to prevent double dots
-  res = res.replace(/\b(?:crouching|crouch|cr|low)\b(?!\.)/g, 'cr.');
-  res = res.replace(/\b(?:standing|stand|st|s)\b(?!\.)/g, 's.');
-  res = res.replace(/\b(?:jumping|jump|j|air)\b(?!\.)/g, 'j.');
-  res = res.replace(/\b(?:while standing|ws)\b(?!\.)/g, 'ws.');
+  const stateSlang = [
+    [/\b(?:crouching|crouch|cr|low)\b(?!\.)/g, 'cr.'],
+    [/\b(?:standing|stand|st|s)\b(?!\.)/g,     's.'],
+    [/\b(?:jumping|jump|j|air)\b(?!\.)/g,      'j.'],
+    [/\b(?:while standing|ws)\b(?!\.)/g,       'ws.']
+  ];
+  for (const [pattern, replacement] of stateSlang) {
+    res = res.replace(pattern, replacement);
+  }
 
-  // 5. Button Strengths & Synonyms (ordered to map full phrases before single terms)
-  res = res.replace(/\bmedium\s+punch\b/g, 'MP');
-  res = res.replace(/\bmedium\s+kick\b/g, 'MK');
-  res = res.replace(/\blight\s+punch\b/g, 'LP');
-  res = res.replace(/\blight\s+kick\b/g, 'LK');
-  res = res.replace(/\bheavy\s+punch\b/g, 'HP');
-  res = res.replace(/\bheavy\s+kick\b/g, 'HK');
-
-  res = res.replace(/\bjab\b/g, 'LP');
-  res = res.replace(/\bshort\b/g, 'LK');
-  res = res.replace(/\bstrong\b/g, 'MP');
-  res = res.replace(/\bfierce\b/g, 'HP');
-  res = res.replace(/\broundhouse\b/g, 'HK');
-  res = res.replace(/\brh\b/g, 'HK');
-
-  res = res.replace(/\bmedium\b/g, 'M');
-  res = res.replace(/\bmed\b/g, 'M');
-  res = res.replace(/\blight\b/g, 'L');
-  res = res.replace(/\bheavy\b/g, 'H');
-  res = res.replace(/\bpunch\b/g, 'P');
-  res = res.replace(/\bkick\b/g, 'K');
+  // 5. Button Strengths & Synonyms (ordered: full phrases before single terms)
+  const buttonSlang = [
+    [/\bmedium\s+punch\b/g, 'MP'], [/\bmedium\s+kick\b/g, 'MK'],
+    [/\blight\s+punch\b/g,  'LP'], [/\blight\s+kick\b/g,  'LK'],
+    [/\bheavy\s+punch\b/g,  'HP'], [/\bheavy\s+kick\b/g,  'HK'],
+    [/\bjab\b/g, 'LP'],   [/\bshort\b/g, 'LK'],  [/\bstrong\b/g, 'MP'],
+    [/\bfierce\b/g, 'HP'], [/\broundhouse\b/g, 'HK'], [/\brh\b/g, 'HK'],
+    [/\bmedium\b/g, 'M'],  [/\bmed\b/g, 'M'],     [/\blight\b/g, 'L'],
+    [/\bheavy\b/g, 'H'],   [/\bpunch\b/g, 'P'],   [/\bkick\b/g, 'K']
+  ];
+  for (const [pattern, replacement] of buttonSlang) {
+    res = res.replace(pattern, replacement);
+  }
 
   return res;
 }
@@ -738,73 +723,55 @@ if (typeof document !== 'undefined') {
 }
 
 function renderJoystickSvg(animId, title = '') {
-  let pathHtml = '';
-  let chargeIndicator = '';
-  
-  if (animId === '236') {
-    pathHtml = `
-      <path d="M16 26 A 10 10 0 0 0 26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId === '214') {
-    pathHtml = `
-      <path d="M16 26 A 10 10 0 0 1 6 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M8 13 L5 16 L8 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId === '623') {
-    pathHtml = `
-      <path d="M26 16 L16 26 L23 23" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
-      <path d="M20 23 L23 23 L23 20" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
-    `;
-  } else if (animId === '421') {
-    pathHtml = `
-      <path d="M6 16 L16 26 L9 23" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
-      <path d="M12 23 L9 23 L9 20" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
-    `;
-  } else if (animId === '41236') {
-    pathHtml = `
-      <path d="M6 16 A 10 10 0 0 0 26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId === '63214') {
-    pathHtml = `
-      <path d="M26 16 A 10 10 0 0 1 6 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M8 13 L5 16 L8 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId === 'c46') {
-    chargeIndicator = `<circle cx="6" cy="16" r="4.5" fill="rgba(0, 132, 255, 0.25)" stroke="rgba(0, 132, 255, 0.5)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
-    pathHtml = `
-      <path d="M6 16 L26 16" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M24 13 L27 16 L24 19" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId === 'c28') {
-    chargeIndicator = `<circle cx="16" cy="26" r="4.5" fill="rgba(0, 132, 255, 0.25)" stroke="rgba(0, 132, 255, 0.5)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
-    pathHtml = `
-      <path d="M16 26 L16 6" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-      <path d="M13 9 L16 6 L19 9" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    `;
-  } else if (animId.startsWith('hold-')) {
-    const holdDir = animId.substring(5);
-    let cx = 16, cy = 16;
-    if (holdDir === '4') { cx = 6; cy = 16; }
-    else if (holdDir === '2') { cx = 16; cy = 26; }
-    else if (holdDir === '1') { cx = 9; cy = 23; }
-    else if (holdDir === '3') { cx = 23; cy = 23; }
-    chargeIndicator = `<circle cx="${cx}" cy="${cy}" r="4.5" fill="rgba(0, 132, 255, 0.3)" stroke="rgba(0, 132, 255, 0.6)" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+  // SVG path overlays for each motion type
+  const arc = (d, arrowD) => `
+    <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+    <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  `;
+  const corner = (d, arrowD) => `
+    <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
+    <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
+  `;
+  const chargeDot = (cx, cy, opacity = 0.25, strokeOp = 0.5) =>
+    `<circle cx="${cx}" cy="${cy}" r="4.5" fill="rgba(0, 132, 255, ${opacity})" stroke="rgba(0, 132, 255, ${strokeOp})" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+
+  const MOTION_PATHS = {
+    '236':   arc('M16 26 A 10 10 0 0 0 26 16', 'M24 13 L27 16 L24 19'),
+    '214':   arc('M16 26 A 10 10 0 0 1 6 16',  'M8 13 L5 16 L8 19'),
+    '623':   corner('M26 16 L16 26 L23 23', 'M20 23 L23 23 L23 20'),
+    '421':   corner('M6 16 L16 26 L9 23',   'M12 23 L9 23 L9 20'),
+    '41236': arc('M6 16 A 10 10 0 0 0 26 16',  'M24 13 L27 16 L24 19'),
+    '63214': arc('M26 16 A 10 10 0 0 1 6 16',  'M8 13 L5 16 L8 19'),
+    'c46':   arc('M6 16 L26 16',  'M24 13 L27 16 L24 19'),
+    'c28':   arc('M16 26 L16 6',  'M13 9 L16 6 L19 9')
+  };
+
+  const CHARGE_INDICATORS = {
+    'c46': chargeDot(6, 16),
+    'c28': chargeDot(16, 26)
+  };
+
+  const HOLD_COORDS = { '4': [6, 16], '2': [16, 26], '1': [9, 23], '3': [23, 23] };
+
+  const DIR_GUIDE_COORDS = {
+    '1': [9, 23], '2': [16, 26], '3': [23, 23], '4': [6, 16],
+    '6': [26, 16], '7': [9, 9], '8': [16, 6], '9': [23, 9]
+  };
+
+  let pathHtml = MOTION_PATHS[animId] || '';
+  let chargeIndicator = CHARGE_INDICATORS[animId] || '';
+
+  // Hold directions (e.g. hold-4, hold-2)
+  if (animId.startsWith('hold-')) {
+    const coords = HOLD_COORDS[animId.substring(5)] || [16, 16];
+    chargeIndicator = chargeDot(coords[0], coords[1], 0.3, 0.6);
   }
 
+  // Direction guide line for single-direction animations
   let dirGuide = '';
-  if (['1', '2', '3', '4', '6', '7', '8', '9'].includes(animId)) {
-    let x2 = 16, y2 = 16;
-    if (animId === '6') x2 = 26;
-    if (animId === '4') x2 = 6;
-    if (animId === '2') y2 = 26;
-    if (animId === '8') y2 = 6;
-    if (animId === '1') { x2 = 9; y2 = 23; }
-    if (animId === '3') { x2 = 23; y2 = 23; }
-    if (animId === '7') { x2 = 9; y2 = 9; }
-    if (animId === '9') { x2 = 23; y2 = 9; }
-    dirGuide = `<line x1="16" y1="16" x2="${x2}" y2="${y2}" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" stroke-dasharray="1.5,1.5" />`;
+  const guideCoords = DIR_GUIDE_COORDS[animId];
+  if (guideCoords) {
+    dirGuide = `<line x1="16" y1="16" x2="${guideCoords[0]}" y2="${guideCoords[1]}" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" stroke-dasharray="1.5,1.5" />`;
   }
 
   return `
@@ -844,23 +811,22 @@ function renderDirectionElement(numDirection, titleStr) {
 }
 
 function renderMotionElement(motionId, titleStr) {
-  const standardMotions = ['236', '214', '623', '421', '41236', '63214'];
+  const CHARGE_TEXT = {
+    'c46': ['[←]', 'Charge [4]', '→', 'Direction 6'],
+    'c28': ['[↓]', 'Charge [2]', '↑', 'Direction 8']
+  };
+
   let textHtml = '';
-  
-  if (standardMotions.includes(motionId)) {
+  const chargeInfo = CHARGE_TEXT[motionId];
+  if (chargeInfo) {
+    textHtml = `
+      <span class="notation-text combo-dir" title="${chargeInfo[1]}">${chargeInfo[0]}</span>
+      <span class="notation-text combo-dir" title="${chargeInfo[3]}">${chargeInfo[2]}</span>
+    `;
+  } else {
     textHtml = `<span class="notation-text combo-dir" title="${titleStr}">${motionId}</span>`;
-  } else if (motionId === 'c46') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Charge [4]">[←]</span>
-      <span class="notation-text combo-dir" title="Direction 6">→</span>
-    `;
-  } else if (motionId === 'c28') {
-    textHtml = `
-      <span class="notation-text combo-dir" title="Charge [2]">[↓]</span>
-      <span class="notation-text combo-dir" title="Direction 8">↑</span>
-    `;
   }
-  
+
   return `
     ${textHtml.trim()}
     <span class="notation-joystick joystick-wrapper">${renderJoystickSvg(motionId, titleStr)}</span>
@@ -874,6 +840,14 @@ function parseStrategyHubStep(stepStr, gameId) {
   let html = `<div class="combo-step">`;
   let parsedAny = false;
 
+  // Game-specific configuration: buttons and direction overrides
+  const GAME_CONFIG = {
+    t8:    { buttons: ['1', '2', '3', '4'], dirOverrides: [] },
+    sf6:   { buttons: ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'p', 'k'], dirOverrides: [] },
+    ggst:  { buttons: ['p', 'k', 's', 'hs', 'd'], dirOverrides: ['d'] },
+    gbvsr: { buttons: ['l', 'm', 'h', 'u'], dirOverrides: ['u'] }
+  };
+
   const DIR_MAP = {
     '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
     'db': '1', 'd/b': '1',
@@ -885,13 +859,10 @@ function parseStrategyHubStep(stepStr, gameId) {
     'u': '8',
     'uf': '9', 'u/f': '9'
   };
-  // For Guilty Gear, treat 'D' as Dust button, not down direction
-  if (gameId === 'ggst') {
-    delete DIR_MAP['d'];
-  }
-  // For Granblue (GBVSR), treat 'U' as Unique/Ultimate button, not up direction
-  if (gameId === 'gbvsr') {
-    delete DIR_MAP['u'];
+  // Remove direction keys that are game-specific buttons (e.g. D=Dust in GGST, U=Unique in GBVSR)
+  const config = GAME_CONFIG[gameId];
+  if (config) {
+    for (const key of config.dirOverrides) delete DIR_MAP[key];
   }
 
   while (remaining.length > 0) {
@@ -919,15 +890,18 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
-    // 1. State Prefixes
+    // 1. State & Proximity Prefixes
+    const muted = (text) => `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">${text}</span>`;
     const prefixRules = [
-      { key: 'j.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">j.</span>' },
-      { key: 'jc.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">jc.</span>' },
+      { key: 'jc.', html: muted('jc.') },
+      { key: 'j.',  html: muted('j.') },
       { key: 'cr.', html: '<span class="combo-dir" title="Crouch">↓</span>' },
       { key: 'st.', html: '<span class="combo-dir" title="Stand">•</span>' },
-      { key: 's.', html: '<span class="combo-dir" title="Stand">•</span>' },
-      { key: 'ws.', html: '<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.2rem;">WS</span>' },
-      { key: 'ch.', html: '<span class="text-danger" style="font-size: 0.75rem; font-weight: bold; margin-right: 0.2rem;">CH</span>' }
+      { key: 'ws.', html: muted('WS') },
+      { key: 'ch.', html: '<span class="text-danger" style="font-size: 0.75rem; font-weight: bold; margin-right: 0.2rem;">CH</span>' },
+      { key: 'c.',  html: muted('c.') },
+      { key: 'f.',  html: muted('f.') },
+      { key: 's.',  html: '<span class="combo-dir" title="Stand">•</span>' }
     ];
 
     for (const rule of prefixRules) {
@@ -1017,16 +991,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
-    // 5. Proximity prefixes like c. or f. (GGST close/far)
-    if (remaining.toLowerCase().startsWith('c.') || remaining.toLowerCase().startsWith('f.')) {
-      const prefix = remaining.substring(0, 2).toLowerCase();
-      html += `<span class="text-muted builder-pad-empty-text" style="font-size: 0.75rem; margin-right: 0.1rem;">${prefix}</span>`;
-      remaining = remaining.substring(2).trim();
-      parsedAny = true;
-      continue;
-    }
-
-    // 6. Complex Motion Inputs (non-Tekken)
+    // 5. Complex Motion Inputs (non-Tekken)
     if (gameId !== 't8') {
       const motionKeys = Object.keys(MOTIONS).sort((a, b) => b.length - a.length);
       for (const num of motionKeys) {
@@ -1042,7 +1007,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       if (matched) continue;
     }
 
-    // 7. Known abbreviations/stances (case-insensitive)
+    // 6. Known abbreviations/stances (case-insensitive)
     const abbrevs = ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch', 'sen'];
     for (const abbrev of abbrevs) {
       const regex = new RegExp('^' + abbrev + '\\b', 'i');
@@ -1056,17 +1021,8 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 8. Game-Specific Active Buttons
-    let activeButtons = Object.keys(BUTTON_CLASSES);
-    if (gameId === 't8') {
-      activeButtons = ['1', '2', '3', '4'];
-    } else if (gameId === 'sf6') {
-      activeButtons = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'p', 'k'];
-    } else if (gameId === 'ggst') {
-      activeButtons = ['p', 'k', 's', 'hs', 'd'];
-    } else if (gameId === 'gbvsr') {
-      activeButtons = ['l', 'm', 'h', 'u'];
-    }
+    // 7. Game-Specific Active Buttons (uses GAME_CONFIG defined above)
+    const activeButtons = config ? config.buttons : Object.keys(BUTTON_CLASSES);
     const buttonKeys = activeButtons.sort((a, b) => b.length - a.length);
 
     for (const btnKey of buttonKeys) {
@@ -1089,7 +1045,7 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 9. Diagonal/Cardinal directions (d/f, db, etc.)
+    // 8. Diagonal/Cardinal directions (d/f, db, etc.)
     const dirKeys = ['d/f', 'd/b', 'u/f', 'u/b', 'db', 'df', 'ub', 'uf', 'd', 'f', 'b', 'u'];
     for (const dirKey of dirKeys) {
       const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/') + '(?![a-z])', 'i');
@@ -1104,7 +1060,7 @@ function parseStrategyHubStep(stepStr, gameId) {
     }
     if (matched) continue;
 
-    // 10. Numpad directions for non-Tekken games (digits 1-9)
+    // 9. Numpad directions for non-Tekken games (digits 1-9)
     if (gameId !== 't8') {
       const numMatch = remaining.match(/^[1-9]/);
       if (numMatch) {
@@ -1122,7 +1078,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       }
     }
 
-    // 11. Standard words (alphabetic sequence)
+    // 10. Standard words (alphabetic sequence)
     const wordMatch = remaining.match(/^[a-z]+/i);
     if (wordMatch) {
       const word = wordMatch[0];
@@ -1132,7 +1088,7 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
-    // 12. Fallback for single symbol/character
+    // 11. Fallback for single symbol/character
     const char = remaining.charAt(0);
     html += `<span class="combo-custom-action">${char.toUpperCase()}</span>`;
     remaining = remaining.substring(1).trim();
@@ -1159,16 +1115,21 @@ export function parseStrategyHubNotationToHtml(notationString, gameId) {
 
   let html = `<div class="combo-sequence" style="display: inline-flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;">`;
 
+  const DELIMITER_HTML = {
+    '>':  '<span class="combo-flow" style="font-size: 0.9rem; color: var(--text-muted); opacity: 0.8;">➔</span>',
+    '->': '<span class="combo-flow" style="font-size: 0.9rem; color: var(--text-muted); opacity: 0.8;">➔</span>',
+    ',':  '<span class="combo-flow" style="font-size: 0.9rem; color: var(--text-muted); opacity: 0.8;">➔</span>',
+    'xx': '<span class="combo-flow text-danger" style="font-weight: bold; font-size: 0.85rem; margin: 0 0.1rem;">xx</span>',
+    '~':  '<span class="combo-flow text-warning" style="font-weight: bold; font-size: 0.85rem; margin: 0 0.1rem;">~</span>'
+  };
+
   tokens.forEach(token => {
     const trimmedToken = token.trim();
     if (!trimmedToken) return;
 
-    if (['>', '->', ','].includes(trimmedToken)) {
-      html += `<span class="combo-flow" style="font-size: 0.9rem; color: var(--text-muted); opacity: 0.8;">➔</span>`;
-    } else if (trimmedToken === 'xx') {
-      html += `<span class="combo-flow text-danger" style="font-weight: bold; font-size: 0.85rem; margin: 0 0.1rem;">xx</span>`;
-    } else if (trimmedToken === '~') {
-      html += `<span class="combo-flow text-warning" style="font-weight: bold; font-size: 0.85rem; margin: 0 0.1rem;">~</span>`;
+    const delimHtml = DELIMITER_HTML[trimmedToken];
+    if (delimHtml) {
+      html += delimHtml;
     } else {
       html += parseStrategyHubStep(trimmedToken, gameId);
     }

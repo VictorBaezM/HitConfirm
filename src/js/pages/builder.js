@@ -190,7 +190,7 @@ export function renderBuilderPage(navigateCallback) {
           <label class="form-label">Demonstration Video Link (YouTube/Twitch - Optional)</label>
           <div class="video-input-wrapper">
             <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
-            <input type="text" id="combo-video" class="form-input" placeholder="https://www.youtube.com/watch?v=..." />
+            <input type="text" id="combo-video" class="form-input post-video-input" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           
           <!-- Format hint -->

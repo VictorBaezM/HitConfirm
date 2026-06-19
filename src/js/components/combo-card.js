@@ -43,8 +43,6 @@ export function renderComboCard(combo, navigateCallback) {
     `;
   }
 
-  // Render difficulty badge
-  const difficultyBadge = `<span class="wiki-badge wiki-badge-difficulty-${combo.difficulty}">${combo.difficulty}</span>`;
   const gameBadge = `<span class="wiki-badge wiki-badge-${combo.game}">${gameName}</span>`;
 
   const card = document.createElement('div');
@@ -59,9 +57,8 @@ export function renderComboCard(combo, navigateCallback) {
   card.innerHTML = `
     <div class="wiki-combo-header">
       <div class="wiki-combo-meta">
+      <span class="wiki-badge wiki-char-badge">${escapeHtml(combo.character)}</span>
         ${gameBadge}
-        ${difficultyBadge}
-        <span class="wiki-badge wiki-char-badge">${escapeHtml(combo.character)}</span>
       </div>
       <div class="wiki-combo-date">${dateStr}</div>
     </div>

@@ -144,9 +144,9 @@ export function renderProfilePage(navigateCallback, options = {}) {
       `
       : `
         <div class="tabs">
-          <div class="tab ${activeTab === 'my-combos' ? 'active' : ''}" data-tab="my-combos">My Combos</div>
-          <div class="tab ${activeTab === 'saved-combos' ? 'active' : ''}" data-tab="saved-combos">Saved Combos</div>
-          <div class="tab ${activeTab === 'my-posts' ? 'active' : ''}" data-tab="my-posts">My Posts</div>
+          <div class="game-chip tab ${activeTab === 'my-combos' ? 'active' : ''}" data-tab="my-combos">My Combos</div>
+          <div class="game-chip tab ${activeTab === 'saved-combos' ? 'active' : ''}" data-tab="saved-combos">Saved Combos</div>
+          <div class="game-chip tab ${activeTab === 'my-posts' ? 'active' : ''}" data-tab="my-posts">My Posts</div>
         </div>
         <div id="profile-submissions-list"></div>
       `;
@@ -163,7 +163,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       ? `
         <div class="card profile-stats-card">
           <h3 class="profile-sidebar-heading">
-            Dojo Achievement Status
+            Dojo Achievements
           </h3>
           <div class="profile-stats-grid-1col">
             <div class="profile-stat-item">
@@ -176,7 +176,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
       : `
         <div class="card profile-stats-card">
           <h3 class="profile-sidebar-heading">
-            Dojo Achievement Status
+            Dojo Achievements
           </h3>
           <div class="profile-stats-grid-2col">
             <div class="profile-stat-item">
