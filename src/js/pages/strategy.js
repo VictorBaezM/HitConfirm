@@ -33,8 +33,8 @@ export function renderStrategyPage(navigateCallback) {
       <div id="strategy-left-pane">
         <div class="flex justify-between items-center mb-6">
           <div>
-            <h1 class="gradient-text strategy-title">STRATEGY HUB</h1>
-            <p class="strategy-desc">Study frames, matchups, punish guides, and lab tutorials.</p>
+            <h1 class="gradient-text strategy-title">Guides</h1>
+            <p class="strategy-desc">Post/Learn strategies on how to play with specific characters</p>
           </div>
           <button class="btn btn-primary btn-sm" id="btn-create-guide">
             <i class="fa-solid fa-pen-to-square"></i> Post Guide

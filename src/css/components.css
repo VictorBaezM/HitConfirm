@@ -938,4 +938,92 @@
   border: 1px solid var(--border-color);
 }
 
+/* Collapsible Navigation Sidebar Styles */
+.wiki-left-nav {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wiki-left-nav.collapsed {
+  width: 70px;
+  padding: 24px 8px;
+}
+
+.wiki-brand-text {
+  transition: opacity 0.2s ease, max-width 0.2s ease;
+  opacity: 1;
+  max-width: 150px;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wiki-left-nav.collapsed .wiki-brand-text {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
+.wiki-left-nav.collapsed .wiki-brand {
+  justify-content: center;
+  gap: 0;
+}
+
+.wiki-nav-text {
+  transition: opacity 0.2s ease, max-width 0.2s ease;
+  opacity: 1;
+  max-width: 150px;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wiki-left-nav.collapsed .wiki-nav-text {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
+.wiki-nav-link {
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.3s cubic-bezier(0.4, 0, 0.2, 1), gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wiki-left-nav.collapsed .wiki-nav-link {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+}
+
+.wiki-auth-panel {
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.3s cubic-bezier(0.4, 0, 0.2, 1), gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wiki-left-nav.collapsed .wiki-auth-panel {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.wiki-user-info {
+  transition: opacity 0.2s ease, max-width 0.2s ease;
+  opacity: 1;
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wiki-left-nav.collapsed .wiki-user-info {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
+.wiki-left-nav.collapsed .wiki-update-log .update-text {
+  display: none;
+}
+
+.wiki-left-nav.collapsed .wiki-update-log {
+  justify-content: center;
+  padding: 8px 0;
+}
+
 

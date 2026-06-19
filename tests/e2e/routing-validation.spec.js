@@ -26,10 +26,32 @@ test.describe('HitConfirm SPA Page Routing', () => {
 
     // 4. Click Guides link
     await page.click('.nav-link[data-page="strategy"]');
-    await expect(page.locator('h1:has-text("STRATEGY HUB")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Guides")')).toBeVisible();
 
     // 5. Click My Dojo link (without login should show locker room page)
     await page.click('.nav-link[data-page="profile"]');
     await expect(page.locator('h2:has-text("Dojo Locker Room")')).toBeVisible();
+  });
+
+  test('should support collapsing and expanding the left navigation sidebar', async ({ page }) => {
+    await page.goto('/');
+    
+    const sidebar = page.locator('.wiki-left-nav');
+    const appContainer = page.locator('#app-container');
+    const toggleBtn = page.locator('#nav-toggle-sidebar');
+    
+    // Initial state: expanded
+    await expect(sidebar).not.toHaveClass(/collapsed/);
+    await expect(appContainer).not.toHaveClass(/sidebar-collapsed/);
+    
+    // Click toggle button to collapse
+    await toggleBtn.click();
+    await expect(sidebar).toHaveClass(/collapsed/);
+    await expect(appContainer).toHaveClass(/sidebar-collapsed/);
+    
+    // Click toggle button again to expand
+    await toggleBtn.click();
+    await expect(sidebar).not.toHaveClass(/collapsed/);
+    await expect(appContainer).not.toHaveClass(/sidebar-collapsed/);
   });
 });

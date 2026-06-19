@@ -10,6 +10,16 @@ export function renderNavbar(activePage, navigateCallback) {
   const mount = document.getElementById('navbar-mount');
   if (!mount) return;
 
+  const isCollapsed = localStorage.getItem('hc_sidebar_collapsed') === 'true';
+  const appContainer = document.getElementById('app-container');
+  if (appContainer) {
+    if (isCollapsed) {
+      appContainer.classList.add('sidebar-collapsed');
+    } else {
+      appContainer.classList.remove('sidebar-collapsed');
+    }
+  }
+
   const currentUser = store.getCurrentUser();
 
   const links = [
@@ -48,7 +58,7 @@ export function renderNavbar(activePage, navigateCallback) {
   if (currentUser) {
     authHtml = `
       <div class="wiki-auth-panel">
-        <div class="wiki-user-avatar" style="border: 2px solid ${currentUser.avatarColor}">
+        <div class="wiki-user-avatar" style="border: 2px solid ${currentUser.avatarColor}; cursor: pointer;" title="My Dojo / Profile">
           ${currentUser.username.substring(0, 2).toUpperCase()}
         </div>
         <div class="wiki-user-info">
@@ -60,19 +70,29 @@ export function renderNavbar(activePage, navigateCallback) {
       </div>
     `;
   } else {
-    authHtml = `
-      <div class="wiki-auth-actions">
-        <button id="nav-login-btn" class="wiki-btn wiki-btn-outline">Log In</button>
-        <button id="nav-register-btn" class="wiki-btn wiki-btn-primary">Sign Up</button>
-      </div>
-    `;
+    if (isCollapsed) {
+      authHtml = `
+        <div class="wiki-auth-panel" style="justify-content: center;">
+          <button id="nav-login-btn" class="wiki-btn wiki-btn-primary" style="padding: 10px; width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center;" title="Log In / Sign Up">
+            <i class="fa-solid fa-right-to-bracket"></i>
+          </button>
+        </div>
+      `;
+    } else {
+      authHtml = `
+        <div class="wiki-auth-actions">
+          <button id="nav-login-btn" class="wiki-btn wiki-btn-outline">Log In</button>
+          <button id="nav-register-btn" class="wiki-btn wiki-btn-primary">Sign Up</button>
+        </div>
+      `;
+    }
   }
 
   mount.innerHTML = `
-    <aside class="wiki-left-nav">
-      <div class="wiki-brand" id="nav-logo" style="cursor: pointer;">
-        <i class="fa-solid fa-bolt wiki-brand-icon"></i>
-        <span class="wiki-brand-text">HITCONFIRM</span>
+    <aside class="wiki-left-nav ${isCollapsed ? 'collapsed' : ''}">
+      <div class="wiki-brand" id="nav-logo">
+        <i class="fa-solid fa-bolt wiki-brand-icon" id="nav-toggle-sidebar" style="cursor: pointer;" title="Toggle Sidebar"></i>
+        <span class="wiki-brand-text" style="cursor: pointer;">HITCONFIRM</span>
       </div>
       
       <ul class="wiki-nav-menu">
@@ -90,7 +110,6 @@ export function renderNavbar(activePage, navigateCallback) {
   `;
 
   // Attach Event Listeners
-  // Attach Event Listeners
   mount.querySelectorAll('.wiki-nav-link').forEach(function (link) {
     link.addEventListener('click', function (e) {
       e.preventDefault();
@@ -99,12 +118,29 @@ export function renderNavbar(activePage, navigateCallback) {
     });
   });
 
-  const logo = mount.querySelector('#nav-logo');
-  if (logo) {
-    logo.addEventListener('click', function () {
+  const toggleBtn = mount.querySelector('#nav-toggle-sidebar');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const current = localStorage.getItem('hc_sidebar_collapsed') === 'true';
+      localStorage.setItem('hc_sidebar_collapsed', (!current).toString());
+      renderNavbar(activePage, navigateCallback);
+    });
+  }
+
+  const logoText = mount.querySelector('.wiki-brand-text');
+  if (logoText) {
+    logoText.addEventListener('click', function () {
       navigateCallback('feed');
     });
   }
+
+  const avatars = mount.querySelectorAll('.wiki-user-avatar');
+  avatars.forEach(avatar => {
+    avatar.addEventListener('click', function () {
+      navigateCallback('profile');
+    });
+  });
 
   const logoutBtn = mount.querySelector('#logout-btn');
   if (logoutBtn) {
@@ -195,7 +231,7 @@ export function renderNavbar(activePage, navigateCallback) {
       console.error("Failed to load local updates configuration:", err);
       applyFallback(badge);
     }
-  };
+  }
 
   // Run asynchronously without blocking main thread
   setTimeout(fetchLatestCommit, 100);
