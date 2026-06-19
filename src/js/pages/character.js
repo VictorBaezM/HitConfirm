@@ -6,11 +6,15 @@ import store from '../store.js';
 import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../utils/dustloop-helpers.js';
 import { parseStrategyHubNotationToHtml } from '../utils/combo-parser.js';
 import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
+import { hideGameSidebar } from '../components/game-sidebar.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName } = options;
   const mount = document.getElementById('content-mount');
   if (!mount) return;
+
+  hideGameSidebar();
+  mount.className = 'has-right-sidebar';
 
   const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
   const cachedUrl = getCachedPortraitUrl(gameId, charName);

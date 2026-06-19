@@ -4,10 +4,14 @@
  * @param {function} navigateCallback - SPA router navigation function.
  */
 import { renderStrategyHub } from '../components/strategy-hub.js';
+import { hideGameSidebar } from '../components/game-sidebar.js';
 
 export function renderHubPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
+
+  hideGameSidebar();
+  mount.className = 'has-right-sidebar';
 
   // Simple layout: header + hub container + licensing footer
   mount.innerHTML = `
