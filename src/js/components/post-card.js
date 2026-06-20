@@ -45,10 +45,12 @@ export function renderPostCard(post, navigateCallback) {
     // Simple youtube URL replacement if not already in embed format
     if (post.videoUrl.includes('youtube.com/watch?v=')) {
       const videoId = post.videoUrl.split('v=')[1]?.split('&')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
     } else if (post.videoUrl.includes('youtu.be/')) {
       const videoId = post.videoUrl.split('youtu.be/')[1]?.split('?')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+    } else if (post.videoUrl.includes('youtube.com/embed/')) {
+      embedUrl = post.videoUrl.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
     }
     
     videoHtml = `

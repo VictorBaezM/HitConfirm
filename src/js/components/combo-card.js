@@ -28,10 +28,12 @@ export function renderComboCard(combo, navigateCallback) {
     let embedUrl = combo.videoUrl;
     if (combo.videoUrl.includes('youtube.com/watch?v=')) {
       const videoId = combo.videoUrl.split('v=')[1]?.split('&')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
     } else if (combo.videoUrl.includes('youtu.be/')) {
       const videoId = combo.videoUrl.split('youtu.be/')[1]?.split('?')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+    } else if (combo.videoUrl.includes('youtube.com/embed/')) {
+      embedUrl = combo.videoUrl.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
     }
 
     videoHtml = `
