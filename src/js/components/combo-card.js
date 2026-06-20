@@ -97,7 +97,7 @@ export function renderComboCard(combo, navigateCallback) {
 
     <div class="wiki-combo-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" title="Upvote Combo">
-        <span class="material-symbols-rounded">whatshot</span>
+        <span class="material-symbols-rounded">mode_heat</span>
       </button>
       <span class="wiki-upvote-text upvote-count">${combo.upvotes} 🔥</span>
 

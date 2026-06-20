@@ -139,9 +139,9 @@ export function renderPostCard(post, navigateCallback) {
 
     <div class="wiki-post-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">
-        <span class="material-symbols-rounded">whatshot</span>
+        <span class="material-symbols-rounded">mode_heat</span>
+        ${post.upvotes}
       </button>
-      <span class="wiki-upvote-text upvote-count">${post.upvotes} 🔥</span>
       
       ${notation ? `
         <button class="wiki-action-btn btn-save ${saveClass}" title="Save to Dojo">
@@ -155,8 +155,8 @@ export function renderPostCard(post, navigateCallback) {
       
       <button class="wiki-action-btn btn-comment" title="Toggle comments" style="margin-left: auto;">
         <span class="material-symbols-rounded">chat_bubble</span>
+        ${post.comments?.length || 0}
       </button>
-      <span class="wiki-comment-counter">${post.comments?.length || 0}</span>
     </div>
 
     <!-- Toggleable Comments Panel -->

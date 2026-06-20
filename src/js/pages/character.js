@@ -1165,7 +1165,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
           <div class="strategy-viewer-footer mt-8 border-top pt-4 flex items-center gap-3" style="border-top: 1px solid rgba(255,255,255,0.08);">
             <button class="btn-icon btn-upvote-guide ${voteBtnClass}" id="btn-upvote-active-guide" title="Upvote Guide" style="background: none; border: none; cursor: pointer; color: ${upvoted ? 'var(--color-primary)' : 'var(--text-muted)'}; font-size: 1.25rem;">
-              <span class="material-symbols-rounded">whatshot</span>
+              <span class="material-symbols-rounded">mode_heat</span>
             </button>
             <span class="guide-upvote-count strategy-viewer-upvote-count text-secondary font-bold">${selectedGuide.upvotes} 🔥</span>
           </div>

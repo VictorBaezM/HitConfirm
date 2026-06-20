@@ -44,7 +44,7 @@ export function renderFeedPage(navigateCallback) {
       <!-- Dojo Training Widget -->
       <div class="card">
         <h3 class="wiki-console-title">
-          <span class="material-symbols-rounded icon-mr-1">whatshot</span>Hottest Combos
+          <span class="material-symbols-rounded icon-mr-1">mode_heat</span>Hottest Combos
         </h3>
         <div id="sidebar-hot-combos" class="flex flex-col gap-3"></div>
         <button class="btn btn-secondary btn-sm w-full" id="sidebar-go-dojo">
