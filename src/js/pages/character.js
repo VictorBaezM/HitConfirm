@@ -47,6 +47,10 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   let dustloopError = null;
   let dustloopLoaded = false;
   let selectedGuide = null;
+  let preloaderStarted = false;
+  let preloaderFinished = false;
+  let preloaderTotalFiles = 0;
+  let preloaderLoadedCount = 0;
 
   // Stateful Loading Logic to hide overlay only when all elements are fully loaded
   let dataLoaded = false;
@@ -359,8 +363,25 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     // Initial render of rows
     renderRows(characterRows);
 
-    // Start background preloading of all character move images
-    preloadCharacterMoveImages(characterRows, gameId);
+    // Start background preloading of all character move images once per page load
+    if (!preloaderStarted) {
+      preloaderStarted = true;
+      preloadCharacterMoveImages(characterRows, gameId);
+    } else if (!preloaderFinished) {
+      const container = document.getElementById('preloader-status-container');
+      const statusText = document.getElementById('preloader-status-text');
+      const fill = document.getElementById('preloader-fill');
+      if (container) {
+        container.classList.remove('hidden');
+      }
+      if (preloaderTotalFiles > 0) {
+        const percentage = Math.round((preloaderLoadedCount / preloaderTotalFiles) * 100);
+        if (fill) fill.style.width = `${percentage}%`;
+        if (statusText) {
+          statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
+        }
+      }
+    }
   }
 
   // Render the table header and body rows based on search and sort states
@@ -594,34 +615,40 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }
     });
 
-    const totalFiles = filesToPreload.length;
-    if (totalFiles === 0) return;
+    preloaderTotalFiles = filesToPreload.length;
+    if (preloaderTotalFiles === 0) {
+      preloaderFinished = true;
+      return;
+    }
 
     const container = document.getElementById('preloader-status-container');
-    const statusText = document.getElementById('preloader-status-text');
-    const fill = document.getElementById('preloader-fill');
-
     if (container) {
       container.classList.remove('hidden');
     }
 
     let activeIndex = 0;
-    let loadedCount = 0;
+    preloaderLoadedCount = 0;
 
     function updatePreloadProgress() {
-      const percentage = Math.round((loadedCount / totalFiles) * 100);
-      if (fill) fill.style.width = `${percentage}%`;
-      if (statusText) {
-        statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${loadedCount} / ${totalFiles} (${percentage}%)`;
+      const currentContainer = document.getElementById('preloader-status-container');
+      const currentStatusText = document.getElementById('preloader-status-text');
+      const currentFill = document.getElementById('preloader-fill');
+
+      const percentage = Math.round((preloaderLoadedCount / preloaderTotalFiles) * 100);
+      if (currentFill) currentFill.style.width = `${percentage}%`;
+      if (currentStatusText) {
+        currentStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
       }
 
-      if (loadedCount === totalFiles) {
-        if (statusText) {
-          statusText.innerHTML = `<i class="fa-solid fa-circle-check text-success mr-1"></i> All move images cached!`;
+      if (preloaderLoadedCount === preloaderTotalFiles) {
+        preloaderFinished = true;
+        if (currentStatusText) {
+          currentStatusText.innerHTML = `<i class="fa-solid fa-circle-check text-success mr-1"></i> All move images cached!`;
         }
         setTimeout(() => {
-          if (container) {
-            container.classList.add('hidden');
+          const latestContainer = document.getElementById('preloader-status-container');
+          if (latestContainer) {
+            latestContainer.classList.add('hidden');
           }
         }, 2000);
       }
@@ -806,11 +833,11 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     }
 
     function startPreloadWorker() {
-      if (activeIndex >= totalFiles) return Promise.resolve();
+      if (activeIndex >= preloaderTotalFiles) return Promise.resolve();
 
       const fileItem = filesToPreload[activeIndex++];
       return preloadFile(fileItem).then(() => {
-        loadedCount++;
+        preloaderLoadedCount++;
         updatePreloadProgress();
         return startPreloadWorker();
       });
@@ -820,7 +847,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     const MAX_CONCURRENT = 4;
     const workers = [];
-    for (let i = 0; i < Math.min(MAX_CONCURRENT, totalFiles); i++) {
+    for (let i = 0; i < Math.min(MAX_CONCURRENT, preloaderTotalFiles); i++) {
       workers.push(startPreloadWorker());
     }
     Promise.all(workers);
