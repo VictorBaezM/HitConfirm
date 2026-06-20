@@ -19,25 +19,28 @@ export function openAuthModal(type = 'login', navigateCallback) {
   if (type === 'login') {
     titleMount.innerText = 'DOJO MEMBER SIGN-IN';
     bodyMount.innerHTML = `
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" id="auth-email" class="form-input" placeholder="Enter your email..." />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <input type="password" id="auth-password" class="form-input" placeholder="Enter your password..." />
-      </div>
-      
-      <div class="flex justify-between items-center mt-6">
-        <a id="btn-toggle-auth-reg" href="#" class="auth-toggle-link">Create an account</a>
-        <div class="flex gap-2">
-          <button class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
-          <button class="btn btn-primary btn-sm" id="btn-auth-submit">Sign In</button>
+      <form id="auth-login-form">
+        <div class="form-group">
+          <label class="form-label" for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" name="email" class="form-input" placeholder="Enter your email..." required autocomplete="username" />
         </div>
-      </div>
+        <div class="form-group">
+          <label class="form-label" for="auth-password">Password</label>
+          <input type="password" id="auth-password" name="password" class="form-input" placeholder="Enter your password..." required autocomplete="current-password" />
+        </div>
+        
+        <div class="flex justify-between items-center mt-6">
+          <a id="btn-toggle-auth-reg" href="#" class="auth-toggle-link">Create an account</a>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="btn-auth-submit">Sign In</button>
+          </div>
+        </div>
+      </form>
     `;
 
     // Sign in trigger
+    const form = bodyMount.querySelector('#auth-login-form');
     const submitBtn = bodyMount.querySelector('#btn-auth-submit');
     const emailInput = bodyMount.querySelector('#auth-email');
     const passwordInput = bodyMount.querySelector('#auth-password');
@@ -70,14 +73,9 @@ export function openAuthModal(type = 'login', navigateCallback) {
       }
     }
 
-    submitBtn.addEventListener('click', handleLogin);
-    
-    // Support enter key on both fields
-    emailInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') handleLogin();
-    });
-    passwordInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') handleLogin();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      handleLogin();
     });
 
     bodyMount.querySelector('#btn-toggle-auth-reg').addEventListener('click', function (e) {
@@ -88,43 +86,45 @@ export function openAuthModal(type = 'login', navigateCallback) {
   } else {
     titleMount.innerText = 'CREATE DOJO ACCOUNT';
     bodyMount.innerHTML = `
-      <div class="form-group">
-        <label class="form-label">Username</label>
-        <input type="text" id="auth-username" class="form-input" placeholder="Choose a unique username..." />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" id="auth-email" class="form-input" placeholder="Enter your email address..." />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <input type="password" id="auth-password" class="form-input" placeholder="Choose a secure password..." />
-      </div>
-
-      <div class="auth-modal-grid-2col">
-        <div class="form-group mb-0">
-          <label class="form-label">Main Game</label>
-          <select id="auth-game" class="form-select">
-            ${Object.values(games).map(function (g) {
-              return `<option value="${g.id}">${g.name}</option>`;
-            }).join('')}
-          </select>
+      <form id="auth-register-form">
+        <div class="form-group">
+          <label class="form-label" for="auth-username">Username</label>
+          <input type="text" id="auth-username" name="username" class="form-input" placeholder="Choose a unique username..." required autocomplete="username" />
         </div>
-        <div class="form-group mb-0">
-          <label class="form-label">Main Character</label>
-          <select id="auth-char" class="form-select"></select>
-        </div>
-      </div>
 
-      <div class="flex justify-between items-center mt-6">
-        <a id="btn-toggle-auth-login" href="#" class="auth-toggle-link">Already have account?</a>
-        <div class="flex gap-2">
-          <button class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
-          <button class="btn btn-primary btn-sm" id="btn-auth-submit">Register</button>
+        <div class="form-group">
+          <label class="form-label" for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" name="email" class="form-input" placeholder="Enter your email address..." required autocomplete="email" />
         </div>
-      </div>
+
+        <div class="form-group">
+          <label class="form-label" for="auth-password">Password</label>
+          <input type="password" id="auth-password" name="password" class="form-input" placeholder="Choose a secure password..." required autocomplete="new-password" />
+        </div>
+
+        <div class="auth-modal-grid-2col">
+          <div class="form-group mb-0">
+            <label class="form-label" for="auth-game">Main Game</label>
+            <select id="auth-game" name="game" class="form-select">
+              ${Object.values(games).map(function (g) {
+                return `<option value="${g.id}">${g.name}</option>`;
+              }).join('')}
+            </select>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="auth-char">Main Character</label>
+            <select id="auth-char" name="character" class="form-select"></select>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+          <a id="btn-toggle-auth-login" href="#" class="auth-toggle-link">Already have account?</a>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-auth-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="btn-auth-submit">Register</button>
+          </div>
+        </div>
+      </form>
     `;
 
     const gameSel = bodyMount.querySelector('#auth-game');
@@ -141,6 +141,7 @@ export function openAuthModal(type = 'login', navigateCallback) {
     fillChars();
 
     // Register trigger
+    const form = bodyMount.querySelector('#auth-register-form');
     const submitBtn = bodyMount.querySelector('#btn-auth-submit');
     const usernameInput = bodyMount.querySelector('#auth-username');
     const emailInput = bodyMount.querySelector('#auth-email');
@@ -186,16 +187,9 @@ export function openAuthModal(type = 'login', navigateCallback) {
       }
     }
 
-    submitBtn.addEventListener('click', handleRegister);
-    
-    usernameInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') handleRegister();
-    });
-    emailInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') handleRegister();
-    });
-    passwordInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') handleRegister();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      handleRegister();
     });
 
     bodyMount.querySelector('#btn-toggle-auth-login').addEventListener('click', function (e) {

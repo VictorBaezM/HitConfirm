@@ -390,23 +390,26 @@ class Store {
       if (usersCount.count === 0) {
         await this.seedSupabase();
       } else {
-        // Sync the games config to keep the character roster updated.
+        // Sync the games config to keep the character roster updated only if we have an active session.
         // Wrap in a try-catch to handle offline mock testing or RLS restrictions gracefully.
-        const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
-          return {
-            id: g.id,
-            name: g.name,
-            characters: g.characters,
-            notation_type: g.notationType
-          };
-        });
-        try {
-          const { error } = await supabase.from('games').upsert(gamesToSeed);
-          if (error) {
-            console.debug('Note: Games configuration sync skipped (read-only client).');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
+            return {
+              id: g.id,
+              name: g.name,
+              characters: g.characters,
+              notation_type: g.notationType
+            };
+          });
+          try {
+            const { error } = await supabase.from('games').upsert(gamesToSeed);
+            if (error) {
+              console.debug('Note: Games configuration sync skipped (read-only client).');
+            }
+          } catch (e) {
+            console.debug('Note: Games configuration sync skipped (read-only or mocked client).');
           }
-        } catch (e) {
-          console.debug('Note: Games configuration sync skipped (read-only or mocked client).');
         }
       }
 
