@@ -375,13 +375,13 @@ function renderCreatorBox(navigateCallback) {
       </h3>
       
       <div class="form-group">
-        <textarea class="form-textarea post-input" placeholder="What are you learning in the lab today? Use **bold** for combos or #hashtags..."></textarea>
+        <textarea class="form-textarea post-input" name="content" aria-label="Post Content" placeholder="What are you learning in the lab today? Use **bold** for combos or #hashtags..."></textarea>
       </div>
 
       <div class="flex gap-3" style="flex-wrap: wrap; margin-bottom: 8px;">
         <!-- Game Dropdown tag -->
         <div style="flex: 1; min-width: 140px;">
-          <select class="form-select post-game-select" id="post-game-select">
+          <select class="form-select post-game-select" id="post-game-select" name="game" aria-label="Tag Game">
             <option value="">Tag Game (Optional)</option>
             ${Object.values(games).map(function (g) {
               return `<option value="${g.id}">${g.name}</option>`;
@@ -391,7 +391,7 @@ function renderCreatorBox(navigateCallback) {
 
         <!-- Character Dropdown tag -->
         <div style="flex: 1; min-width: 140px; display: none;" id="post-char-select-container">
-          <select class="form-select post-char-select" id="post-char-select">
+          <select class="form-select post-char-select" id="post-char-select" name="character" aria-label="Select Character">
             <option value="">Select Character</option>
           </select>
         </div>
@@ -399,14 +399,14 @@ function renderCreatorBox(navigateCallback) {
         <!-- Video Input Link -->
         <div class="video-input-wrapper" style="flex: 2; min-width: 200px;">
           <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
-          <input type="text" id="post-video-input" class="form-input post-video-input" placeholder="YouTube Video URL (Optional)" />
+          <input type="text" id="post-video-input" name="video" class="form-input post-video-input" aria-label="YouTube Video URL" placeholder="YouTube Video URL (Optional)" />
         </div>
       </div>
 
       <!-- Combo Notation Input (placed underneath the chosen video row) -->
       <div class="form-group" style="margin-top: 12px;">
-        <label class="form-label">Combo Notation (Optional)</label>
-        <input type="text" id="post-notation-input" class="form-input" placeholder="e.g. 236P > 5K > 2D" />
+        <label class="form-label" for="post-notation-input">Combo Notation (Optional)</label>
+        <input type="text" id="post-notation-input" name="notation" class="form-input" placeholder="e.g. 236P > 5K > 2D" />
       </div>
 
       <!-- Video format hint (always visible when a game is selected) -->
@@ -420,8 +420,8 @@ function renderCreatorBox(navigateCallback) {
 
       <!-- Confirmation checkbox (shown when video + game are both present) -->
       <div id="video-confirm-row" style="display: none; margin-top: 8px;">
-        <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
-          <input type="checkbox" id="video-confirm-checkbox" style="width: 16px; height: 16px; margin-top: 2px;">
+        <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;" for="video-confirm-checkbox">
+          <input type="checkbox" id="video-confirm-checkbox" name="videoConfirm" aria-label="Confirm video relevance" style="width: 16px; height: 16px; margin-top: 2px;">
           <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
         </label>
       </div>

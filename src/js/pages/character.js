@@ -330,7 +330,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       <div class="table-controls flex justify-between items-center flex-wrap gap-4">
         <div class="search-wrapper w-full md:w-72 relative">
           <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
-          <input type="text" id="table-search" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
+          <input type="text" id="table-search" name="search" aria-label="Search moves by name or input" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
         </div>
         <div id="preloader-status-container" class="preloader-status-container hidden">
           <span id="preloader-status-text">Caching move images...</span>
@@ -1323,28 +1323,28 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     
     modalBody.innerHTML = `
       <div class="form-group">
-        <label class="form-label">Guide Title</label>
-        <input type="text" id="modal-guide-title" class="form-input" placeholder="e.g. Punishing Sol's pressure, Neutral Guide..." />
+        <label class="form-label" for="modal-guide-title">Guide Title</label>
+        <input type="text" id="modal-guide-title" name="title" class="form-input" placeholder="e.g. Punishing Sol's pressure, Neutral Guide..." />
       </div>
 
       <div class="strategy-modal-grid-2col">
         <div class="form-group strategy-modal-form-group-flat">
-          <label class="form-label">Game</label>
-          <select id="modal-guide-game" class="form-select" disabled>
+          <label class="form-label" for="modal-guide-game">Game</label>
+          <select id="modal-guide-game" name="game" class="form-select" disabled>
             <option value="${gameId}">${getGameName(gameId)}</option>
           </select>
         </div>
         <div class="form-group strategy-modal-form-group-flat">
-          <label class="form-label">Character Focus</label>
-          <select id="modal-guide-char" class="form-select" disabled>
+          <label class="form-label" for="modal-guide-char">Character Focus</label>
+          <select id="modal-guide-char" name="character" class="form-select" disabled>
             <option value="${charName}">${charName}</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Guide Content (Strategy, Tips, Punishes)</label>
-        <textarea id="modal-guide-content" class="form-textarea strategy-modal-textarea" placeholder="Outline your matchup strategies. Markdown supported (e.g. ### Headers, 1. Lists)"></textarea>
+        <label class="form-label" for="modal-guide-content">Guide Content (Strategy, Tips, Punishes)</label>
+        <textarea id="modal-guide-content" name="content" class="form-textarea strategy-modal-textarea" placeholder="Outline your matchup strategies. Markdown supported (e.g. ### Headers, 1. Lists)"></textarea>
       </div>
 
       <div class="strategy-modal-actions">

@@ -63,8 +63,8 @@ export function renderBuilderPage(navigateCallback) {
         <div class="flex gap-4" style="flex-wrap: wrap; margin-bottom: 20px;">
           <!-- Game Select -->
           <div style="flex: 1; min-width: 200px;">
-            <label class="form-label">Game</label>
-            <select id="builder-game-select" class="form-select">
+            <label class="form-label" for="builder-game-select">Game</label>
+            <select id="builder-game-select" name="game" class="form-select">
               <option value="">Select Game</option>
               ${Object.values(games).map(function (g) {
                 return `<option value="${g.id}">${g.name}</option>`;
@@ -73,9 +73,9 @@ export function renderBuilderPage(navigateCallback) {
           </div>
           <!-- Character Select -->
           <div style="flex: 1; min-width: 200px;">
-            <label class="form-label">Character</label>
+            <label class="form-label" for="builder-char-select">Character</label>
             <div class="flex gap-2">
-              <select id="builder-char-select" class="form-select"></select>
+              <select id="builder-char-select" name="character" class="form-select"></select>
               <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px;" title="Add new DLC character">
                 <i class="fa-solid fa-plus"></i>
               </button>
@@ -144,8 +144,8 @@ export function renderBuilderPage(navigateCallback) {
 
           <!-- Manual Notation edit Option -->
           <div class="form-group" style="margin-top: 16px;">
-            <label class="form-label">Manual Notation Editor (Optional)</label>
-            <input type="text" id="builder-manual-input" class="form-input" placeholder="Or type directly (e.g., 236P > 5K > 2D)" />
+            <label class="form-label" for="builder-manual-input">Manual Notation Editor (Optional)</label>
+            <input type="text" id="builder-manual-input" name="manualNotation" class="form-input" placeholder="Or type directly (e.g., 236P > 5K > 2D)" />
             <span class="wiki-update-log" style="margin-top: 4px;">Use &gt; or , or -&gt; as move links.</span>
           </div>
         </div>
@@ -158,22 +158,22 @@ export function renderBuilderPage(navigateCallback) {
         </h3>
         
         <div class="form-group">
-          <label class="form-label">Combo Title</label>
-          <input type="text" id="combo-title" class="form-input" placeholder="e.g. High Damage Corner Carry, Bread & Butter..." />
+          <label class="form-label" for="combo-title">Combo Title</label>
+          <input type="text" id="combo-title" name="title" class="form-input" placeholder="e.g. High Damage Corner Carry, Bread & Butter..." />
         </div>
 
         <div class="flex gap-4" style="flex-wrap: wrap;">
           <div class="form-group" style="flex: 1; min-width: 120px;">
-            <label class="form-label">Damage</label>
-            <input type="text" id="combo-damage" class="form-input" placeholder="e.g. 250 or 2100" />
+            <label class="form-label" for="combo-damage">Damage</label>
+            <input type="text" id="combo-damage" name="damage" class="form-input" placeholder="e.g. 250 or 2100" />
           </div>
           <div class="form-group" style="flex: 1; min-width: 120px;">
-            <label class="form-label">Meter Required</label>
-            <input type="text" id="combo-meter" class="form-input" placeholder="e.g. 50% or 2 Bars" />
+            <label class="form-label" for="combo-meter">Meter Required</label>
+            <input type="text" id="combo-meter" name="meter" class="form-input" placeholder="e.g. 50% or 2 Bars" />
           </div>
           <div class="form-group" style="flex: 1; min-width: 120px;">
-            <label class="form-label">Execution Difficulty</label>
-            <select id="combo-difficulty" class="form-select">
+            <label class="form-label" for="combo-difficulty">Execution Difficulty</label>
+            <select id="combo-difficulty" name="difficulty" class="form-select">
               <option value="easy">Easy</option>
               <option value="medium" selected>Medium</option>
               <option value="hard">Hard</option>
@@ -182,15 +182,15 @@ export function renderBuilderPage(navigateCallback) {
         </div>
 
         <div class="form-group">
-          <label class="form-label">Execution Description/Notes (Optional)</label>
-          <textarea id="combo-description" class="form-textarea" placeholder="Provide tips on timing, counter-hit states, spacing, or matchups..."></textarea>
+          <label class="form-label" for="combo-description">Execution Description/Notes (Optional)</label>
+          <textarea id="combo-description" name="description" class="form-textarea" placeholder="Provide tips on timing, counter-hit states, spacing, or matchups..."></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Demonstration Video Link (YouTube/Twitch - Optional)</label>
+          <label class="form-label" for="combo-video">Demonstration Video Link (YouTube/Twitch - Optional)</label>
           <div class="video-input-wrapper">
             <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
-            <input type="text" id="combo-video" class="form-input post-video-input" placeholder="https://www.youtube.com/watch?v=..." />
+            <input type="text" id="combo-video" name="video" class="form-input post-video-input" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           
           <!-- Format hint -->
@@ -204,8 +204,8 @@ export function renderBuilderPage(navigateCallback) {
 
           <!-- Confirmation checkbox row -->
           <div id="video-confirm-row" style="display: none; margin-top: 8px;">
-            <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
-              <input type="checkbox" id="video-confirm-checkbox" style="width: 16px; height: 16px; margin-top: 2px;">
+            <label class="wiki-comment-user" style="cursor: pointer; display: flex; align-items: flex-start; gap: 10px;" for="video-confirm-checkbox">
+              <input type="checkbox" id="video-confirm-checkbox" name="videoConfirm" aria-label="Confirm video relevance" style="width: 16px; height: 16px; margin-top: 2px;">
               <span id="video-confirm-label">I confirm this video is directly relevant to the tagged game and the character shown in the combo.</span>
             </label>
           </div>

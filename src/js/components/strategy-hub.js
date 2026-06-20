@@ -50,7 +50,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       <div class="hub-controls flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         <div class="search-wrapper w-full md:w-72 relative">
           <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
-          <input type="text" id="hub-search" class="form-input pl-10 w-full" placeholder="Search characters..." value="${searchFilter}" />
+          <input type="text" id="hub-search" name="search" aria-label="Search characters" class="form-input pl-10 w-full" placeholder="Search characters..." value="${searchFilter}" />
         </div>
       </div>
 

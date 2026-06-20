@@ -49,13 +49,13 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
         <div class="dojo-filters-grid">
           <!-- Search box -->
           <div class="dojo-search-relative">
-            <input type="text" id="dojo-search-char" class="form-input dojo-search-field" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." value="" />
+            <input type="text" id="dojo-search-char" name="character" aria-label="Search by character" class="form-input dojo-search-field" placeholder="Search by character (e.g. Sol, Ryu, Kazuya)..." value="" />
           </div>
 
           <div class="dojo-select-filters-grid">
             <!-- Game selector drop -->
             <div>
-              <select id="dojo-game-filter" class="form-select dojo-select-filter-box">
+              <select id="dojo-game-filter" name="game" aria-label="Filter by Game" class="form-select dojo-select-filter-box">
                 <option value="all">All Games</option>
                 ${Object.values(games).map(function (g) {
                   return `<option value="${g.id}">${g.name}</option>`;
@@ -65,7 +65,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
             <!-- Difficulty selector drop -->
             <div>
-              <select id="dojo-difficulty-filter" class="form-select dojo-select-filter-box">
+              <select id="dojo-difficulty-filter" name="difficulty" aria-label="Filter by Difficulty" class="form-select dojo-select-filter-box">
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
