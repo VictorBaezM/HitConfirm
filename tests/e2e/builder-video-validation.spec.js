@@ -144,7 +144,7 @@ async function mockYouTubeOEmbed(page, fakeTitle) {
  */
 async function goToBuilder(page) {
   await page.goto('/');
-  await page.click('text=Combo Builder');
+  await page.locator('a[data-page="builder"]').first().click();
   await page.waitForSelector('#builder-game-select', { timeout: 10_000 });
 }
 

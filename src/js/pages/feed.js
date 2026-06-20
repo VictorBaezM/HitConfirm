@@ -5,6 +5,7 @@ import { renderComboCard } from '../components/combo-card.js';
 import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
 import { extractYouTubeVideoId, fetchVideoTitle, validateVideoTitle, GAME_VIDEO_KEYWORDS } from '../utils/video-validator.js';
 import { escapeHtml } from '../utils/security.js';
+import { fetchGameNews } from '../utils/news-fetcher.js';
 
 /**
  * Renders the main dashboard timeline feed, chip selectors, hottest combos, and Dojo challenge widget.
@@ -51,22 +52,16 @@ export function renderFeedPage(navigateCallback) {
         </button>
       </div>
 
-      <!-- FGC Event Tracker -->
-      <div class="card">
+      <!-- FGC Game News Widget -->
+      <div class="card" id="sidebar-game-news-card">
         <h3 class="wiki-console-title">
-          <i class="fa-solid fa-trophy"></i> Weekly Dojo Challenge
+          <i class="fa-solid fa-newspaper"></i> Latest Game News
         </h3>
-        <div class="wiki-comment-item">
-          <div class="wiki-comment-user">Street Fighter 6 Ryu Challenge</div>
-          <p class="wiki-comment-text">Perform a corner combo ending in Shin Shoryuken with maximum damage scaling.</p>
-          <div class="flex items-center justify-between">
-            <span>Reward: <strong>"Legend" Title</strong></span>
-            <span>Ends: <strong>3 days</strong></span>
+        <div id="sidebar-game-news-list" class="flex flex-col gap-3">
+          <div class="text-center py-4 text-gray">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Loading latest news...
           </div>
         </div>
-        <button class="btn btn-primary btn-sm w-full" id="sidebar-go-builder">
-          Try in Combo Builder
-        </button>
       </div>
 
       <!-- FGC Game Resources & Patch Notes Widget -->
@@ -270,9 +265,54 @@ export function renderFeedPage(navigateCallback) {
 
   refreshHotCombos();
 
+  // Load dynamic game news for supported games
+  async function loadSidebarNews() {
+    const newsContainer = document.getElementById('sidebar-game-news-list');
+    if (!newsContainer) return;
+
+    try {
+      const officialGameIds = Object.keys(games).filter(id => id !== 'dbfzce');
+      const newsItems = await fetchGameNews(officialGameIds);
+      
+      let newsHtml = '';
+      newsItems.forEach(item => {
+        const game = games[item.gameId];
+        const badgeClass = `badge-${item.gameId}`;
+        const gameName = game ? game.name : item.gameId.toUpperCase();
+        
+        newsHtml += `
+          <div class="wiki-news-game-item">
+            <div class="wiki-news-game-header flex items-center justify-between">
+              <span class="game-name font-semibold text-sm">${escapeHtml(gameName)}</span>
+              <span class="badge ${badgeClass}">${item.gameId.toUpperCase()}</span>
+            </div>
+            <div class="wiki-news-article">
+              <a class="news-title text-sm" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+                ${escapeHtml(item.title)}
+              </a>
+              <div class="news-meta text-xs text-gray mt-1">
+                <i class="fa-regular fa-clock"></i> ${escapeHtml(item.date)}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      newsContainer.innerHTML = newsHtml;
+    } catch (err) {
+      console.error('[Feed Page] Error loading sidebar news:', err);
+      newsContainer.innerHTML = `
+        <div class="text-center py-4 text-red">
+          <i class="fa-solid fa-triangle-exclamation"></i> Failed to load latest news.
+        </div>
+      `;
+    }
+  }
+
+  loadSidebarNews();
+
   // Attach Sidebar Button Listeners
   document.getElementById('sidebar-go-dojo').addEventListener('click', function () { navigateCallback('combos'); });
-  document.getElementById('sidebar-go-builder').addEventListener('click', function () { navigateCallback('builder'); });
 
   // Initialize Left Game Sidebar
   function initSidebar(activeGame, activeDifficulties) {

@@ -1042,4 +1042,58 @@
   padding: 8px 0;
 }
 
+/* Game News Widget Styles */
+.wiki-news-game-item {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.wiki-news-game-item:hover {
+  background: rgba(255, 107, 0, 0.03);
+  border-color: rgba(255, 107, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.wiki-news-game-header {
+  margin-bottom: 6px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.wiki-news-game-header .game-name {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.wiki-news-article {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wiki-news-article .news-title {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  line-height: 1.35;
+  transition: color var(--transition-fast);
+  cursor: pointer;
+}
+
+.wiki-news-article .news-title:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.wiki-news-article .news-meta {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
