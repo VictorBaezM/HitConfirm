@@ -42,22 +42,38 @@ export function renderPostCard(post, navigateCallback) {
   let videoHtml = '';
   if (post.videoUrl) {
     let embedUrl = post.videoUrl;
+    let videoId = '';
     // Simple youtube URL replacement if not already in embed format
     if (post.videoUrl.includes('youtube.com/watch?v=')) {
-      const videoId = post.videoUrl.split('v=')[1]?.split('&')[0];
+      videoId = post.videoUrl.split('v=')[1]?.split('&')[0];
       embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
     } else if (post.videoUrl.includes('youtu.be/')) {
-      const videoId = post.videoUrl.split('youtu.be/')[1]?.split('?')[0];
+      videoId = post.videoUrl.split('youtu.be/')[1]?.split('?')[0];
       embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
     } else if (post.videoUrl.includes('youtube.com/embed/')) {
       embedUrl = post.videoUrl.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
+      videoId = embedUrl.split('/embed/')[1]?.split('?')[0];
     }
     
-    videoHtml = `
-      <div class="wiki-video-wrapper">
-        <iframe src="${embedUrl}" allowfullscreen></iframe>
-      </div>
-    `;
+    if (videoId) {
+      embedUrl = `${embedUrl}${embedUrl.includes('?') ? '&' : '?'}autoplay=1`;
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      videoHtml = `
+        <div class="wiki-video-wrapper video-facade-container" data-embed="${embedUrl}">
+          <div class="wiki-video-facade" style="background-image: url('${thumbnailUrl}');">
+            <div class="play-button-overlay">
+              <i class="fa-solid fa-play"></i>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      videoHtml = `
+        <div class="wiki-video-wrapper">
+          <iframe src="${embedUrl}" allowfullscreen></iframe>
+        </div>
+      `;
+    }
   }
 
   // Format creation date
@@ -293,6 +309,17 @@ export function renderPostCard(post, navigateCallback) {
       navigateCallback('profile', { userId: post.userId });
     });
   });
+
+  // Attach video facade play listener
+  const facade = card.querySelector('.video-facade-container');
+  if (facade) {
+    facade.addEventListener('click', function () {
+      const embedUrl = facade.getAttribute('data-embed');
+      if (embedUrl) {
+        facade.innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
+      }
+    });
+  }
 
   return card;
 }

@@ -38,8 +38,8 @@ export function renderComboCard(combo, navigateCallback) {
 
     videoHtml = `
       <div class="wiki-video-container hidden">
-        <div class="wiki-video-wrapper">
-          <iframe src="${embedUrl}" allowfullscreen></iframe>
+        <div class="wiki-video-wrapper" data-embed="${embedUrl}">
+          <!-- iframe loaded dynamically on click -->
         </div>
       </div>
     `;
@@ -182,8 +182,19 @@ export function renderComboCard(combo, navigateCallback) {
   if (combo.videoUrl) {
     const videoToggle = card.querySelector('.btn-video-toggle');
     const videoContainer = card.querySelector('.wiki-video-container');
+    const videoWrapper = card.querySelector('.wiki-video-wrapper');
     videoToggle.addEventListener('click', function () {
-      videoContainer.classList.toggle('hidden');
+      const isHidden = videoContainer.classList.contains('hidden');
+      if (isHidden) {
+        if (!videoWrapper.querySelector('iframe')) {
+          const embedUrl = videoWrapper.getAttribute('data-embed');
+          videoWrapper.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+        }
+        videoContainer.classList.remove('hidden');
+      } else {
+        videoWrapper.innerHTML = '';
+        videoContainer.classList.add('hidden');
+      }
       videoToggle.classList.toggle('wiki-btn-primary');
     });
   }
