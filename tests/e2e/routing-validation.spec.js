@@ -24,9 +24,9 @@ test.describe('HitConfirm SPA Page Routing', () => {
     await page.click('.nav-link[data-page="builder"]');
     await expect(page.locator('#builder-game-select')).toBeVisible();
 
-    // 4. Click Guides link
-    await page.click('.nav-link[data-page="strategy"]');
-    await expect(page.locator('h1:has-text("Guides")')).toBeVisible();
+    // 4. Click Strategy Hub link
+    await page.click('.nav-link[data-page="hub"]');
+    await expect(page.locator('h1.hub-title:has-text("Strategy Hub")')).toBeVisible();
 
     // 5. Click My Dojo link (without login should show locker room page)
     await page.click('.nav-link[data-page="profile"]');

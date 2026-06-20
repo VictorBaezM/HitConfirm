@@ -42,6 +42,11 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   let sortByField = '';
   let sortOrder = 'asc'; // 'asc' or 'desc'
   let rawRows = [];
+  let activeTab = 'framedata';
+  let dustloopData = null;
+  let dustloopError = null;
+  let dustloopLoaded = false;
+  let selectedGuide = null;
 
   // Stateful Loading Logic to hide overlay only when all elements are fully loaded
   let dataLoaded = false;
@@ -125,18 +130,27 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" referrerpolicy="no-referrer" />
             <div>
               <h1 class="gradient-text m-0">${charName}</h1>
-              <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Frame Data</p>
+              <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Character Page</p>
             </div>
           </div>
           ${logoHtml}
         </div>
 
-        <!-- Controls & Search -->
-        <div id="character-table-mount">
-          <!-- Will be populated dynamically by loading or drawing -->
+        <!-- Tab Bar -->
+        <div class="pill-tabs mb-6" id="char-tab-bar">
+          <div class="pill-tab active" id="tab-framedata" data-tab="framedata">
+            <i class="fa-solid fa-table mr-1"></i> Frame Data
+          </div>
+          <div class="pill-tab" id="tab-guides" data-tab="guides">
+            <i class="fa-solid fa-book mr-1"></i> Guides
+          </div>
+        </div>
+
+        <!-- Tab Content Mount -->
+        <div id="character-tab-content">
           <div class="spinner-container p-12 text-center">
             <div class="spinner"></div>
-            <p class="text-muted mt-2">Loading frame data from Supabase cache...</p>
+            <p class="text-muted mt-2">Loading character details...</p>
           </div>
         </div>
 
@@ -153,6 +167,18 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   // Attach back button listener
   document.getElementById('btn-back').addEventListener('click', function () {
     navigateCallback('hub');
+  });
+
+  // Attach tab listeners
+  const tabs = document.querySelectorAll('#char-tab-bar .pill-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function () {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab.getAttribute('data-tab');
+      selectedGuide = null; // Reset read view when changing tabs
+      refreshTabContent();
+    });
   });
 
   // Handle dismiss-on-click-outside for hitbox/hurtbox tooltips
@@ -240,39 +266,25 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   // Load the frame data
   store.fetchDustloopData(gameId).then(data => {
-    // Check if the game is unsupported
-    if (data && data._unsupported) {
-      drawUnsupportedState(data.note || 'Data is not supported for this title.');
-      dataLoaded = true;
-      updateProgress();
-      checkAllReady();
-      return;
-    }
-    
-    rawRows = data || [];
-    drawTableContainer();
+    dustloopData = data;
+    dustloopLoaded = true;
+    rawRows = (data && !data._unsupported) ? data : [];
     dataLoaded = true;
     updateProgress();
     checkAllReady();
+    refreshTabContent();
   }).catch(err => {
-    const container = document.getElementById('character-table-mount');
-    if (container) {
-      container.innerHTML = `
-        <div class="unsupported-notice">
-          <i class="fa-solid fa-triangle-exclamation unsupported-icon"></i>
-          <h3 class="text-danger">Failed to Load Frame Data</h3>
-          <p class="text-muted">${err.message || err}</p>
-        </div>
-      `;
-    }
+    dustloopError = err;
+    dustloopLoaded = true;
     dataLoaded = true;
     updateProgress();
     checkAllReady();
+    refreshTabContent();
   });
 
   // Draw notice for unsupported titles (Phase 2 placeholder)
   function drawUnsupportedState(note) {
-    const container = document.getElementById('character-table-mount');
+    const container = document.getElementById('character-tab-content');
     if (!container) return;
 
     container.innerHTML = `
@@ -290,7 +302,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   // Draw the wrapper cards, search bar, and mount the table rows
   function drawTableContainer() {
-    const container = document.getElementById('character-table-mount');
+    const container = document.getElementById('character-tab-content');
     if (!container) return;
 
     // Filter rows belonging to this character first
@@ -1047,6 +1059,311 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }
     }
   }
+
+  function refreshTabContent() {
+    const tabContent = document.getElementById('character-tab-content');
+    if (!tabContent) return;
+
+    if (activeTab === 'framedata') {
+      if (!dustloopLoaded) {
+        tabContent.innerHTML = `
+          <div class="spinner-container p-12 text-center">
+            <div class="spinner"></div>
+            <p class="text-muted mt-2">Loading frame data...</p>
+          </div>
+        `;
+        return;
+      }
+      if (dustloopError) {
+        tabContent.innerHTML = `
+          <div class="unsupported-notice">
+            <i class="fa-solid fa-triangle-exclamation unsupported-icon"></i>
+            <h3 class="text-danger">Failed to Load Frame Data</h3>
+            <p class="text-muted">${dustloopError.message || dustloopError}</p>
+          </div>
+        `;
+        return;
+      }
+      if (dustloopData && dustloopData._unsupported) {
+        drawUnsupportedState(dustloopData.note || 'Data is not supported for this title.');
+        return;
+      }
+      drawTableContainer();
+    } else if (activeTab === 'guides') {
+      drawGuidesTab();
+    }
+  }
+
+  function drawGuidesTab() {
+    const tabContent = document.getElementById('character-tab-content');
+    if (!tabContent) return;
+
+    const currentUser = store.getCurrentUser();
+    const allStrategies = store.getStrategies() || [];
+
+    // Filter strategies for the current character/game
+    const charGuides = allStrategies.filter(s => 
+      s.game === gameId && s.character.toLowerCase() === charName.toLowerCase()
+    );
+
+    // Reference guides: all other guides from the same game or other games
+    const refGuides = allStrategies.filter(s => 
+      !(s.game === gameId && s.character.toLowerCase() === charName.toLowerCase())
+    );
+
+    // If a guide is selected, draw the reader view
+    if (selectedGuide) {
+      const upvoted = currentUser && selectedGuide.upvotedBy && selectedGuide.upvotedBy.includes(currentUser.id);
+      const voteBtnClass = upvoted ? 'active' : '';
+
+      tabContent.innerHTML = `
+        <div id="guide-reader-view" class="card p-6">
+          <button class="btn btn-secondary btn-sm mb-4" id="btn-back-to-guides">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Back to Guides List
+          </button>
+          
+          <div class="strategy-viewer-header flex items-center gap-2 mb-4">
+            <span class="badge badge-${selectedGuide.game}">${selectedGuide.game.toUpperCase()}</span>
+            <span class="badge strategy-viewer-badge-char">${escapeHtml(selectedGuide.character)}</span>
+          </div>
+
+          <h2 class="strategy-viewer-title mb-2" style="font-size: 1.8rem; text-transform: uppercase;">${escapeHtml(selectedGuide.title)}</h2>
+          <div class="strategy-guide-item-author mb-6 text-sm text-secondary">
+            By <strong>${escapeHtml(selectedGuide.author)}</strong>
+          </div>
+
+          <div class="strategy-viewer-content border-top pt-4 text-primary" style="line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.08);">
+            ${formatGuideMarkdown(selectedGuide.content)}
+          </div>
+
+          <div class="strategy-viewer-footer mt-8 border-top pt-4 flex items-center gap-3" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button class="btn-icon btn-upvote-guide ${voteBtnClass}" id="btn-upvote-active-guide" title="Upvote Guide" style="background: none; border: none; cursor: pointer; color: ${upvoted ? 'var(--color-primary)' : 'var(--text-muted)'}; font-size: 1.25rem;">
+              <i class="fa-solid fa-fire"></i>
+            </button>
+            <span class="guide-upvote-count strategy-viewer-upvote-count text-secondary font-bold">${selectedGuide.upvotes} 🔥</span>
+          </div>
+        </div>
+      `;
+
+      // Back button listener
+      document.getElementById('btn-back-to-guides').addEventListener('click', () => {
+        selectedGuide = null;
+        drawGuidesTab();
+      });
+
+      // Upvote listener
+      document.getElementById('btn-upvote-active-guide').addEventListener('click', async () => {
+        if (!currentUser) {
+          window.openAuthModal('login', navigateCallback);
+          return;
+        }
+        const result = await store.upvoteStrategy(selectedGuide.id);
+        if (result.success) {
+          const upvoteCountEl = tabContent.querySelector('.guide-upvote-count');
+          const upvoteBtnEl = document.getElementById('btn-upvote-active-guide');
+          if (upvoteCountEl) upvoteCountEl.innerText = `${result.upvotes} 🔥`;
+          if (upvoteBtnEl) {
+            if (result.upvoted) {
+              upvoteBtnEl.classList.add('active');
+              upvoteBtnEl.style.color = 'var(--color-primary)';
+            } else {
+              upvoteBtnEl.classList.remove('active');
+              upvoteBtnEl.style.color = 'var(--text-muted)';
+            }
+          }
+          // Sync selectedGuide locally
+          selectedGuide.upvotes = result.upvotes;
+          selectedGuide.upvotedBy = result.upvoted ? [...(selectedGuide.upvotedBy || []), currentUser.id] : (selectedGuide.upvotedBy || []).filter(uid => uid !== currentUser.id);
+        } else {
+          window.showToast(result.error || 'Failed to update reaction.');
+        }
+      });
+      return;
+    }
+
+    // Otherwise, render list view
+    let charGuidesHtml = '';
+    if (charGuides.length === 0) {
+      charGuidesHtml = `
+        <div class="card p-6 text-center text-muted" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px;">
+          <p class="m-0">No guides shared for ${charName} yet. Be the first to post notes!</p>
+        </div>
+      `;
+    } else {
+      charGuidesHtml = `
+        <div class="flex flex-col gap-4">
+          ${charGuides.map((guide, idx) => `
+            <div class="card card-hoverable p-4 cursor-pointer char-guide-item" data-index="${idx}" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; transition: transform var(--transition-fast), border-color var(--transition-fast);">
+              <h4 class="text-primary m-0" style="font-size: 1.1rem; font-weight: 600;">${escapeHtml(guide.title)}</h4>
+              <div class="text-secondary mt-2 text-sm">By <strong>${escapeHtml(guide.author)}</strong> &bull; ${guide.upvotes} 🔥</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    let refGuidesHtml = '';
+    if (refGuides.length === 0) {
+      refGuidesHtml = `
+        <p class="text-muted text-sm">No other guides available in the system yet.</p>
+      `;
+    } else {
+      refGuidesHtml = `
+        <div class="flex flex-col gap-3">
+          ${refGuides.map((guide, idx) => `
+            <div class="card card-hoverable p-3 cursor-pointer ref-guide-item" data-index="${idx}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.95rem;">
+               <div class="flex items-center gap-2 mb-1">
+                 <span class="badge badge-${guide.game}" style="font-size: 0.7rem; padding: 2px 6px;">${guide.game.toUpperCase()}</span>
+                 <span class="badge strategy-badge-char" style="font-size: 0.7rem; padding: 2px 6px;">${escapeHtml(guide.character)}</span>
+               </div>
+               <h5 class="text-primary m-0" style="font-size: 0.95rem; font-weight: 500;">${escapeHtml(guide.title)}</h5>
+               <div class="text-muted mt-1 text-xs">By <strong>${escapeHtml(guide.author)}</strong> &bull; ${guide.upvotes} 🔥</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    tabContent.innerHTML = `
+      <div id="guides-list-view">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="gradient-text strategy-title m-0" style="font-size: 1.5rem; text-transform: uppercase;">${charName} Guides</h2>
+            <p class="strategy-desc text-secondary m-0 mt-1" style="font-size: 0.9rem;">Read or post strategy guides specifically for ${charName}</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-create-char-guide">
+            <i class="fa-solid fa-pen-to-square mr-1"></i> Post Guide
+          </button>
+        </div>
+
+        <!-- Character Guides Section -->
+        <h3 class="strategy-guides-heading mb-4" style="font-size: 1.1rem; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">Community Guides</h3>
+        <div class="mb-8">
+          ${charGuidesHtml}
+        </div>
+
+        <!-- Reference Guides Section -->
+        <h3 class="strategy-guides-heading mb-4" style="font-size: 1.1rem; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">Reference Guides (Other Characters & Games)</h3>
+        <div>
+          ${refGuidesHtml}
+        </div>
+      </div>
+    `;
+
+    // Click listener for character guides
+    tabContent.querySelectorAll('.char-guide-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.getAttribute('data-index'), 10);
+        selectedGuide = charGuides[idx];
+        drawGuidesTab();
+      });
+    });
+
+    // Click listener for reference guides
+    tabContent.querySelectorAll('.ref-guide-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.getAttribute('data-index'), 10);
+        selectedGuide = refGuides[idx];
+        drawGuidesTab();
+      });
+    });
+
+    // Post Guide button listener
+    document.getElementById('btn-create-char-guide').addEventListener('click', () => {
+      if (!currentUser) {
+        window.openAuthModal('login', navigateCallback);
+      } else {
+        openCreateGuideModal();
+      }
+    });
+  }
+
+  function formatGuideMarkdown(text) {
+    const escaped = escapeHtml(text);
+    return escaped
+      .replace(/### (.*?)\n/g, '<h4>$1</h4>')
+      .replace(/## (.*?)\n/g, '<h3>$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/- (.*?)\n/g, '<li>$1</li>')
+      .replace(/\n\n/g, '<br/>');
+  }
+
+  function openCreateGuideModal() {
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    
+    modalTitle.innerText = 'CREATE STRATEGY ARTICLE';
+    
+    modalBody.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Guide Title</label>
+        <input type="text" id="modal-guide-title" class="form-input" placeholder="e.g. Punishing Sol's pressure, Neutral Guide..." />
+      </div>
+
+      <div class="strategy-modal-grid-2col">
+        <div class="form-group strategy-modal-form-group-flat">
+          <label class="form-label">Game</label>
+          <select id="modal-guide-game" class="form-select" disabled>
+            <option value="${gameId}">${getGameName(gameId)}</option>
+          </select>
+        </div>
+        <div class="form-group strategy-modal-form-group-flat">
+          <label class="form-label">Character Focus</label>
+          <select id="modal-guide-char" class="form-select" disabled>
+            <option value="${charName}">${charName}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Guide Content (Strategy, Tips, Punishes)</label>
+        <textarea id="modal-guide-content" class="form-textarea strategy-modal-textarea" placeholder="Outline your matchup strategies. Markdown supported (e.g. ### Headers, 1. Lists)"></textarea>
+      </div>
+
+      <div class="strategy-modal-actions">
+        <button class="btn btn-secondary" id="modal-guide-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-guide-publish">Publish Guide</button>
+      </div>
+    `;
+
+    const overlay = document.getElementById('modal-container');
+    overlay.classList.add('open');
+
+    document.getElementById('modal-guide-cancel').addEventListener('click', () => {
+      overlay.classList.remove('open');
+    });
+
+    document.getElementById('modal-guide-publish').addEventListener('click', async () => {
+      const titleVal = document.getElementById('modal-guide-title').value.trim();
+      const contentVal = document.getElementById('modal-guide-content').value.trim();
+
+      if (!titleVal || !contentVal) {
+        window.showToast('Please fill out the title and guide content.');
+        return;
+      }
+
+      const result = await store.saveStrategy({
+        game: gameId,
+        character: charName,
+        title: titleVal,
+        content: contentVal
+      });
+
+      if (result.success) {
+        window.showToast('Strategy guide published successfully!');
+        overlay.classList.remove('open');
+        
+        // Select the new guide and auto-open it in reader view
+        selectedGuide = result.strategy;
+        drawGuidesTab();
+      } else {
+        window.showToast(result.error || 'Failed to publish.');
+      }
+    });
+  }
+
+  // Initial draw
+  refreshTabContent();
 }
 
 // ================================================================

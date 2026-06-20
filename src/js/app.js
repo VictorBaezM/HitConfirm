@@ -4,7 +4,6 @@ import { renderNavbar } from './components/navbar.js';
 import { renderFeedPage } from './pages/feed.js';
 import { renderCombosPage } from './pages/combos.js';
 import { renderBuilderPage } from './pages/builder.js';
-import { renderStrategyPage } from './pages/strategy.js';
 import { renderProfilePage } from './pages/profile.js';
 import { openAuthModal } from './pages/auth.js';
 import { renderCharacterPage } from './pages/character.js';
@@ -57,9 +56,6 @@ export function navigate(pageId, options = {}) {
           break;
         case 'builder':
           renderBuilderPage(navigate);
-          break;
-        case 'strategy':
-          renderStrategyPage(navigate);
           break;
         case 'profile':
           renderProfilePage(navigate, pageOptions);
