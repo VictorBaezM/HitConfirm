@@ -23,10 +23,10 @@ export function renderNavbar(activePage, navigateCallback) {
   const currentUser = store.getCurrentUser();
 
   const links = [
-    { id: 'feed', label: 'Feed', icon: 'fa-square-rss' },
-    { id: 'combos', label: 'Dojo', icon: 'fa-gamepad' },
-    { id: 'builder', label: 'Builder', icon: 'fa-hammer' },
-    { id: 'hub', label: 'Strategy Hub', icon: 'fa-book' }
+    { id: 'feed', label: 'Feed', icon: 'rss_feed' },
+    { id: 'combos', label: 'Dojo', icon: 'sports_esports' },
+    { id: 'builder', label: 'Builder', icon: 'build' },
+    { id: 'hub', label: 'Strategy Hub', icon: 'book' }
   ];
 
   let linksHtml = '';
@@ -35,7 +35,7 @@ export function renderNavbar(activePage, navigateCallback) {
     linksHtml += `
       <li class="wiki-nav-item">
         <a class="wiki-nav-link nav-link ${isActive}" data-page="${link.id}">
-          <i class="fa-solid ${link.icon}"></i>
+          <span class="material-symbols-rounded">${link.icon}</span>
           <span class="wiki-nav-text">${link.label}</span>
         </a>
       </li>
@@ -47,7 +47,7 @@ export function renderNavbar(activePage, navigateCallback) {
   linksHtml += `
     <li class="wiki-nav-item">
       <a class="wiki-nav-link nav-link ${profileActive}" data-page="profile">
-        <i class="fa-solid fa-user"></i>
+        <span class="material-symbols-rounded">person</span>
         <span class="wiki-nav-text">My Dojo</span>
       </a>
     </li>
@@ -63,7 +63,7 @@ export function renderNavbar(activePage, navigateCallback) {
         <div class="wiki-user-info">
           <span class="wiki-user-name">${currentUser.username}</span>
           <button id="logout-btn" class="wiki-logout-btn">
-            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+            <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle; margin-right: 6px;">logout</span> Sign Out
           </button>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function renderNavbar(activePage, navigateCallback) {
       authHtml = `
         <div class="wiki-auth-panel" style="justify-content: center;">
           <button id="nav-login-btn" class="wiki-btn wiki-btn-primary" style="padding: 10px; width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center;" title="Log In / Sign Up">
-            <i class="fa-solid fa-right-to-bracket"></i>
+            <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle;">login</span>
           </button>
         </div>
       `;
@@ -90,7 +90,7 @@ export function renderNavbar(activePage, navigateCallback) {
   mount.innerHTML = `
     <aside class="wiki-left-nav ${isCollapsed ? 'collapsed' : ''}">
       <div class="wiki-brand" id="nav-logo">
-        <i class="fa-solid fa-bolt wiki-brand-icon" id="nav-toggle-sidebar" style="cursor: pointer;" title="Toggle Sidebar"></i>
+        <span class="material-symbols-rounded wiki-brand-icon" id="nav-toggle-sidebar" style="cursor: pointer;" title="Toggle Sidebar">bolt</span>
         <span class="wiki-brand-text" style="cursor: pointer;">HITCONFIRM</span>
       </div>
       

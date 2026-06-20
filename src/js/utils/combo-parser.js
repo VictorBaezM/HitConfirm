@@ -231,7 +231,7 @@ export function renderNotationHtml(notationString) {
     <div class="wiki-combo-sequence">
       ${parseComboToHtml(notationString)}
       <div class="wiki-notation-helper">
-        <i class="fa-solid fa-circle-question"></i>
+        <span class="material-symbols-rounded">help</span>
         <div class="wiki-notation-tooltip">
           <div class="tooltip-title">Reading Notations</div>
           <ul>

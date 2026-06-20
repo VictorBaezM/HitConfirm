@@ -44,7 +44,7 @@ export function renderFeedPage(navigateCallback) {
       <!-- Dojo Training Widget -->
       <div class="card">
         <h3 class="wiki-console-title">
-          <i class="fa-solid fa-fire"></i> Hottest Combos
+          <span class="material-symbols-rounded icon-mr-1">whatshot</span>Hottest Combos
         </h3>
         <div id="sidebar-hot-combos" class="flex flex-col gap-3"></div>
         <button class="btn btn-secondary btn-sm w-full" id="sidebar-go-dojo">
@@ -55,11 +55,11 @@ export function renderFeedPage(navigateCallback) {
       <!-- FGC Game News Widget -->
       <div class="card" id="sidebar-game-news-card">
         <h3 class="wiki-console-title">
-          <i class="fa-solid fa-newspaper"></i> Latest Game News
+          <span class="material-symbols-rounded icon-mr-1">newspaper</span>Latest Game News
         </h3>
         <div id="sidebar-game-news-list" class="flex flex-col gap-3">
           <div class="text-center py-4 text-gray">
-            <i class="fa-solid fa-circle-notch fa-spin"></i> Loading latest news...
+            <span class="material-symbols-rounded spin icon-mr-1">progress_activity</span>Loading latest news...
           </div>
         </div>
       </div>
@@ -67,7 +67,7 @@ export function renderFeedPage(navigateCallback) {
       <!-- FGC Game Resources & Patch Notes Widget -->
       <div class="card" id="feed-news-resources-widget">
         <h3 class="wiki-console-title">
-          <i class="fa-solid fa-newspaper"></i> Game Resources & Patches
+          <span class="material-symbols-rounded icon-mr-1">newspaper</span>Game Resources & Patches
         </h3>
         <div class="flex flex-col gap-3">
           <!-- SF6 -->
@@ -78,13 +78,13 @@ export function renderFeedPage(navigateCallback) {
             </div>
             <div class="flex gap-2">
               <a href="https://www.streetfighter.com/6/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-sf6">
-                <i class="fa-solid fa-globe"></i> Site
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">public</span>Site
               </a>
               <a href="https://www.streetfighter.com/6/en-us/character/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-sf6">
-                <i class="fa-solid fa-users"></i> Roster
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">group</span>Roster
               </a>
               <a href="https://www.streetfighter.com/6/en-us/buckler/battle_change/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-sf6">
-                <i class="fa-solid fa-file-lines"></i> Patches
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">article</span>Patches
               </a>
             </div>
           </div>
@@ -97,13 +97,13 @@ export function renderFeedPage(navigateCallback) {
             </div>
             <div class="flex gap-2">
               <a href="https://tekken.com/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-t8">
-                <i class="fa-solid fa-globe"></i> Site
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">public</span>Site
               </a>
               <a href="https://bandainamcoent.com/games/tekken-8" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-t8">
-                <i class="fa-solid fa-users"></i> Roster
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">group</span>Roster
               </a>
               <a href="https://bandainamcoent.com/news?game=tekken-8" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-t8">
-                <i class="fa-solid fa-file-lines"></i> Patches
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">article</span>Patches
               </a>
             </div>
           </div>
@@ -116,13 +116,13 @@ export function renderFeedPage(navigateCallback) {
             </div>
             <div class="flex gap-2">
               <a href="https://www.guiltygear.com/ggst/en/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ggst">
-                <i class="fa-solid fa-globe"></i> Site
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">public</span>Site
               </a>
               <a href="https://www.guiltygear.com/ggst/en/character/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ggst">
-                <i class="fa-solid fa-users"></i> Roster
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">group</span>Roster
               </a>
               <a href="https://www.guiltygear.com/ggst/en/news/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ggst">
-                <i class="fa-solid fa-file-lines"></i> Patches
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">article</span>Patches
               </a>
             </div>
           </div>
@@ -135,13 +135,13 @@ export function renderFeedPage(navigateCallback) {
             </div>
             <div class="flex gap-2">
               <a href="https://www.smashbros.com/en_US/" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ssbu">
-                <i class="fa-solid fa-globe"></i> Site
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">public</span>Site
               </a>
               <a href="https://www.smashbros.com/en_US/char/index.html" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ssbu">
-                <i class="fa-solid fa-users"></i> Roster
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">group</span>Roster
               </a>
               <a href="https://en-americas-support.nintendo.com/app/answers/detail/a_id/42809" target="_blank" rel="noopener noreferrer" class="game-resource-btn game-resource-btn-ssbu">
-                <i class="fa-solid fa-file-lines"></i> Patches
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">article</span>Patches
               </a>
             </div>
           </div>
@@ -168,7 +168,7 @@ export function renderFeedPage(navigateCallback) {
       if (!currentUser) {
         listMount.innerHTML = `
           <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary); border-color: rgba(255, 0, 91, 0.15);">
-            <i class="fa-solid fa-lock" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <span class="material-symbols-rounded" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary); display: block; margin-left: auto; margin-right: auto; width: fit-content;">lock</span>
             <h3>Log in to see your following feed</h3>
             <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players and keep up with their lab clips and notes!</p>
           </div>
@@ -179,7 +179,7 @@ export function renderFeedPage(navigateCallback) {
       if (followingList.length === 0) {
         listMount.innerHTML = `
           <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
-            <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+            <span class="material-symbols-rounded" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary); display: block; margin-left: auto; margin-right: auto; width: fit-content;">person_add</span>
             <h3>Your following feed is empty</h3>
             <p style="font-size: 0.9rem; margin-top: 4px;">Follow other players in the community to customize your activity feed.</p>
           </div>
@@ -197,7 +197,7 @@ export function renderFeedPage(navigateCallback) {
     if (filtered.length === 0) {
       listMount.innerHTML = `
         <div class="card" style="text-align: center; padding: 48px; color: var(--text-secondary);">
-          <i class="fa-solid fa-face-sad-tear" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary);"></i>
+          <span class="material-symbols-rounded" style="font-size: 2.5rem; margin-bottom: 12px; color: var(--color-secondary); display: block; margin-left: auto; margin-right: auto; width: fit-content;">sentiment_very_dissatisfied</span>
           <h3>No posts found here yet</h3>
           <p style="font-size: 0.9rem; margin-top: 4px;">Be the first to share your thoughts, videos or strategies!</p>
         </div>
@@ -291,7 +291,7 @@ export function renderFeedPage(navigateCallback) {
                 ${escapeHtml(item.title)}
               </a>
               <div class="news-meta text-xs text-gray mt-1">
-                <i class="fa-regular fa-clock"></i> ${escapeHtml(item.date)}
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 14px; vertical-align: middle;">schedule</span>${escapeHtml(item.date)}
               </div>
             </div>
           </div>
@@ -303,7 +303,7 @@ export function renderFeedPage(navigateCallback) {
       console.error('[Feed Page] Error loading sidebar news:', err);
       newsContainer.innerHTML = `
         <div class="text-center py-4 text-red">
-          <i class="fa-solid fa-triangle-exclamation"></i> Failed to load latest news.
+          <span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">warning</span>Failed to load latest news.
         </div>
       `;
     }
@@ -371,7 +371,7 @@ function renderCreatorBox(navigateCallback) {
   mount.innerHTML = `
     <div class="card">
       <h3 class="wiki-console-title">
-        <i class="fa-solid fa-pen-nib"></i> Share a Strategic Thought or Clip
+        <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">edit</span>Share a Strategic Thought or Clip
       </h3>
       
       <div class="form-group">
@@ -398,7 +398,7 @@ function renderCreatorBox(navigateCallback) {
 
         <!-- Video Input Link -->
         <div class="video-input-wrapper" style="flex: 2; min-width: 200px;">
-          <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
+          <span id="combo-video-icon" class="material-symbols-rounded video-input-icon">videocam</span>
           <input type="text" id="post-video-input" name="video" class="form-input post-video-input" aria-label="YouTube Video URL" placeholder="YouTube Video URL (Optional)" />
         </div>
       </div>
@@ -411,7 +411,7 @@ function renderCreatorBox(navigateCallback) {
 
       <!-- Video format hint (always visible when a game is selected) -->
       <div id="video-format-hint" class="wiki-comment-item" style="display: none; margin-top: 8px;">
-        <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
+        <span class="material-symbols-rounded icon-mr-1" style="color: var(--color-primary); font-size: 18px; vertical-align: middle;">info</span>
         <span id="video-format-hint-text"></span>
       </div>
 
@@ -481,7 +481,7 @@ function renderCreatorBox(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(245,158,11,0.2)';
       validationBanner.style.color = 'var(--text-secondary)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-triangle-exclamation" style="color: var(--color-accent); margin-right: 6px;"></i>' +
+        '<span class="material-symbols-rounded icon-mr-1" style="color: var(--color-accent); font-size: 16px; vertical-align: middle;">warning</span>' +
         'Could not verify video title (network issue). The confirmation checkbox is required to continue.';
       showConfirmRow(gameSelect.value);
       return;
@@ -493,7 +493,7 @@ function renderCreatorBox(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(34,197,94,0.2)';
       validationBanner.style.color = 'var(--color-success)';
       validationBanner.innerHTML =
-        `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>` +
+        `<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">check_circle</span>` +
         `Video "${safeTitle}" looks relevant to <strong>${escapeHtml(result.label)}</strong>. ` +
         `Confirmation checkbox still required before publishing.`;
       showConfirmRow(gameSelect.value);
@@ -509,7 +509,7 @@ function renderCreatorBox(navigateCallback) {
     validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
     validationBanner.style.color = 'var(--color-danger)';
     validationBanner.innerHTML =
-      `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>` +
+      `<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">warning</span>` +
       `Video title "${safeTitle}" is missing ${missing.join(' and ')}. ` +
       `Please use a video whose title clearly mentions both. You may still post, ` +
       `but must confirm relevance below.`;
@@ -590,7 +590,7 @@ function renderCreatorBox(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
       validationBanner.style.color = 'var(--color-danger)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-link-slash" style="margin-right: 6px;"></i>' +
+        '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">link_off</span>' +
         'That does not look like a valid YouTube URL. Please use a full youtube.com or youtu.be link.';
       confirmRow.style.display = 'none';
       return;
@@ -601,7 +601,7 @@ function renderCreatorBox(navigateCallback) {
     validationBanner.style.border = '1px solid rgba(59,130,246,0.12)';
     validationBanner.style.color = 'var(--text-muted)';
     validationBanner.innerHTML =
-      '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px;"></i>Checking video title...';
+      '<span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Checking video title...';
 
     const rawTitle = await fetchVideoTitle(videoId);
     const safeTitle = escapeHtml(rawTitle || '');

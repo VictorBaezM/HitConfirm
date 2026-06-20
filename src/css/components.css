@@ -529,6 +529,39 @@
   border: none;
 }
 
+/* Google Material Symbols base overrides */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+}
+
+/* Material Symbols alignment and scaling helpers */
+.material-symbols-rounded.icon-mr-1 {
+  margin-right: 4px;
+}
+
+.spin {
+  animation: material-spin 1.5s infinite linear;
+  display: inline-block;
+}
+
+@keyframes material-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .wiki-video-facade {
   position: absolute;
   top: 0;

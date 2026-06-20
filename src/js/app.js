@@ -94,7 +94,7 @@ window.showToast = function(message, duration = 3000) {
   const toast = document.getElementById('toast-notification');
   if (!toast) return;
 
-  toast.innerHTML = `<i class="fa-solid fa-bell text-secondary mr-2"></i> ${message}`;
+  toast.innerHTML = `<span class="material-symbols-rounded text-secondary mr-2" style="font-size: 1.1rem; vertical-align: middle;">notifications</span> ${message}`;
   toast.style.transform = 'translateY(0)';
   
   setTimeout(function () {

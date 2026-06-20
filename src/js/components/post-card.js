@@ -62,7 +62,7 @@ export function renderPostCard(post, navigateCallback) {
         <div class="wiki-video-wrapper video-facade-container" data-embed="${embedUrl}">
           <div class="wiki-video-facade" style="background-image: url('${thumbnailUrl}');">
             <div class="play-button-overlay">
-              <i class="fa-solid fa-play"></i>
+              <span class="material-symbols-rounded">play_arrow</span>
             </div>
           </div>
         </div>
@@ -139,22 +139,22 @@ export function renderPostCard(post, navigateCallback) {
 
     <div class="wiki-post-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" data-id="${post.id}" title="Upvote post">
-        <i class="fa-solid fa-fire"></i>
+        <span class="material-symbols-rounded">whatshot</span>
       </button>
       <span class="wiki-upvote-text upvote-count">${post.upvotes} 🔥</span>
       
       ${notation ? `
         <button class="wiki-action-btn btn-save ${saveClass}" title="Save to Dojo">
-          <i class="fa-regular fa-bookmark"></i>
+          <span class="material-symbols-rounded">bookmark</span>
         </button>
 
         <button class="wiki-action-btn btn-copy" title="Copy Notation">
-          <i class="fa-regular fa-copy"></i>
+          <span class="material-symbols-rounded">content_copy</span>
         </button>
       ` : ''}
       
       <button class="wiki-action-btn btn-comment" title="Toggle comments" style="margin-left: auto;">
-        <i class="fa-regular fa-comment"></i>
+        <span class="material-symbols-rounded">chat_bubble</span>
       </button>
       <span class="wiki-comment-counter">${post.comments?.length || 0}</span>
     </div>

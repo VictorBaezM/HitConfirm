@@ -35,7 +35,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
   const logoHtml = KNOWN_LOGOS.includes(gameId)
     ? `<img src="src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
-    : `<i class="fa-solid fa-gamepad game-header-logo-large text-muted" style="font-size: 28px; width: 32px; text-align: center;"></i>`;
+    : `<span class="material-symbols-rounded game-header-logo-large text-muted" style="font-size: 28px; width: 32px; text-align: center; vertical-align: middle;">sports_esports</span>`;
 
   // Page level state
   let searchQuery = '';
@@ -143,10 +143,10 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         <!-- Tab Bar -->
         <div class="pill-tabs mb-6" id="char-tab-bar">
           <div class="pill-tab active" id="tab-framedata" data-tab="framedata">
-            <i class="fa-solid fa-table mr-1"></i> Frame Data
+            <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">table_chart</span>Frame Data
           </div>
           <div class="pill-tab" id="tab-guides" data-tab="guides">
-            <i class="fa-solid fa-book mr-1"></i> Guides
+            <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">book</span>Guides
           </div>
         </div>
 
@@ -293,7 +293,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     container.innerHTML = `
       <div class="unsupported-notice">
-        <i class="fa-solid fa-triangle-exclamation unsupported-icon"></i>
+        <span class="material-symbols-rounded unsupported-icon">warning</span>
         <h3>Phase 2 Expansion</h3>
         <p class="text-secondary max-w-md mt-2 mb-6">
           HitConfirm currently fetches frame data from Dustloop for Arc System Works titles in Phase 1. 
@@ -318,7 +318,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (characterRows.length === 0) {
       container.innerHTML = `
         <div class="unsupported-notice">
-          <i class="fa-solid fa-folder-open unsupported-icon"></i>
+          <span class="material-symbols-rounded unsupported-icon">folder_open</span>
           <h3>No Data Available</h3>
           <p class="text-muted">No frame data rows match character "${charName}".</p>
         </div>
@@ -329,7 +329,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     container.innerHTML = `
       <div class="table-controls flex justify-between items-center flex-wrap gap-4">
         <div class="search-wrapper w-full md:w-72 relative">
-          <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
+          <span class="material-symbols-rounded search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">search</span>
           <input type="text" id="table-search" name="search" aria-label="Search moves by name or input" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
         </div>
         <div id="preloader-status-container" class="preloader-status-container hidden">
@@ -378,7 +378,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         const percentage = Math.round((preloaderLoadedCount / preloaderTotalFiles) * 100);
         if (fill) fill.style.width = `${percentage}%`;
         if (statusText) {
-          statusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
+          statusText.innerHTML = `<span class="material-symbols-rounded spin text-secondary icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
         }
       }
     }
@@ -486,7 +486,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <td colspan="${fieldsToRender.length}" class="p-0">
               <div class="move-details-expanded p-4" id="details-content-${idx}">
                 <div class="loading-images text-center text-muted p-4">
-                  <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading move images...
+                  <span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Loading move images...
                 </div>
               </div>
             </td>
@@ -637,13 +637,13 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       const percentage = Math.round((preloaderLoadedCount / preloaderTotalFiles) * 100);
       if (currentFill) currentFill.style.width = `${percentage}%`;
       if (currentStatusText) {
-        currentStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-secondary mr-1"></i> Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
+        currentStatusText.innerHTML = `<span class="material-symbols-rounded spin text-secondary icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Caching move images: ${preloaderLoadedCount} / ${preloaderTotalFiles} (${percentage}%)`;
       }
 
       if (preloaderLoadedCount === preloaderTotalFiles) {
         preloaderFinished = true;
         if (currentStatusText) {
-          currentStatusText.innerHTML = `<i class="fa-solid fa-circle-check text-success mr-1"></i> All move images cached!`;
+          currentStatusText.innerHTML = `<span class="material-symbols-rounded text-success icon-mr-1" style="font-size: 16px; vertical-align: middle;">check_circle</span>All move images cached!`;
         }
         setTimeout(() => {
           const latestContainer = document.getElementById('preloader-status-container');
@@ -955,7 +955,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (imageFiles.length === 0 && hitboxFiles.length === 0) {
       contentContainer.innerHTML = `
         <div class="text-center text-muted p-4">
-          <i class="fa-solid fa-image-slash mr-2"></i> No move images or hitboxes available for this move.
+          <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">hide_image</span>No move images or hitboxes available for this move.
         </div>
       `;
       contentContainer.setAttribute('data-loaded', 'true');
@@ -985,11 +985,11 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         imagesHtml = `
           <div class="move-image-card">
             <h5 class="move-image-card-title title-action">
-              <i class="fa-solid fa-gamepad"></i> Action Frame
+              <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">sports_esports</span>Action Frame
             </h5>
             <div class="move-image-wrapper" id="action-video-container-${index}">
               <div class="loading-video-frame text-muted p-2" style="font-size: 0.9rem;">
-                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Extracting frame...
+                <span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Extracting frame...
               </div>
             </div>
           </div>
@@ -998,7 +998,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         imagesHtml = `
           <div class="move-image-card">
             <h5 class="move-image-card-title title-action">
-              <i class="fa-solid fa-gamepad"></i> Action Frame
+              <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">sports_esports</span>Action Frame
             </h5>
             <div class="move-image-wrapper">
               <img src="${actionUrl}" alt="Action Frame" class="move-details-img" data-guesses="${guessesAttr}" data-filename="${firstFile}" data-game="${gameId}" data-try-idx="0"${fromCacheAttr} onload="if(!this.getAttribute('data-loaded-from-cache')){ window.handleMoveImageLoad && window.handleMoveImageLoad(this); }" onerror="window.handleMoveImageError && window.handleMoveImageError(this, '${gameId}');" referrerpolicy="no-referrer" />
@@ -1029,7 +1029,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           <div class="move-image-card">
             <h5 class="move-image-card-title title-hitbox">
               <span>
-                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">shield</span>Hitbox / Hurtbox
               </span>
             </h5>
             <div class="move-image-wrapper">
@@ -1042,10 +1042,10 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           <div class="move-image-card">
             <h5 class="move-image-card-title title-hitbox">
               <span>
-                <i class="fa-solid fa-shield-halved"></i> Hitbox / Hurtbox
+                <span class="material-symbols-rounded icon-mr-1" style="font-size: 18px; vertical-align: middle;">shield</span>Hitbox / Hurtbox
               </span>
               <span class="hitbox-helper" onclick="event.stopPropagation(); this.classList.toggle('active');">
-                <i class="fa-solid fa-circle-question"></i>
+                <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle;">help</span>
                 <div class="hitbox-tooltip">
                   <div class="tooltip-title">Box Color Guide</div>
                   <ul>
@@ -1104,7 +1104,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       if (dustloopError) {
         tabContent.innerHTML = `
           <div class="unsupported-notice">
-            <i class="fa-solid fa-triangle-exclamation unsupported-icon"></i>
+            <span class="material-symbols-rounded unsupported-icon" style="color: var(--color-danger);">warning</span>
             <h3 class="text-danger">Failed to Load Frame Data</h3>
             <p class="text-muted">${dustloopError.message || dustloopError}</p>
           </div>
@@ -1146,7 +1146,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       tabContent.innerHTML = `
         <div id="guide-reader-view" class="card p-6">
           <button class="btn btn-secondary btn-sm mb-4" id="btn-back-to-guides">
-            <i class="fa-solid fa-arrow-left mr-1"></i> Back to Guides List
+            <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">arrow_back</span>Back to Guides List
           </button>
           
           <div class="strategy-viewer-header flex items-center gap-2 mb-4">
@@ -1165,7 +1165,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
           <div class="strategy-viewer-footer mt-8 border-top pt-4 flex items-center gap-3" style="border-top: 1px solid rgba(255,255,255,0.08);">
             <button class="btn-icon btn-upvote-guide ${voteBtnClass}" id="btn-upvote-active-guide" title="Upvote Guide" style="background: none; border: none; cursor: pointer; color: ${upvoted ? 'var(--color-primary)' : 'var(--text-muted)'}; font-size: 1.25rem;">
-              <i class="fa-solid fa-fire"></i>
+              <span class="material-symbols-rounded">whatshot</span>
             </button>
             <span class="guide-upvote-count strategy-viewer-upvote-count text-secondary font-bold">${selectedGuide.upvotes} 🔥</span>
           </div>
@@ -1259,7 +1259,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <p class="strategy-desc text-secondary m-0 mt-1" style="font-size: 0.9rem;">Read or post strategy guides specifically for ${charName}</p>
           </div>
           <button class="btn btn-primary btn-sm" id="btn-create-char-guide">
-            <i class="fa-solid fa-pen-to-square mr-1"></i> Post Guide
+            <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">edit_note</span>Post Guide
           </button>
         </div>
 

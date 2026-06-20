@@ -49,7 +49,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       <!-- Filters and Search Bar Container -->
       <div class="hub-controls flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         <div class="search-wrapper w-full md:w-72 relative">
-          <i class="fa-solid fa-magnifying-glass search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted"></i>
+          <span class="material-symbols-rounded search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">search</span>
           <input type="text" id="hub-search" name="search" aria-label="Search characters" class="form-input pl-10 w-full" placeholder="Search characters..." value="${searchFilter}" />
         </div>
       </div>
@@ -79,7 +79,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
               const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
               const logoHtml = KNOWN_LOGOS.includes(game.id)
                 ? `<img src="src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />`
-                : `<i class="fa-solid fa-gamepad game-header-logo text-muted" style="font-size: 24px; width: 28px; text-align: center;"></i>`;
+                : `<span class="material-symbols-rounded game-header-logo text-muted" style="font-size: 24px; width: 28px; text-align: center; vertical-align: middle;">sports_esports</span>`;
 
               return `
                 <div class="game-section mb-6" id="section-${game.id}">
@@ -98,7 +98,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
 
           <!-- Empty State -->
           <div id="hub-empty-state" class="text-center p-8 hidden">
-            <i class="fa-solid fa-gamepad text-muted text-4xl mb-3"></i>
+            <span class="material-symbols-rounded text-muted text-4xl mb-3" style="display: block; margin: 0 auto 12px auto; width: fit-content;">sports_esports</span>
             <p class="text-muted font-md">No characters match your search filter.</p>
           </div>
         </div>
@@ -107,13 +107,13 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       <!-- Pagination Controls -->
       <div class="hub-pagination flex justify-center items-center gap-4 mt-8 ${totalPages <= 1 ? 'hidden' : ''}">
         <button class="btn btn-sm btn-primary" id="btn-prev-page" ${currentPage === 1 ? 'disabled' : ''}>
-          <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+          <span class="material-symbols-rounded icon-mr-1">chevron_left</span>Prev
         </button>
         <span class="text-muted font-mono text-sm" id="page-indicator">
           Page ${currentPage} of ${totalPages}
         </span>
         <button class="btn btn-sm btn-primary" id="btn-next-page" ${currentPage === totalPages ? 'disabled' : ''}>
-          Next <i class="fa-solid fa-chevron-right ml-1"></i>
+          Next<span class="material-symbols-rounded" style="margin-left: 4px;">chevron_right</span>
         </button>
       </div>
     `;

@@ -34,7 +34,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
           <p class="dojo-title-desc">Browse community optimization combos and inputs.</p>
         </div>
         <button class="btn btn-primary" id="dojo-create-combo-btn">
-          <i class="fa-solid fa-plus"></i> Share Combo
+          <span class="material-symbols-rounded icon-mr-1">add</span>Share Combo
         </button>
       </div>
 
@@ -85,7 +85,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
 
       <div class="card dojo-sidebar-card">
         <h3 class="dojo-sidebar-heading">
-          <i class="fa-solid fa-trophy dojo-sidebar-heading-ticon"></i> Top Lab Masters
+          <span class="material-symbols-rounded dojo-sidebar-heading-ticon" style="vertical-align: middle; margin-right: 4px;">trophy</span>Top Lab Masters
         </h3>
         <div id="top-lab-masters-mount" class="flex flex-col gap-3">
           <!-- Dynamically populated -->
@@ -114,7 +114,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       if (!currentUser) {
         listMount.innerHTML = `
           <div class="card dojo-locked-card">
-            <i class="fa-solid fa-lock icon-lg mb-3 color-secondary"></i>
+            <span class="material-symbols-rounded icon-lg mb-3 color-secondary" style="font-size: 2.5rem; display: block; margin: 0 auto 12px auto; width: fit-content;">lock</span>
             <h3>Log in to see combos from followed users</h3>
             <p class="font-md mt-1">Follow other lab masters and see their optimized combos here!</p>
           </div>
@@ -125,7 +125,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
       if (followingList.length === 0) {
         listMount.innerHTML = `
           <div class="card feed-empty-card">
-            <i class="fa-solid fa-user-plus icon-lg mb-3 color-secondary"></i>
+            <span class="material-symbols-rounded icon-lg mb-3 color-secondary" style="font-size: 2.5rem; display: block; margin: 0 auto 12px auto; width: fit-content;">person_add</span>
             <h3>Your Following Dojo is empty</h3>
             <p class="font-md mt-1">Follow other players in the community to customize your Dojo.</p>
           </div>
@@ -156,7 +156,7 @@ export function renderCombosPage(navigateCallback, initialFilters = {}) {
     if (filtered.length === 0) {
       listMount.innerHTML = `
         <div class="card feed-empty-card">
-          <i class="fa-solid fa-compass icon-lg mb-3 color-primary"></i>
+          <span class="material-symbols-rounded icon-lg mb-3 color-primary" style="font-size: 2.5rem; display: block; margin: 0 auto 12px auto; width: fit-content;">explore</span>
           <h3>No matching combos found</h3>
           <p class="font-md mt-1">Try modifying your search queries or game filter categories.</p>
         </div>

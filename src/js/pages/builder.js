@@ -76,8 +76,8 @@ export function renderBuilderPage(navigateCallback) {
             <label class="form-label" for="builder-char-select">Character</label>
             <div class="flex gap-2">
               <select id="builder-char-select" name="character" class="form-select"></select>
-              <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px;" title="Add new DLC character">
-                <i class="fa-solid fa-plus"></i>
+              <button id="btn-add-builder-char" class="btn btn-secondary" style="padding: 0 12px; height: 38px; display: flex; align-items: center; justify-content: center;" title="Add new DLC character">
+                <span class="material-symbols-rounded">add</span>
               </button>
             </div>
           </div>
@@ -133,10 +133,10 @@ export function renderBuilderPage(navigateCallback) {
               <!-- Sequence link tools -->
               <div class="flex gap-2" style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 8px;">
                 <button class="btn btn-accent btn-sm" id="btn-link-move" style="flex: 2;">
-                  <i class="fa-solid fa-arrow-right-long"></i> Link Next Move
+                  <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">arrow_right_alt</span>Link Next Move
                 </button>
                 <button class="btn btn-secondary btn-sm" id="btn-delete-last" style="flex: 1;" title="Delete last input">
-                  <i class="fa-solid fa-delete-left"></i> Undo
+                  <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">backspace</span>Undo
                 </button>
               </div>
             </div>
@@ -189,13 +189,13 @@ export function renderBuilderPage(navigateCallback) {
         <div class="form-group">
           <label class="form-label" for="combo-video">Demonstration Video Link (YouTube/Twitch - Optional)</label>
           <div class="video-input-wrapper">
-            <i id="combo-video-icon" class="fa-solid fa-video video-input-icon"></i>
+            <span id="combo-video-icon" class="material-symbols-rounded video-input-icon">videocam</span>
             <input type="text" id="combo-video" name="video" class="form-input post-video-input" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           
           <!-- Format hint -->
           <div id="video-format-hint" class="wiki-comment-item" style="display: none; margin-top: 8px;">
-            <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 5px;"></i>
+            <span class="material-symbols-rounded icon-mr-1" style="color: var(--color-primary); font-size: 18px; vertical-align: middle;">info</span>
             <span id="video-format-hint-text"></span>
           </div>
 
@@ -221,7 +221,7 @@ export function renderBuilderPage(navigateCallback) {
     <div id="builder-sidebar" class="flex flex-col gap-6">
       <div class="card">
         <h3 class="wiki-console-title">
-          <i class="fa-solid fa-circle-info"></i> How to Build
+          <span class="material-symbols-rounded icon-mr-1" style="vertical-align: middle;">info</span>How to Build
         </h3>
         <ol class="dojo-notations-list" style="margin-left: 16px;">
           <li>Select the <strong>Game</strong> and <strong>Character</strong> you are labbing.</li>
@@ -465,7 +465,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(245,158,11,0.2)';
       validationBanner.style.color = 'var(--text-secondary)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-triangle-exclamation color-accent icon-mr-1"></i>' +
+        '<span class="material-symbols-rounded color-accent icon-mr-1" style="font-size: 16px; vertical-align: middle;">warning</span>' +
         'Could not verify video title (network issue). The confirmation checkbox is required to continue.';
       showBuilderConfirmRow(selectedGame);
       return;
@@ -477,7 +477,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(34,197,94,0.2)';
       validationBanner.style.color = 'var(--color-success)';
       validationBanner.innerHTML =
-        `<i class="fa-solid fa-circle-check icon-mr-1"></i>` +
+        `<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">check_circle</span>` +
         `Video "${safeTitle}" looks relevant to <strong>${escapeHtml(result.label)}</strong>. ` +
         `Confirmation checkbox still required before publishing.`;
       showBuilderConfirmRow(selectedGame);
@@ -493,7 +493,7 @@ export function renderBuilderPage(navigateCallback) {
     validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
     validationBanner.style.color = 'var(--color-danger)';
     validationBanner.innerHTML =
-      `<i class="fa-solid fa-triangle-exclamation icon-mr-1"></i>` +
+      `<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">warning</span>` +
       `Video title "${safeTitle}" is missing ${missing.join(' and ')}. ` +
       `Please use a video whose title clearly mentions both. You may still post, ` +
       `but must confirm relevance below.`;
@@ -511,13 +511,13 @@ export function renderBuilderPage(navigateCallback) {
     videoInput.addEventListener('input', function () {
       const val = videoInput.value.trim();
       if (extractYouTubeVideoId(val)) {
-        videoIcon.className = 'fa-brands fa-youtube';
+        videoIcon.textContent = 'smart_display';
         videoIcon.style.color = '#ff0000';
       } else if (extractTwitchInfo(val)) {
-        videoIcon.className = 'fa-brands fa-twitch';
+        videoIcon.textContent = 'live_tv';
         videoIcon.style.color = '#9146ff';
       } else {
-        videoIcon.className = 'fa-solid fa-video';
+        videoIcon.textContent = 'videocam';
         videoIcon.style.color = 'var(--text-muted)';
       }
     });
@@ -539,7 +539,7 @@ export function renderBuilderPage(navigateCallback) {
         validationBanner.style.border = '1px solid rgba(239,68,68,0.2)';
         validationBanner.style.color = 'var(--color-danger)';
         validationBanner.innerHTML =
-          '<i class="fa-solid fa-link-slash icon-mr-1"></i>' +
+          '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">link_off</span>' +
           'That does not look like a valid YouTube or Twitch URL. Please use a full YouTube or Twitch link.';
         if (confirmRow) confirmRow.style.display = 'none';
         return;
@@ -550,7 +550,7 @@ export function renderBuilderPage(navigateCallback) {
       validationBanner.style.border = '1px solid rgba(59,130,246,0.12)';
       validationBanner.style.color = 'var(--text-muted)';
       validationBanner.innerHTML =
-        '<i class="fa-solid fa-spinner fa-spin icon-mr-1"></i>Checking video title...';
+        '<span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Checking video title...';
 
       let rawTitle = null;
       if (youtubeId) {

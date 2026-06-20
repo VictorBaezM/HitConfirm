@@ -97,21 +97,21 @@ export function renderComboCard(combo, navigateCallback) {
 
     <div class="wiki-combo-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" title="Upvote Combo">
-        <i class="fa-solid fa-fire"></i>
+        <span class="material-symbols-rounded">whatshot</span>
       </button>
       <span class="wiki-upvote-text upvote-count">${combo.upvotes} 🔥</span>
 
       <button class="wiki-action-btn btn-save ${saveClass}" title="Save to Dojo">
-        <i class="fa-regular fa-bookmark"></i>
+        <span class="material-symbols-rounded">bookmark</span>
       </button>
 
       <button class="wiki-action-btn btn-copy" title="Copy Notation">
-        <i class="fa-regular fa-copy"></i>
+        <span class="material-symbols-rounded">content_copy</span>
       </button>
 
       ${combo.videoUrl ? `
         <button class="wiki-btn wiki-btn-sm btn-video-toggle">
-          <i class="fa-solid fa-video"></i> Video
+          <span class="material-symbols-rounded icon-mr-1">videocam</span>Video
         </button>
       ` : ''}
     </div>
@@ -205,7 +205,7 @@ export function renderComboCard(combo, navigateCallback) {
   commentToggleBtn.className = 'wiki-action-btn btn-comment-toggle';
   commentToggleBtn.title = 'Comments';
   commentToggleBtn.style.marginLeft = '8px';
-  commentToggleBtn.innerHTML = `<i class="fa-regular fa-comment"></i>`;
+  commentToggleBtn.innerHTML = `<span class="material-symbols-rounded">chat_bubble</span>`;
   
   const commentCountLabel = document.createElement('span');
   commentCountLabel.className = 'wiki-comment-counter';

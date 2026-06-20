@@ -18,7 +18,7 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
   // Build game list HTML
   let gameItemsHtml = `
     <div class="wiki-console-tab ${activeGame === 'all' ? 'active' : ''}" data-game="all" id="sidebar-game-all" title="All Databases">
-      <i class="fa-solid fa-database database-logo-icon"></i>
+      <span class="material-symbols-rounded database-logo-icon">database</span>
     </div>
   `;
 

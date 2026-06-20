@@ -36,7 +36,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
     mount.innerHTML = `
       <div class="profile-locker-wrapper">
         <div class="card profile-locker-card">
-          <i class="fa-solid fa-lock profile-locker-icon"></i>
+          <span class="material-symbols-rounded profile-locker-icon" style="font-size: 3.5rem; display: block; margin: 0 auto 16px auto; width: fit-content; color: var(--color-secondary);">lock</span>
           <h2 class="profile-locker-title">Dojo Locker Room</h2>
           <p class="profile-locker-desc">
             Log in or sign up to personalize your Dojo, save optimal combos for training sessions, and join matchup discussions.
@@ -125,11 +125,11 @@ export function renderProfilePage(navigateCallback, options = {}) {
     if (isPublicView) {
       const isFollowing = currentUser && currentUser.following && currentUser.following.includes(viewedUser.id);
       const followText = isFollowing ? 'Following' : 'Follow';
-      const followIcon = isFollowing ? 'fa-solid fa-user-check' : 'fa-solid fa-user-plus';
+      const followIcon = isFollowing ? 'person_check' : 'person_add';
       const followBtnClass = isFollowing ? 'btn-secondary' : 'btn-primary';
       followButtonHtml = `
-        <button class="btn ${followBtnClass} btn-sm w-full mt-3" id="btn-follow-user">
-          <i class="${followIcon}"></i> ${followText}
+        <button class="btn ${followBtnClass} btn-sm w-full mt-3" id="btn-follow-user" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span class="material-symbols-rounded" style="font-size: 20px;">${followIcon}</span> ${followText}
         </button>
       `;
     }
@@ -154,8 +154,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
     const editButtonHtml = isPublicView
       ? ''
       : `
-        <button class="btn btn-secondary btn-sm w-full mt-3" id="btn-edit-profile-mains">
-          <i class="fa-solid fa-user-gear"></i> Edit Settings
+        <button class="btn btn-secondary btn-sm w-full mt-3" id="btn-edit-profile-mains" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span class="material-symbols-rounded" style="font-size: 20px;">manage_accounts</span> Edit Settings
         </button>
       `;
 
@@ -399,8 +399,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
               </div>
             `;
           }).join('') + `
-            <div class="char-chip-add profile-char-chip-add" data-game="${gameId}">
-              <i class="fa-solid fa-plus"></i> Add DLC
+            <div class="char-chip-add profile-char-chip-add" data-game="${gameId}" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <span class="material-symbols-rounded" style="font-size: 18px;">add</span> Add DLC
             </div>
           `;
 
@@ -438,8 +438,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
           </div>
         `;
       }).join('') + `
-        <div class="char-chip-add profile-char-chip-add" data-game="${currentSelectedPrimaryGame}">
-          <i class="fa-solid fa-plus"></i> Add DLC
+        <div class="char-chip-add profile-char-chip-add" data-game="${currentSelectedPrimaryGame}" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <span class="material-symbols-rounded" style="font-size: 18px;">add</span> Add DLC
         </div>
       `;
 
@@ -487,7 +487,7 @@ export function renderProfilePage(navigateCallback, options = {}) {
           <div class="flex items-center justify-between pointer-events-none">
             <span class="badge badge-${g.id} profile-edit-game-badge">${g.name}</span>
             <span class="status-indicator profile-edit-game-status">
-              ${playsThisGame ? '<i class="fa-solid fa-circle-check"></i> ACTIVE' : '<i class="fa-regular fa-circle"></i> INACTIVE'}
+              ${playsThisGame ? '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">check_circle</span>ACTIVE' : '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">circle</span>INACTIVE'}
             </span>
           </div>
           <div id="char-selection-${g.id}" class="char-selection-grid profile-edit-char-grid ${activeClass}" onclick="event.stopPropagation();">
@@ -500,8 +500,8 @@ export function renderProfilePage(navigateCallback, options = {}) {
                 </div>
               `;
             }).join('')}
-            <div class="char-chip-add profile-char-chip-add" data-game="${g.id}">
-              <i class="fa-solid fa-plus"></i> Add DLC
+            <div class="char-chip-add profile-char-chip-add" data-game="${g.id}" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <span class="material-symbols-rounded" style="font-size: 18px;">add</span> Add DLC
             </div>
           </div>
         </div>
@@ -519,10 +519,10 @@ export function renderProfilePage(navigateCallback, options = {}) {
         const isActive = card.classList.contains('active');
         
         if (isActive) {
-          indicator.innerHTML = '<i class="fa-solid fa-circle-check"></i> ACTIVE';
+          indicator.innerHTML = '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">check_circle</span>ACTIVE';
           grid.classList.remove('hidden');
         } else {
-          indicator.innerHTML = '<i class="fa-regular fa-circle"></i> INACTIVE';
+          indicator.innerHTML = '<span class="material-symbols-rounded icon-mr-1" style="font-size: 16px; vertical-align: middle;">circle</span>INACTIVE';
           grid.classList.add('hidden');
           
           // Reset all chips inside this card
