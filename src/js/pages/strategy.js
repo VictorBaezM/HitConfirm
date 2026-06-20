@@ -1,7 +1,7 @@
 /* Strategy Guides & Matchup Hub Page Controller */
 import store from '../store.js';
 import { escapeHtml } from '../utils/security.js';
-import { hideGameSidebar } from '../components/game-sidebar.js';
+import { renderGameSidebar, showGameSidebar } from '../components/game-sidebar.js';
 
 /**
  * Renders the Strategy Hub page, containing directories of matchup strategy articles,
@@ -12,14 +12,14 @@ export function renderStrategyPage(navigateCallback) {
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
-  // Split layout — hide game sidebar on this page
-  hideGameSidebar();
-  mount.className = 'has-right-sidebar';
+  // Split layout — show game sidebar on this page
+  showGameSidebar();
+  mount.className = 'has-game-sidebar';
 
   const games = store.getGames();
   const currentUser = store.getCurrentUser();
   
-  let selectedGame = 'all';
+  let selectedGame = (currentUser && currentUser.mainGame) ? currentUser.mainGame : 'ggst';
   let activeGuide = null; // Currently reading guide object
 
   function refreshPage() {
@@ -39,16 +39,6 @@ export function renderStrategyPage(navigateCallback) {
           <button class="btn btn-primary btn-sm" id="btn-create-guide">
             <i class="fa-solid fa-pen-to-square"></i> Post Guide
           </button>
-        </div>
-
-        <!-- Selector Bar -->
-        <div class="game-selector-bar mb-5" id="strategy-game-chips">
-          <div class="game-chip ${selectedGame === 'all' ? 'active' : ''}" data-game="all">All Games</div>
-          ${Object.values(games).map(function (g) {
-            return `
-              <div class="game-chip ${selectedGame === g.id ? 'active' : ''}" data-game="${g.id}">${g.name}</div>
-            `;
-          }).join('')}
         </div>
 
         <!-- Guides Catalog List -->
@@ -76,15 +66,6 @@ export function renderStrategyPage(navigateCallback) {
 
     // 3. Draw Active Guide View
     drawActiveGuide();
-
-    // Attach chip listeners
-    const chips = mount.querySelectorAll('#strategy-game-chips .game-chip');
-    chips.forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        selectedGame = chip.getAttribute('data-game');
-        refreshPage();
-      });
-    });
 
     // Attach create guide click
     document.getElementById('btn-create-guide').addEventListener('click', function () {
@@ -336,8 +317,21 @@ export function renderStrategyPage(navigateCallback) {
     });
   }
 
+  // Initialize Left Game Sidebar
+  function initSidebar(activeGame) {
+    renderGameSidebar({
+      activeGame,
+      onGameChange: function (gameId) {
+        selectedGame = gameId;
+        refreshPage();
+        initSidebar(gameId);
+      }
+    });
+  }
+
   // Run initializer draw
   refreshPage();
+  initSidebar(selectedGame);
 }
 
 function formatGuideMarkdown(text) {
