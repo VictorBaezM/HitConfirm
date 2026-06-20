@@ -5,14 +5,14 @@ import { md5 } from './md5.js';
 export const PLACEHOLDER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNTAgMjAwIiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFlMWUyNCIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxMjEyMTQiIC8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImFjY2VudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjZiMDAiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBjYmQ2IiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmcpIiByeD0iOCIgLz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjYWNjZW50KSIgc3Ryb2tlLXdpZHRoPSIyIiByeD0iOCIgb3BhY2l0eT0iMC4zIiAvPjxwYXRoIGQ9Ik00NSw5MCBDMzUsOTAgMjUsOTggMjUsMTE1IEMyNSwxMzAgMzUsMTQ1IDUwLDE0NSBDNTgsMTQ1IDY1LDEzOCA3NSwxMzggQzg1LDEzOCA5MiwxNDUgMTAwLDE0NSBDMTE1LDE0NSAxMjUsMTMwIDEyNSwxMTUgQzEyNSw5OCAxMTUsOTAgMTA1LDkwIEw0NSw5MCBaIiBmaWxsPSIjMmQyZDM4IiAvPjxjaXJjbGUgY3g9IjQ4IiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPjxjaXJjbGUgY3g9IjYyIiBjeT0iMTE1IiByPSI1IiBmaWxsPSIjNGE0YTVhIiAvPjxjaXJjbGUgY3g9IjEwMiIgY3k9IjExMCIgcj0iNCIgZmlsbD0iI2ZmNmIwMCIgLz48Y2lyY2xlIGN4PSI5MiIgY3k9IjEyMCIgcj0iNCIgZmlsbD0iIzAwY2JkNiIgLz48Y2lyY2xlIGN4PSIxMDIiIGN5PSIxMjAiIHI9IjQiIGZpbGw9IiNmZmQyMDAiIC8+PHRleHQgeD0iNzUiIHk9IjY1IiBmb250LWZhbWlseT0ibW9ub3NwYWNlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzRhNGE1YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjEiPkhJVENPTkZJUk08L3RleHQ+PHRleHQgeD0iNzUiIHk9IjE3MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjNmE2YTdhIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5OTyBJTUFHRTwvdGV4dD48L3N2Zz4=';
 
 export const WIKI_CONFIG = {
-  ggst: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.supercombo.gg', 'https://wiki.gbl.gg'] },
-  sf6: { primary: 'https://wiki.supercombo.gg', fallbacks: ['https://www.dustloop.com/wiki', 'https://wiki.gbl.gg'] },
-  dbfz: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
-  dbfzce: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
-  gbvsr: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
-  dnfd: { primary: 'https://www.dustloop.com/wiki', fallbacks: ['https://wiki.gbl.gg'] },
-  ssbu: { primary: 'https://www.ssbwiki.com', fallbacks: ['https://www.dustloop.com/wiki'] },
-  t8: { primary: 'https://wavu.wiki', fallbacks: ['https://www.dustloop.com/wiki'] }
+  ggst: { primary: 'https://www.dustloop.com/wiki', fallbacks: [] },
+  sf6: { primary: 'https://wiki.supercombo.gg', fallbacks: [] },
+  dbfz: { primary: 'https://www.dustloop.com/wiki', fallbacks: [] },
+  dbfzce: { primary: 'https://www.dustloop.com/wiki', fallbacks: [] },
+  gbvsr: { primary: 'https://www.dustloop.com/wiki', fallbacks: [] },
+  dnfd: { primary: 'https://www.dustloop.com/wiki', fallbacks: [] },
+  ssbu: { primary: 'https://www.ssbwiki.com', fallbacks: [] },
+  t8: { primary: 'https://wavu.wiki', fallbacks: [] }
 };
 
 const IMAGE_CACHE_KEY = 'hitconfirm_resolved_image_cache';
