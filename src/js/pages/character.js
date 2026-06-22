@@ -110,6 +110,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     hideLoader();
   }, 15000); // 15-second safety fallback timeout
 
+  const source = getCharacterSource(gameId, charName);
+  const sourceHtml = source ? `
+    <span class="text-muted" style="font-size: 0.8rem; opacity: 0.6; margin: 0 4px;">•</span>
+    <a href="${source.url}" target="_blank" class="flex items-center gap-1 hover-glow" style="color: var(--color-primary, #ff9f0a); font-size: 0.8rem; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; vertical-align: middle;">
+      <span class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle; margin-right: 2px;">open_in_new</span>
+      Data From ${source.name}
+    </a>
+  ` : '';
+
   // Main Page Layout Structure
   mount.innerHTML = `
     <div style="position: relative; min-height: 400px; width: 100%;">
@@ -134,7 +143,10 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             <img id="char-header-portrait" src="${portraitUrl}" alt="${charName}" class="character-portrait-large" referrerpolicy="no-referrer" />
             <div>
               <h1 class="gradient-text m-0">${charName}</h1>
-              <p class="text-secondary m-0 mt-1">${getGameName(gameId)} Character Page</p>
+              <div class="flex items-center gap-1 mt-1 flex-wrap" style="line-height: 1.2;">
+                <span class="text-secondary" style="font-size: 0.9rem; margin: 0;">${getGameName(gameId)} Character Page</span>
+                ${sourceHtml}
+              </div>
             </div>
           </div>
           ${logoHtml}
@@ -1400,6 +1412,61 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 function getGameName(id) {
   const game = store.getGame(id);
   return game ? game.name : id.toUpperCase();
+}
+
+function getCharacterSource(gameId, charName) {
+  const cleanName = charName.replace(/\s+/g, '_');
+  if (gameId === 'ggst') {
+    return {
+      name: 'Dustloop Wiki',
+      url: `https://www.dustloop.com/w/GGST/${cleanName}`
+    };
+  }
+  if (gameId === 'gbvsr') {
+    return {
+      name: 'Dustloop Wiki',
+      url: `https://www.dustloop.com/w/GBVSR/${cleanName}`
+    };
+  }
+  if (gameId === 'dbfz') {
+    return {
+      name: 'Dustloop Wiki',
+      url: `https://www.dustloop.com/w/DBFZ/${cleanName}`
+    };
+  }
+  if (gameId === 'dbfzce') {
+    return {
+      name: 'Dustloop Wiki',
+      url: `https://www.dustloop.com/w/DBFZ/${cleanName}`
+    };
+  }
+  if (gameId === 'sf6') {
+    const ufdSlug = charName.toLowerCase().replace(/\./g, '').replace(/\s+/g, '_').replace(/&/g, 'and');
+    return {
+      name: 'Ultimate Frame Data',
+      url: `https://ultimateframedata.com/sf6/${ufdSlug}`
+    };
+  }
+  if (gameId === 't8') {
+    return {
+      name: 'Wavu Wiki',
+      url: `https://wavu.wiki/t/${cleanName}`
+    };
+  }
+  if (gameId === 'dnfd') {
+    return {
+      name: 'Dustloop Wiki',
+      url: `https://www.dustloop.com/w/DNFD/${cleanName}`
+    };
+  }
+  if (gameId === 'ssbu') {
+    const ufdSlug = charName.toLowerCase().replace(/\./g, '').replace(/\s+/g, '_').replace(/&/g, 'and');
+    return {
+      name: 'Ultimate Frame Data',
+      url: `https://ultimateframedata.com/${ufdSlug}`
+    };
+  }
+  return null;
 }
 
 function escapeHtml(str) {

@@ -23,7 +23,7 @@ module.exports = defineConfig({
 
   // Start a lightweight static file server before tests run
   webServer: {
-    command: 'node tests/e2e/server.js',
+    command: 'node-bin\\node-v20.12.2-win-x64\\node.exe tests/e2e/server.js',
     url: 'http://localhost:5000',
     reuseExistingServer: !process.env.CI,
     timeout: 15_000,

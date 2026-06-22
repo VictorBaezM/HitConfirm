@@ -967,6 +967,51 @@
   border-radius: 0px;
 }
 
+/* Delimiter / Connector (e.g. or, and, /, |) */
+.combo-connector {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: normal;
+  margin: 0 4px;
+  vertical-align: middle;
+  text-transform: lowercase;
+}
+
+/* Stance / State Descriptor Badge (e.g. WS, FC, SSL) */
+.combo-descriptor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 1px 4px;
+  margin-right: 4px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/* Counter Hit Descriptor Badge (CH) */
+.combo-descriptor-ch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff4a4a;
+  border: 1px dashed rgba(255, 74, 74, 0.3);
+  padding: 1px 4px;
+  margin-right: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 2px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
 .combo-plus {
   display: inline-flex;
   align-items: center;

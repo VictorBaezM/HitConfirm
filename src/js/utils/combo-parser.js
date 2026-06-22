@@ -877,6 +877,16 @@ function parseStrategyHubStep(stepStr, gameId) {
       continue;
     }
 
+    // Delimiters/Connectors (e.g., 'or', 'and', '/', '|')
+    const delimiterMatch = remaining.match(/^(or|and)\b/i) || remaining.match(/^(\/|\|)/);
+    if (delimiterMatch) {
+      const delim = delimiterMatch[0];
+      html += `<span class="combo-connector">${delim.toLowerCase()}</span>`;
+      remaining = remaining.substring(delim.length).trim();
+      parsedAny = true;
+      continue;
+    }
+
     let matched = false;
 
     // 1a. Combined jump prefix (e.g., j.H, j.K) – treat as one token
@@ -897,8 +907,6 @@ function parseStrategyHubStep(stepStr, gameId) {
       { key: 'j.',  html: muted('j.') },
       { key: 'cr.', html: '<span class="combo-dir" title="Crouch">↓</span>' },
       { key: 'st.', html: '<span class="combo-dir" title="Stand">•</span>' },
-      { key: 'ws.', html: muted('WS') },
-      { key: 'ch.', html: '<span class="text-danger" style="font-size: 0.75rem; font-weight: bold; margin-right: 0.2rem;">CH</span>' },
       { key: 'c.',  html: muted('c.') },
       { key: 'f.',  html: muted('f.') },
       { key: 's.',  html: '<span class="combo-dir" title="Stand">•</span>' }
@@ -1007,19 +1015,24 @@ function parseStrategyHubStep(stepStr, gameId) {
       if (matched) continue;
     }
 
-    // 6. Known abbreviations/stances (case-insensitive)
-    const abbrevs = ['ssl', 'ssr', 'ws', 'wr', 'fc', 'ss', 'ch', 'sen'];
-    for (const abbrev of abbrevs) {
-      const regex = new RegExp('^' + abbrev + '\\b', 'i');
-      if (regex.test(remaining)) {
-        html += `<span class="combo-custom-action">${abbrev.toUpperCase()}</span>`;
-        remaining = remaining.replace(regex, '').trim();
-        parsedAny = true;
-        matched = true;
-        break;
-      }
+    // 6a. Counter Hit (CH) descriptor (case-insensitive, optionally with dot)
+    const chMatch = remaining.match(/^ch\b\.?/i);
+    if (chMatch) {
+      html += `<span class="combo-descriptor-ch">CH</span>`;
+      remaining = remaining.substring(chMatch[0].length).trim();
+      parsedAny = true;
+      continue;
     }
-    if (matched) continue;
+
+    // 6b. Stance & Condition descriptors (case-insensitive, optionally with dot)
+    const stanceMatch = remaining.match(/^(ssl|ssr|ws|wr|fc|ss|sen)\b\.?/i);
+    if (stanceMatch) {
+      const stanceName = stanceMatch[1].toUpperCase();
+      html += `<span class="combo-descriptor">${stanceName}</span>`;
+      remaining = remaining.substring(stanceMatch[0].length).trim();
+      parsedAny = true;
+      continue;
+    }
 
     // 7. Game-Specific Active Buttons (uses GAME_CONFIG defined above)
     const activeButtons = config ? config.buttons : Object.keys(BUTTON_CLASSES);
@@ -1031,7 +1044,7 @@ function parseStrategyHubStep(stepStr, gameId) {
         // Check what follows: allow if next char is another button start, digit, symbol, space, or end
         const afterBtn = remaining.substring(btnKey.length);
         const nextChar = afterBtn.length > 0 ? afterBtn[0] : '';
-        const isValidEnd = nextChar === '' || /[\d\s+>~,.\-\[\]\(\)]/.test(nextChar) ||
+        const isValidEnd = nextChar === '' || /[\d\s+>~,.\-\[\]\(\)\/|]/.test(nextChar) ||
           buttonKeys.some(bk => afterBtn.toLowerCase().startsWith(bk));
         if (isValidEnd) {
           const btnClass = BUTTON_CLASSES[btnKey];
@@ -1051,11 +1064,13 @@ function parseStrategyHubStep(stepStr, gameId) {
       const regex = new RegExp('^' + dirKey.replace(/\//g, '\\/') + '(?![a-z])', 'i');
       if (regex.test(remaining)) {
         const numDirection = DIR_MAP[dirKey.toLowerCase()];
-        html += renderDirectionElement(numDirection, `Direction ${dirKey.toUpperCase()} (${numDirection})`);
-        remaining = remaining.replace(regex, '').trim();
-        parsedAny = true;
-        matched = true;
-        break;
+        if (numDirection !== undefined) {
+          html += renderDirectionElement(numDirection, `Direction ${dirKey.toUpperCase()} (${numDirection})`);
+          remaining = remaining.replace(regex, '').trim();
+          parsedAny = true;
+          matched = true;
+          break;
+        }
       }
     }
     if (matched) continue;

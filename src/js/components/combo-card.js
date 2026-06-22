@@ -98,8 +98,9 @@ export function renderComboCard(combo, navigateCallback) {
     <div class="wiki-combo-actions">
       <button class="wiki-action-btn btn-upvote ${upvoteClass}" title="Upvote Combo">
         <span class="material-symbols-rounded">mode_heat</span>
+        ${combo.upvotes}
       </button>
-      <span class="wiki-upvote-text upvote-count">${combo.upvotes} 🔥</span>
+  
 
       <button class="wiki-action-btn btn-save ${saveClass}" title="Save to Dojo">
         <span class="material-symbols-rounded">bookmark</span>
@@ -114,14 +115,18 @@ export function renderComboCard(combo, navigateCallback) {
           <span class="material-symbols-rounded icon-mr-1">videocam</span>Video
         </button>
       ` : ''}
+
+      <button class="wiki-action-btn btn-comment" title="Toggle comments" style="margin-left: auto;">
+        <span class="material-symbols-rounded">chat_bubble</span>
+        ${combo.comments?.length || 0}
+      </button>
     </div>
 
-    <!-- Combo Comments Section (hidden by default) -->
-    <div class="wiki-comments-section hidden">
-      <h4 class="wiki-comments-title">Comments</h4>
-      <div class="wiki-comments-input-wrapper">
-        <input type="text" class="wiki-comment-input" placeholder="Ask a question about execution..." />
-        <button class="wiki-btn wiki-btn-primary wiki-btn-submit-comment">Post</button>
+    <!-- Toggleable Comments Panel -->
+    <div class="wiki-comments-panel hidden">
+      <div class="wiki-comment-editor">
+        <input type="text" class="wiki-comment-input comment-input" placeholder="Ask a question about execution..." />
+        <button class="wiki-btn wiki-btn-primary btn-submit-comment">Post</button>
       </div>
       <div class="wiki-comments-container">
         ${renderCommentsList(combo.comments)}
@@ -199,35 +204,17 @@ export function renderComboCard(combo, navigateCallback) {
     });
   }
 
-  // Insert comments toggle button dynamically
-  const actionsContainer = card.querySelector('.wiki-combo-actions');
-  const commentToggleBtn = document.createElement('button');
-  commentToggleBtn.className = 'wiki-action-btn btn-comment-toggle';
-  commentToggleBtn.title = 'Comments';
-  commentToggleBtn.style.marginLeft = '8px';
-  commentToggleBtn.innerHTML = `<span class="material-symbols-rounded">chat_bubble</span>`;
-  
-  const commentCountLabel = document.createElement('span');
-  commentCountLabel.className = 'wiki-comment-counter';
-  commentCountLabel.innerText = combo.comments?.length || 0;
-
-  if (combo.videoUrl) {
-    const videoBtn = card.querySelector('.btn-video-toggle');
-    actionsContainer.insertBefore(commentToggleBtn, videoBtn);
-    actionsContainer.insertBefore(commentCountLabel, videoBtn);
-  } else {
-    actionsContainer.appendChild(commentToggleBtn);
-    actionsContainer.appendChild(commentCountLabel);
-  }
-
-  const commentPanel = card.querySelector('.wiki-comments-section');
-  commentToggleBtn.addEventListener('click', function () {
+  // Toggle Comments Panel Event Listener
+  const commentBtn = card.querySelector('.btn-comment');
+  const commentPanel = card.querySelector('.wiki-comments-panel');
+  commentBtn.addEventListener('click', function () {
     commentPanel.classList.toggle('hidden');
   });
 
   // Combo Comments Submission
-  const commentInput = card.querySelector('.wiki-comment-input');
-  const submitBtn = card.querySelector('.wiki-btn-submit-comment');
+  const commentInput = card.querySelector('.comment-input');
+  const submitBtn = card.querySelector('.btn-submit-comment');
+  const commentCountLabel = card.querySelector('.wiki-comment-counter');
   
   async function submitComboComment() {
     const text = commentInput.value.trim();
