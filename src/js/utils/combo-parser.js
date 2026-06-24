@@ -324,6 +324,11 @@ const DELIMITER_MAP = {
 function normalizeCommunitySlang(str, gameId) {
   let res = str.toLowerCase();
   
+  // Remove commas inside parentheses to prevent splitting on them as step delimiters
+  res = res.replace(/\(([^)]+)\)/g, (match, p1) => {
+    return `(${p1.replace(/,/g, ' ')})`;
+  });
+  
   // 1. Spacing around plus signs
   res = res.replace(/\s*\+\s*/g, '+');
 
@@ -356,7 +361,7 @@ function normalizeCommunitySlang(str, gameId) {
   const stateSlang = [
     [/\b(?:crouching|crouch|cr|low)\b(?!\.)/g, 'cr.'],
     [/\b(?:standing|stand|st|s)\b(?!\.)/g,     's.'],
-    [/\b(?:jumping|jump|j|air)\b(?!\.)/g,      'j.'],
+    [/\b(?:jumping|jump|j|air)\b(?!\.)(?!\s+(?:ok|only)\b)/g,      'j.'],
     [/\b(?:while standing|ws)\b(?!\.)/g,       'ws.']
   ];
   for (const [pattern, replacement] of stateSlang) {
@@ -1030,6 +1035,36 @@ function parseStrategyHubStep(stepStr, gameId) {
       const stanceName = stanceMatch[1].toUpperCase();
       html += `<span class="combo-descriptor">${stanceName}</span>`;
       remaining = remaining.substring(stanceMatch[0].length).trim();
+      parsedAny = true;
+      continue;
+    }
+
+    // 6c. Parenthesized descriptors (e.g. (air ok), (Hold, OK), (HOLD))
+    const parenMatch = remaining.match(/^\(([^)]+)\)/);
+    if (parenMatch) {
+      const content = parenMatch[1].trim().toUpperCase().replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ');
+      html += `<span class="combo-descriptor">${content}</span>`;
+      remaining = remaining.substring(parenMatch[0].length).trim();
+      parsedAny = true;
+      continue;
+    }
+
+    // 6d. Unparenthesized descriptors (e.g. air ok, air only, hold ok, hold only)
+    const airHoldMatch = remaining.match(/^(air|hold)\s+(ok|only)\b/i);
+    if (airHoldMatch) {
+      const adjective = airHoldMatch[1].toUpperCase();
+      const type = airHoldMatch[2].toUpperCase();
+      html += `<span class="combo-descriptor">${adjective} ${type}</span>`;
+      remaining = remaining.substring(airHoldMatch[0].length).trim();
+      parsedAny = true;
+      continue;
+    }
+
+    // 6e. Hold keyword prefix (e.g. Hold HP -> HOLD badge then HP button)
+    const holdWordMatch = remaining.match(/^hold\b\.?/i);
+    if (holdWordMatch) {
+      html += `<span class="combo-descriptor">HOLD</span>`;
+      remaining = remaining.substring(holdWordMatch[0].length).trim();
       parsedAny = true;
       continue;
     }

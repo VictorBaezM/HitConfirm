@@ -295,4 +295,74 @@ test.describe('HitConfirm Strategy Hub E2E Tests', () => {
     // 9. Verify page 2 shows 16 characters and indicator says Page 2 of 3
     await expect(page.locator('#page-indicator')).toHaveText('Page 2 of 3');
   });
+
+  test('should separate character moves into category tabs (All, Normals, Specials, Supers)', async ({ page }) => {
+    // 1. Go to Strategy Hub
+    await page.click('.nav-link[data-page="hub"]');
+    await expect(page.locator('#hub-loading-overlay')).toHaveClass(/hidden/, { timeout: 20000 });
+
+    // 2. Search for Sol Badguy
+    const hubSearch = page.locator('#hub-search');
+    await hubSearch.fill('Sol Badguy');
+    const solCard = page.locator('.character-card:has-text("Sol Badguy")').first();
+    await expect(solCard).toBeVisible();
+    await solCard.click();
+
+    // 3. Verify category tabs exist and display counts
+    const categoryTabsContainer = page.locator('#move-category-tabs');
+    await expect(categoryTabsContainer).toBeVisible();
+
+    const allTab = categoryTabsContainer.locator('.move-category-tab[data-category="all"]');
+    const normalsTab = categoryTabsContainer.locator('.move-category-tab[data-category="normals"]');
+    const specialsTab = categoryTabsContainer.locator('.move-category-tab[data-category="specials"]');
+    const supersTab = categoryTabsContainer.locator('.move-category-tab[data-category="supers"]');
+
+    await expect(allTab).toBeVisible();
+    await expect(normalsTab).toBeVisible();
+    await expect(specialsTab).toBeVisible();
+    await expect(supersTab).toBeVisible();
+
+    // Verify initial "all" tab is active
+    await expect(allTab).toHaveClass(/active/);
+
+    // Verify count elements contain non-zero digits
+    const allCount = await allTab.locator('.category-count').innerText();
+    const normalsCount = await normalsTab.locator('.category-count').innerText();
+    const specialsCount = await specialsTab.locator('.category-count').innerText();
+    const supersCount = await supersTab.locator('.category-count').innerText();
+
+    expect(parseInt(allCount, 10)).toBeGreaterThan(0);
+    expect(parseInt(normalsCount, 10)).toBeGreaterThan(0);
+    expect(parseInt(specialsCount, 10)).toBeGreaterThan(0);
+    expect(parseInt(supersCount, 10)).toBeGreaterThan(0);
+
+    const frameTable = page.locator('#data-table-el');
+
+    // 4. Click Normals tab and check that only Normals are displayed
+    await normalsTab.click();
+    await expect(normalsTab).toHaveClass(/active/);
+    await expect(allTab).not.toHaveClass(/active/);
+    
+    // There should be rows with normals badge, but no special or super badges
+    await expect(frameTable.locator('.badge-type.normals').first()).toBeVisible();
+    await expect(frameTable.locator('.badge-type.specials')).not.toBeVisible();
+    await expect(frameTable.locator('.badge-type.supers')).not.toBeVisible();
+
+    // 5. Click Specials tab
+    await specialsTab.click();
+    await expect(specialsTab).toHaveClass(/active/);
+    
+    await expect(frameTable.locator('.badge-type.specials').first()).toBeVisible();
+    await expect(frameTable.locator('.badge-type.normals')).not.toBeVisible();
+    await expect(frameTable.locator('.badge-type.supers')).not.toBeVisible();
+
+    // 6. Click Supers tab
+    await supersTab.click();
+    await expect(supersTab).toHaveClass(/active/);
+    
+    await expect(frameTable.locator('.badge-type.supers').first()).toBeVisible();
+    await expect(frameTable.locator('.badge-type.normals')).not.toBeVisible();
+    await expect(frameTable.locator('.badge-type.specials')).not.toBeVisible();
+  });
 });
+

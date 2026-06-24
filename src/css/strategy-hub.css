@@ -351,6 +351,56 @@
   color: var(--text-primary, #fff);
 }
 
+/* Submove / Follow-up Row Styling */
+.frame-data-tr.submove-row {
+  background: rgba(0, 0, 0, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.frame-data-tr.submove-row:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.frame-data-tr.submove-row .frame-data-td {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.82rem !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Indent the first cell (Move name) and add tree vertical line styling */
+.submove-name-td {
+  padding-left: 2.75rem !important;
+  position: relative;
+}
+
+/* Vertical line connecting the child moves */
+.submove-name-td::before {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-primary, #ff005b);
+  opacity: 0.45;
+}
+
+/* Indent the second cell (Command buttons) */
+.frame-data-tr.submove-row td:nth-child(2) {
+  padding-left: 2rem !important;
+}
+
+.submove-connector {
+  color: var(--color-primary, #ff005b);
+  opacity: 0.7;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-right: 0.4rem;
+  user-select: none;
+}
+
 /* Advantage Badges */
 .adv-badge {
   display: inline-block;
@@ -763,5 +813,207 @@
   box-shadow: 0 0 8px rgba(255, 107, 0, 0.3);
   border-radius: 3px;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Move category tab styling */
+.move-category-tabs-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+}
+
+.move-category-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.move-category-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary, #a0a0ab);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-heading, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.move-category-tab:hover {
+  color: var(--text-primary, #ffffff);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Category indicator dot */
+.category-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.indicator-all {
+  background: #a0a0ab;
+}
+.indicator-normals {
+  background: var(--color-secondary, #00cbd6);
+}
+.indicator-specials {
+  background: var(--color-primary, #ff6b00);
+}
+.indicator-supers {
+  background: var(--color-danger, #ff005b);
+}
+.indicator-grabs {
+  background: #9c27b0;
+}
+.indicator-state {
+  background: #607d8b;
+}
+.indicator-universal {
+  background: #e91e63;
+}
+
+.move-category-tab.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #ffffff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Active tab specific glow borders */
+.move-category-tab.active[data-category="all"] {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.move-category-tab.active[data-category="normals"] {
+  border: 1px solid rgba(0, 203, 214, 0.3);
+  box-shadow: 0 0 10px rgba(0, 203, 214, 0.15);
+}
+.move-category-tab.active[data-category="specials"] {
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.15);
+}
+.move-category-tab.active[data-category="supers"] {
+  border: 1px solid rgba(255, 0, 91, 0.3);
+  box-shadow: 0 0 10px rgba(255, 0, 91, 0.15);
+}
+.move-category-tab.active[data-category="grabs"] {
+  border: 1px solid rgba(156, 39, 176, 0.3);
+  box-shadow: 0 0 10px rgba(156, 39, 176, 0.15);
+}
+.move-category-tab.active[data-category="state"] {
+  border: 1px solid rgba(96, 125, 139, 0.3);
+  box-shadow: 0 0 10px rgba(96, 125, 139, 0.15);
+}
+.move-category-tab.active[data-category="universal"] {
+  border: 1px solid rgba(233, 30, 99, 0.3);
+  box-shadow: 0 0 10px rgba(233, 30, 99, 0.15);
+}
+
+.move-category-tab.active .category-indicator {
+  transform: scale(1.2);
+}
+
+.move-category-tab.active .indicator-normals {
+  box-shadow: 0 0 8px var(--color-secondary, #00cbd6);
+}
+.move-category-tab.active .indicator-specials {
+  box-shadow: 0 0 8px var(--color-primary, #ff6b00);
+}
+.move-category-tab.active .indicator-supers {
+  box-shadow: 0 0 8px var(--color-danger, #ff005b);
+}
+.move-category-tab.active .indicator-grabs {
+  box-shadow: 0 0 8px #9c27b0;
+}
+.move-category-tab.active .indicator-state {
+  box-shadow: 0 0 8px #607d8b;
+}
+.move-category-tab.active .indicator-universal {
+  box-shadow: 0 0 8px #e91e63;
+}
+
+.category-count {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-muted, #6b6b76);
+  transition: all 0.25s ease;
+}
+
+.move-category-tab:hover .category-count,
+.move-category-tab.active .category-count {
+  color: var(--text-secondary, #a0a0ab);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Category Badge inside table row */
+.badge-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  display: inline-block;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+.badge-type.normals {
+  background: rgba(0, 203, 214, 0.1);
+  color: var(--color-secondary, #00cbd6);
+  border: 1px solid rgba(0, 203, 214, 0.2);
+}
+.badge-type.specials {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--color-primary, #ff6b00);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+}
+.badge-type.supers {
+  background: rgba(255, 0, 91, 0.1);
+  color: var(--color-danger, #ff005b);
+  border: 1px solid rgba(255, 0, 91, 0.2);
+  box-shadow: 0 0 6px rgba(255, 0, 91, 0.2);
+}
+.badge-type.grabs {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9c27b0;
+  border: 1px solid rgba(156, 39, 176, 0.2);
+}
+.badge-type.state {
+  background: rgba(96, 125, 139, 0.1);
+  color: #607d8b;
+  border: 1px solid rgba(96, 125, 139, 0.2);
+}
+.badge-type.universal {
+  background: rgba(233, 30, 99, 0.1);
+  color: #e91e63;
+  border: 1px solid rgba(233, 30, 99, 0.2);
+}
+
+@media (max-width: 767px) {
+  .move-category-tabs-container {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .move-category-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 

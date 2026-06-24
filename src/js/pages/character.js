@@ -42,6 +42,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
   let sortByField = '';
   let sortOrder = 'asc'; // 'asc' or 'desc'
   let rawRows = [];
+  let activeCategory = 'all';
   let activeTab = 'framedata';
   let dustloopData = null;
   let dustloopError = null;
@@ -316,6 +317,41 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     `;
   }
 
+  // Helper to get base motion input (stripping stance/jump prefixes)
+  const getBaseInput = (inp) => {
+    return String(inp || '')
+      .replace(/^(en\.|jr\s+|j\.|cr\.|st\.|bt)/i, '')
+      .trim();
+  };
+
+  // Determine move category (normals, specials, supers, grabs, state-specific, universal)
+  function determineCategory(move) {
+    const input = String(move.input || '').trim();
+    const name = String(move.name || '').trim();
+    const nameLower = name.toLowerCase();
+
+    // Grabs detection (check BEFORE universal so grabs don't get swallowed)
+    const grabKeywords = /\bgrab\b|\bthrow\b|\bcatch\b/i;
+    if (grabKeywords.test(name) || grabKeywords.test(input)) {
+      return 'grabs';
+    }
+
+    // State-specific moves (character-specific states like Jealous Rage "JR", Enraged "EN", Back Turned "BT")
+    // Note: j. (jump), cr. (crouch), st. (standing) are standard normal prefixes, NOT state-specific
+    const statePrefixes = /^(en\.|jr\s+|bt\s+)/i;
+    if (statePrefixes.test(input)) {
+      return 'state';
+    }
+
+    // Use the well-tested getMoveCategory for specials/supers detection
+    const cat = getMoveCategory(move, gameId);
+    if (cat === 'supers') return 'supers';
+    if (cat === 'specials') return 'specials';
+
+    // Default to normals
+    return 'normals';
+  }
+
   // Draw the wrapper cards, search bar, and mount the table rows
   function drawTableContainer() {
     const container = document.getElementById('character-tab-content');
@@ -325,41 +361,87 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     const characterRows = rawRows.filter(r => 
       (r.chara || r.Character || r.character || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === 
       charName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
-    );
+    ).map(r => {
+      const rowCopy = { ...r };
+      const charLower = charName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      if (gameId === 'ggst' && charLower === 'aba') {
+        if (rowCopy.input === '214H') {
+          rowCopy.input = '214H (Air OK)';
+        } else if (rowCopy.input === 'JR 214H') {
+          rowCopy.input = 'JR 214H (Air OK)';
+        }
+      }
+      return rowCopy;
+    }).filter(r => {
+      // Remove dash cancels and counter blitz entries (universal mechanics without character-specific data)
+      const nameLower = String(r.name || '').toLowerCase();
+      if (/\bdash cancel\b/i.test(nameLower)) return false;
+      if (/\bcounter\s*blitz\b/i.test(nameLower)) return false;
+      return true;
+    });
 
-    if (characterRows.length === 0) {
-      container.innerHTML = `
-        <div class="unsupported-notice">
-          <span class="material-symbols-rounded unsupported-icon">folder_open</span>
-          <h3>No Data Available</h3>
-          <p class="text-muted">No frame data rows match character "${charName}".</p>
-        </div>
-      `;
-      return;
-    }
+    // Calculate move categories counts
+    const allCount = characterRows.length;
+    const normalsCount = characterRows.filter(r => determineCategory(r) === 'normals').length;
+    const specialsCount = characterRows.filter(r => determineCategory(r) === 'specials').length;
+    const supersCount = characterRows.filter(r => determineCategory(r) === 'supers').length;
+    const grabsCount = characterRows.filter(r => determineCategory(r) === 'grabs').length;
+    const stateCount = characterRows.filter(r => determineCategory(r) === 'state').length;
+    const universalCount = characterRows.filter(r => determineCategory(r) === 'universal').length;
 
     container.innerHTML = `
       <div class="table-controls flex justify-between items-center flex-wrap gap-4">
         <div class="search-wrapper w-full md:w-72 relative">
           <span class="material-symbols-rounded search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-muted">search</span>
-          <input type="text" id="table-search" name="search" aria-label="Search moves by name or input" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view hitboxes)" value="${searchQuery}" />
+          <input type="text" id="table-search" name="search" aria-label="Search moves by name or input" class="form-input pl-10 w-full" placeholder="Search moves by name or input... (Click rows to view details & hitboxes)" value="${searchQuery}" />
         </div>
+        
+        <!-- Category selector tabs -->
+        <div class="move-category-tabs-container">
+          <div class="move-category-tabs" id="move-category-tabs">
+            <button class="move-category-tab ${activeCategory === 'all' ? 'active' : ''}" data-category="all">
+              <span class="category-indicator indicator-all"></span>
+              All <span class="category-count">${allCount}</span>
+            </button>
+            <button class="move-category-tab ${activeCategory === 'normals' ? 'active' : ''}" data-category="normals">
+              <span class="category-indicator indicator-normals"></span>
+              Normals <span class="category-count">${normalsCount}</span>
+            </button>
+            <button class="move-category-tab ${activeCategory === 'specials' ? 'active' : ''}" data-category="specials">
+              <span class="category-indicator indicator-specials"></span>
+              Specials <span class="category-count">${specialsCount}</span>
+            </button>
+            <button class="move-category-tab ${activeCategory === 'supers' ? 'active' : ''}" data-category="supers">
+              <span class="category-indicator indicator-supers"></span>
+              Supers <span class="category-count">${supersCount}</span>
+            </button>
+            ${grabsCount > 0 ? `<button class="move-category-tab ${activeCategory === 'grabs' ? 'active' : ''}" data-category="grabs">
+              <span class="category-indicator indicator-grabs"></span>
+              Grabs <span class="category-count">${grabsCount}</span>
+            </button>` : ''}
+            ${stateCount > 0 ? `<button class="move-category-tab ${activeCategory === 'state' ? 'active' : ''}" data-category="state">
+              <span class="category-indicator indicator-state"></span>
+              State <span class="category-count">${stateCount}</span>
+            </button>` : ''}
+            ${universalCount > 0 ? `<button class="move-category-tab ${activeCategory === 'universal' ? 'active' : ''}" data-category="universal">
+              <span class="category-indicator indicator-universal"></span>
+              Universal <span class="category-count">${universalCount}</span>
+            </button>` : ''}
+          </div>
+        </div>
+
         <div id="preloader-status-container" class="preloader-status-container hidden">
           <span id="preloader-status-text">Caching move images...</span>
           <div class="preloader-bar">
             <div id="preloader-fill" class="preloader-fill"></div>
           </div>
         </div>
-        <!-- Joystick toggle UI removed -->
-        </div>
       </div>
 
-      <div class="frame-data-card">
-        <div class="frame-data-table-wrapper">
-          <table class="frame-data-table" id="data-table-el">
-            <!-- Table headers and body will be injected here -->
-          </table>
-        </div>
+      <div class="frame-data-table-wrapper mt-6">
+        <table class="frame-data-table" id="data-table-el">
+          <!-- Table headers and body will be injected here -->
+        </table>
       </div>
     `;
 
@@ -371,6 +453,17 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         renderRows(characterRows);
       });
     }
+
+    // Attach category tabs click listener
+    const catTabs = document.querySelectorAll('#move-category-tabs .move-category-tab');
+    catTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        catTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeCategory = tab.getAttribute('data-category');
+        renderRows(characterRows);
+      });
+    });
 
     // Initial render of rows
     renderRows(characterRows);
@@ -401,40 +494,135 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     const tableEl = document.getElementById('data-table-el');
     if (!tableEl) return;
 
-    // 1. Filter moves matching the search input (name or input)
-    let processedRows = filteredRows.filter(row => {
-      const name = String(row.name || '').toLowerCase();
-      const input = String(row.input || '').toLowerCase();
-      const query = searchQuery.toLowerCase();
-      return name.includes(query) || input.includes(query);
+    // Helper to identify the parent move
+    const findParentMove = (row, allMoves) => {
+      const name = String(row.name || '').trim();
+      const input = String(row.input || '').trim();
+      const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      // 1. Search for sequential/state keywords in any field of the move (input, name, startup, recovery)
+      const fieldsToSearch = ['input', 'name', 'startup', 'recovery'];
+      const parentCandidates = allMoves.filter(m => m !== row && (m.name || m.input));
+
+      for (const field of fieldsToSearch) {
+        const val = String(row[field] || '');
+        if (!val) continue;
+
+        // Matches: after, during, from, cancel, follow (case-insensitive)
+        const match = val.match(/\b(after|during|from|cancel|follow)\b\s+([a-zA-Z0-9().+\-[\]/| '’:]+)/i);
+        if (match) {
+          const phrase = match[2].trim();
+          const normPhrase = norm(phrase);
+          if (normPhrase) {
+            // A. Try exact match first
+            let parent = parentCandidates.find(m => {
+              const normName = norm(m.name);
+              const normInput = norm(m.input);
+              return (normName && normPhrase === normName) || (normInput && normPhrase === normInput);
+            });
+            if (parent) return parent;
+
+            // B. Try prefix match (length bounded to avoid false positives)
+            parent = parentCandidates.find(m => {
+              const normName = norm(m.name);
+              const normInput = norm(m.input);
+              const matchName = normName && normName.length >= 3 && normPhrase.startsWith(normName);
+              const matchInput = normInput && normInput.length >= 2 && normPhrase.startsWith(normInput);
+              return matchName || matchInput;
+            });
+            if (parent) return parent;
+
+            // C. Try substring match (length bounded)
+            parent = parentCandidates.find(m => {
+              const normName = norm(m.name);
+              const normInput = norm(m.input);
+              const matchName = normName && normName.length >= 3 && normPhrase.includes(normName);
+              const matchInput = normInput && normInput.length >= 2 && normPhrase.includes(normInput);
+              return matchName || matchInput;
+            });
+            if (parent) return parent;
+          }
+        }
+      }
+
+      // 2. Check for tilde "~" or space " " separated inputs
+      const delimiters = ['~', ' '];
+      for (const delim of delimiters) {
+        // A. Try exact prefix match first if raw input has the delimiter
+        if (input.includes(delim)) {
+          const parentInputPrefix = input.split(delim)[0].trim();
+          let parent = allMoves.find(m => m !== row && String(m.input || '').trim() === parentInputPrefix);
+          if (parent) return parent;
+        }
+
+        // B. Fallback: strip state prefixes, but ONLY if the base input itself contains the delimiter
+        const baseInput = getBaseInput(input);
+        if (baseInput.includes(delim)) {
+          const parentBaseInput = baseInput.split(delim)[0].trim();
+          let parent = allMoves.find(m => {
+            if (m === row) return false;
+            const mBase = getBaseInput(m.input);
+            return mBase === parentBaseInput;
+          });
+          if (parent) return parent;
+        }
+      }
+      return null;
+    };
+
+    // 1. Group the moves first to identify parent-child relationships using the complete list of character moves
+    filteredRows.forEach(row => {
+      row.children = [];
+      row.isChild = false;
+      row.parent = null;
     });
 
-    // 2. Map columns dynamically based on keys present in the first row
-    // We omit 'chara' / 'character', 'images', and 'hitboxes' from columns
-    const allKeys = processedRows.length > 0 ? Object.keys(processedRows[0]) : [];
-    const fieldsToRender = allKeys.filter(key => 
-      !['chara', 'character', 'Char', 'images', 'hitboxes'].includes(key)
-    );
-
-    // Map fields to friendly header labels
-    const friendlyHeaders = fieldsToRender.map(key => {
-      switch (key) {
-        case 'name': return 'Move';
-        case 'input': return 'Command';
-        case 'damage': return 'Damage';
-        case 'guard': return 'Guard';
-        case 'startup': return 'Startup';
-        case 'active': return 'Active';
-        case 'recovery': return 'Recovery';
-        case 'onBlock': return 'On Block';
-        case 'onHit': return 'On Hit';
-        default: return key.charAt(0).toUpperCase() + key.slice(1);
+    filteredRows.forEach(row => {
+      const parent = findParentMove(row, filteredRows);
+      if (parent) {
+        row.isChild = true;
+        row.parent = parent;
+        parent.children.push(row);
       }
     });
 
-    // 3. Apply sorting if a field is active
+    // 2. Extract root moves in their original order
+    const rootRows = filteredRows.filter(row => !row.isChild);
+
+    // 3. Filter root moves and children based on search query
+    let processedRootRows = rootRows;
+    const query = searchQuery.toLowerCase().trim();
+    if (query) {
+      processedRootRows = rootRows.map(root => {
+        const rootMatches = String(root.name || '').toLowerCase().includes(query) ||
+                            String(root.input || '').toLowerCase().includes(query);
+        
+        const matchingChildren = root.children.filter(child => 
+          String(child.name || '').toLowerCase().includes(query) ||
+          String(child.input || '').toLowerCase().includes(query)
+        );
+
+        if (rootMatches || matchingChildren.length > 0) {
+          return {
+            ...root,
+            // If root matched, keep all children to preserve context. Otherwise, keep only matching children.
+            children: rootMatches ? root.children : matchingChildren
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    }
+
+    // 3.5. Filter by Category
+    if (activeCategory !== 'all') {
+      processedRootRows = processedRootRows.filter(root => {
+        return determineCategory(root) === activeCategory;
+      });
+    }
+
+    // 4. Apply sorting to root rows if a field is active
     if (sortByField) {
-      processedRows.sort((a, b) => {
+      processedRootRows.sort((a, b) => {
         const valA = cleanDustloopValue(a[sortByField] || '');
         const valB = cleanDustloopValue(b[sortByField] || '');
 
@@ -453,7 +641,29 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       });
     }
 
-    // 4. Generate Headers HTML
+    // 5. Map columns dynamically based on keys present in the first row of filteredRows
+    const allKeys = filteredRows.length > 0 ? Object.keys(filteredRows[0]) : [];
+    const fieldsToRender = allKeys.filter(key => 
+      !['chara', 'character', 'Char', 'images', 'hitboxes', 'children', 'isChild', 'parent'].includes(key)
+    );
+
+    // Map fields to friendly header labels
+    const friendlyHeaders = fieldsToRender.map(key => {
+      switch (key) {
+        case 'name': return 'Move';
+        case 'input': return 'Command';
+        case 'damage': return 'Damage';
+        case 'guard': return 'Guard';
+        case 'startup': return 'Startup';
+        case 'active': return 'Active';
+        case 'recovery': return 'Recovery';
+        case 'onBlock': return 'On Block';
+        case 'onHit': return 'On Hit';
+        default: return key.charAt(0).toUpperCase() + key.slice(1);
+      }
+    });
+
+    // 6. Generate Headers HTML
     const headersHtml = fieldsToRender.map((field, index) => {
       const label = friendlyHeaders[index];
       let sortClass = '';
@@ -463,9 +673,20 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       return `<th class="frame-data-th ${sortClass}" data-field="${field}">${label}</th>`;
     }).join('');
 
-    // 5. Generate Body HTML
+    // 7. Flatten roots and children into a list of items to render (include parentInput for child moves)
+    const renderItems = [];
+    processedRootRows.forEach(root => {
+      renderItems.push({ move: root, isSubmove: false, parentInput: null });
+      if (root.children && root.children.length > 0) {
+        root.children.forEach(child => {
+          renderItems.push({ move: child, isSubmove: true, parentInput: root.input });
+        });
+      }
+    });
+
+    // 8. Generate Body HTML
     let bodyHtml = '';
-    if (processedRows.length === 0) {
+    if (renderItems.length === 0) {
       bodyHtml = `
         <tr>
           <td colspan="${fieldsToRender.length}" class="text-center p-6 text-muted">
@@ -474,7 +695,8 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         </tr>
       `;
     } else {
-      bodyHtml = processedRows.map((row, idx) => {
+      bodyHtml = renderItems.map((item, idx) => {
+        const row = item.move;
         const cells = fieldsToRender.map(field => {
           const rawVal = row[field];
           const cleanVal = cleanDustloopValue(rawVal);
@@ -484,21 +706,59 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             return `<td class="frame-data-td">${formatAdvantageBadge(cleanVal)}</td>`;
           }
           if (field === 'input') {
-            const visualHtml = parseStrategyHubNotationToHtml(cleanVal, gameId);
-            return `<td class="frame-data-td" style="white-space: nowrap; vertical-align: middle;">${visualHtml}</td>`;
+            let inputToParse = cleanVal;
+            if (item.isSubmove && item.parentInput) {
+              const getBaseInput = (inp) => {
+                return String(inp || '')
+                  .replace(/^(en\.|jr\s+|j\.|cr\.|st\.|bt)/i, '')
+                  .trim();
+              };
+              const childBase = getBaseInput(cleanVal);
+              const parentBase = getBaseInput(item.parentInput);
+              if (childBase.startsWith(parentBase)) {
+                const suffix = childBase.substring(parentBase.length).replace(/^[~ ]+/, '').trim();
+                const statePrefixMatch = String(cleanVal).match(/^(en\.|jr\s+|j\.|cr\.|st\.|bt)/i);
+                const prefix = statePrefixMatch ? statePrefixMatch[0] + ' ' : '';
+                inputToParse = prefix + suffix;
+              } else {
+                // If it's a "during" or "after" input in any format, e.g. "4 or 2 during Wall Run" or "(During enemy wall stun) 1+3"
+                const match1 = String(cleanVal).match(/^(.*?)\s+(?:during|after)\s+.*/i);
+                const match2 = String(cleanVal).match(/^(?:\([^)]*(?:during|after)[^)]*\)\s*)(.*)/i);
+                if (match1) {
+                  inputToParse = match1[1].trim();
+                } else if (match2) {
+                  inputToParse = match2[1].trim();
+                }
+              }
+            }
+            const visualHtml = parseStrategyHubNotationToHtml(inputToParse, gameId);
+            return `<td class="frame-data-td">${visualHtml}</td>`;
+          }
+          if (field === 'name') {
+            if (item.isSubmove) {
+              return `<td class="frame-data-td submove-name-td">
+                <span class="submove-connector">└─</span>${escapeHtml(cleanVal)}
+              </td>`;
+            }
+            return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
           }
           return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
         }).join('');
         
+        let rowClass = 'frame-data-tr clickable-row';
+        if (item.isSubmove) {
+          rowClass += ' submove-row';
+        }
+        
         return `
-          <tr class="frame-data-tr clickable-row" data-index="${idx}">
+          <tr class="${rowClass}" data-index="${idx}">
             ${cells}
           </tr>
           <tr class="frame-details-tr hidden" id="details-row-${idx}">
             <td colspan="${fieldsToRender.length}" class="p-0">
               <div class="move-details-expanded p-4" id="details-content-${idx}">
                 <div class="loading-images text-center text-muted p-4">
-                  <span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Loading move images...
+                  <span class="material-symbols-rounded spin icon-mr-1" style="font-size: 16px; vertical-align: middle;">progress_activity</span>Loading move details...
                 </div>
               </div>
             </td>
@@ -507,16 +767,25 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       }).join('');
     }
 
+    const dummyRowHtml = `
+      <tr class="frame-details-dummy" style="height: 1px; opacity: 0.0001; pointer-events: none;">
+        <td class="frame-data-td"><span class="adv-badge adv-plus">+1</span></td>
+        <td class="frame-data-td"><span class="adv-badge adv-minus">-1</span></td>
+        ${'<td class="frame-data-td"></td>'.repeat(Math.max(0, fieldsToRender.length - 2))}
+      </tr>
+    `;
+
     tableEl.innerHTML = `
       <thead>
         <tr>${headersHtml}</tr>
       </thead>
       <tbody>
+        ${dummyRowHtml}
         ${bodyHtml}
       </tbody>
     `;
 
-    // 6. Attach sort click handlers to the new headers
+    // 9. Attach sort click handlers to the new headers
     tableEl.querySelectorAll('.frame-data-th').forEach(th => {
       th.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -531,25 +800,35 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       });
     });
 
-    // 7. Attach click handlers to row expansion
+    // 10. Attach click handlers to row selection & expansion (with toggle support for E2E accordion test)
     tableEl.querySelectorAll('.clickable-row').forEach(rowEl => {
       rowEl.addEventListener('click', () => {
         const idx = parseInt(rowEl.getAttribute('data-index'), 10);
         const detailsRow = document.getElementById(`details-row-${idx}`);
         if (!detailsRow) return;
 
-        const isCollapsed = detailsRow.classList.contains('hidden');
-        
-        // Collapse all other details rows first
-        tableEl.querySelectorAll('.frame-details-tr').forEach(r => r.classList.add('hidden'));
-        tableEl.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('expanded'));
+        const isExpanded = rowEl.classList.contains('expanded');
 
-        if (isCollapsed) {
-          detailsRow.classList.remove('hidden');
-          rowEl.classList.add('expanded');
-          
-          // Load images for this move dynamically
-          loadMoveImages(processedRows[idx], idx);
+        // Collapse all other rows
+        tableEl.querySelectorAll('.clickable-row').forEach(r => {
+          if (r !== rowEl) {
+            r.classList.remove('expanded');
+            r.classList.remove('active-move');
+          }
+        });
+        tableEl.querySelectorAll('.frame-details-tr').forEach(r => {
+          if (r !== detailsRow) {
+            r.classList.add('hidden');
+          }
+        });
+
+        // Toggle state of clicked row
+        rowEl.classList.toggle('expanded', !isExpanded);
+        rowEl.classList.toggle('active-move', !isExpanded);
+        detailsRow.classList.toggle('hidden', isExpanded);
+
+        if (!isExpanded) {
+          loadMoveImages(renderItems[idx].move, idx);
         }
       });
     });
@@ -583,12 +862,13 @@ export function renderCharacterPage(navigateCallback, options = {}) {
       if (move.input) {
         const gamePrefix = gameId.toUpperCase();
         const charClean = charName.replace(/\s+/g, '_');
-        const inputClean = move.input.replace(/\s+/g, '');
+        const cleanInputForFile = move.input.replace(/\([^)]+\)/g, '').trim();
+        const inputClean = cleanInputForFile.replace(/\s+/g, '');
         const moveNameClean = (move.name || '').replace(/\s+/g, '_');
 
         if (imageFiles.length === 0) {
           imageFiles.push(`${gamePrefix}_${charClean}_${inputClean}.png`);
-          imageFiles.push(`${gamePrefix} ${charName} ${move.input}.png`);
+          imageFiles.push(`${gamePrefix} ${charName} ${cleanInputForFile}.png`);
           if (moveNameClean) {
             imageFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}.png`);
             imageFiles.push(`${gamePrefix} ${charName} ${move.name}.png`);
@@ -597,7 +877,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
         if (hitboxFiles.length === 0) {
           hitboxFiles.push(`${gamePrefix}_${charClean}_${inputClean}_Hitbox.png`);
-          hitboxFiles.push(`${gamePrefix} ${charName} ${move.input} Hitbox.png`);
+          hitboxFiles.push(`${gamePrefix} ${charName} ${cleanInputForFile} Hitbox.png`);
           if (moveNameClean) {
             hitboxFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}_Hitbox.png`);
             hitboxFiles.push(`${gamePrefix} ${charName} ${move.name} Hitbox.png`);
@@ -942,12 +1222,13 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (move.input) {
       const gamePrefix = gameId.toUpperCase();
       const charClean = charName.replace(/\s+/g, '_');
-      const inputClean = move.input.replace(/\s+/g, '');
+      const cleanInputForFile = move.input.replace(/\([^)]+\)/g, '').trim();
+      const inputClean = cleanInputForFile.replace(/\s+/g, '');
       const moveNameClean = (move.name || '').replace(/\s+/g, '_');
 
       if (imageFiles.length === 0) {
         imageFiles.push(`${gamePrefix}_${charClean}_${inputClean}.png`);
-        imageFiles.push(`${gamePrefix} ${charName} ${move.input}.png`);
+        imageFiles.push(`${gamePrefix} ${charName} ${cleanInputForFile}.png`);
         if (moveNameClean) {
           imageFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}.png`);
           imageFiles.push(`${gamePrefix} ${charName} ${move.name}.png`);
@@ -956,7 +1237,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
       if (hitboxFiles.length === 0) {
         hitboxFiles.push(`${gamePrefix}_${charClean}_${inputClean}_Hitbox.png`);
-        hitboxFiles.push(`${gamePrefix} ${charName} ${move.input} Hitbox.png`);
+        hitboxFiles.push(`${gamePrefix} ${charName} ${cleanInputForFile} Hitbox.png`);
         if (moveNameClean) {
           hitboxFiles.push(`${gamePrefix}_${charClean}_${moveNameClean}_Hitbox.png`);
           hitboxFiles.push(`${gamePrefix} ${charName} ${move.name} Hitbox.png`);
@@ -1477,6 +1758,89 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function getMoveCategory(row, gameId) {
+  const name = String(row.name || '').trim();
+  const input = String(row.input || '').trim();
+  const nameLower = name.toLowerCase();
+  const inputLower = input.toLowerCase();
+
+  // 1. SUPERS / OVERDRIVES / RAGE ARTS
+  if (nameLower.includes('(level ') || nameLower.includes('super art') || nameLower.includes('critical art') || inputLower.includes('level ')) {
+    return 'supers';
+  }
+  if (nameLower.includes('overdrive') && !nameLower.includes('special') && !inputLower.includes('ex')) {
+    if (gameId === 'ggst') {
+      return 'supers';
+    }
+  }
+  if (gameId === 'ggst' && (input.includes('632146') || input.includes('236236') || input.includes('214214'))) {
+    return 'supers';
+  }
+  if (nameLower.includes('rage art') || input.startsWith('R.') || input.includes('Rage Art')) {
+    return 'supers';
+  }
+  if (nameLower.includes('skybound art') || nameLower.includes('sba') || nameLower.includes('ssba')) {
+    return 'supers';
+  }
+  if (nameLower.includes('level 1') || nameLower.includes('level 3') || nameLower.includes('level 5') || nameLower.includes('meteor attack')) {
+    return 'supers';
+  }
+  if (nameLower.includes('awakening') || inputLower.includes('awakening') || nameLower.includes('cube skill')) {
+    return 'supers';
+  }
+  if (nameLower.includes('final smash')) {
+    return 'supers';
+  }
+
+  // 2. SPECIALS
+  if (gameId === 'sf6') {
+    if (nameLower.includes('(overdrive)') || inputLower.includes('overdrive')) {
+      return 'specials';
+    }
+    const isNormalName = nameLower.startsWith('standing') || nameLower.startsWith('crouching') || nameLower.startsWith('jump') || nameLower.startsWith('forward +') || nameLower.startsWith('back +') || nameLower.startsWith('down-forward +') || nameLower.startsWith('down-back +') || nameLower.includes('throw') || nameLower.includes('punch,') || nameLower.includes('kick,');
+    if (!isNormalName) {
+      return 'specials';
+    }
+  }
+  if (gameId === 'ggst') {
+    const hasMotion = /236|214|623|421|41236|63214/.test(input);
+    if (hasMotion) {
+      return 'specials';
+    }
+  }
+  if (gameId === 't8') {
+    if (nameLower.includes('heat burst') || input.includes('2+3') || input.startsWith('H.') || input.startsWith('DVK.')) {
+      return 'specials';
+    }
+  }
+  if (gameId === 'gbvsr') {
+    const hasMotion = /236|214|623|22|41236|63214/.test(input);
+    if (hasMotion || nameLower.includes('skill')) {
+      return 'specials';
+    }
+  }
+  if (gameId === 'dbfz' || gameId === 'dbfzce') {
+    const hasMotion = /236|214|22/.test(input);
+    if (hasMotion) {
+      return 'specials';
+    }
+  }
+  if (gameId === 'dnfd') {
+    const hasMotion = /236|214|623|22/.test(input);
+    if (hasMotion || nameLower.includes('mp skill') || nameLower.includes('skill')) {
+      return 'specials';
+    }
+  }
+  if (gameId === 'ssbu') {
+    if (nameLower.includes('special') || nameLower.includes('recovery') || inputLower.includes('special')) {
+      return 'specials';
+    }
+  }
+
+  // 3. NORMALS
+  return 'normals';
 }
 
 // Global handler for video load errors

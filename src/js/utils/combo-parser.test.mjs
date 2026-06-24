@@ -55,8 +55,38 @@ try {
   assertContains(html8, 'class="combo-connector">|<', 'Case 8 - pipe delimiter');
   console.log('  ✅ 6D | 4D parses "|" as a connector');
 
+  // Test Case 9: (air ok) descriptor
+  let html9 = parseStrategyHubNotationToHtml('236K (air ok)', 'ggst');
+  assertContains(html9, 'class="combo-descriptor">AIR OK<', 'Case 9 - (air ok) attribute');
+  console.log('  ✅ 236K (air ok) parses "(air ok)" as a descriptor badge');
+
+  // Test Case 10: air only descriptor (unbracketed)
+  let html10 = parseStrategyHubNotationToHtml('air only 236S', 'ggst');
+  assertContains(html10, 'class="combo-descriptor">AIR ONLY<', 'Case 10 - air only attribute');
+  console.log('  ✅ air only 236S parses "air only" as a descriptor badge');
+
+  // Test Case 11: parenthesized state descriptor (Without Yoyo)
+  let html11 = parseStrategyHubNotationToHtml('214K (Without Yoyo)', 'ggst');
+  assertContains(html11, 'class="combo-descriptor">WITHOUT YOYO<', 'Case 11 - Without Yoyo');
+  console.log('  ✅ 214K (Without Yoyo) parses "(Without Yoyo)" as a descriptor badge');
+
+  // Test Case 12: parenthesized (Hold, OK) descriptor
+  let html12 = parseStrategyHubNotationToHtml('236K (Hold, OK)', 'ggst');
+  assertContains(html12, 'class="combo-descriptor">HOLD OK<', 'Case 12 - (Hold, OK)');
+  console.log('  ✅ 236K (Hold, OK) parses "(Hold, OK)" as "HOLD OK" descriptor badge');
+
+  // Test Case 13: Hold keyword prefix
+  let html13 = parseStrategyHubNotationToHtml('Hold HP', 'sf6');
+  assertContains(html13, 'class="combo-descriptor">HOLD<', 'Case 13 - Hold keyword');
+  console.log('  ✅ Hold HP parses "Hold" as a descriptor badge');
+
+  // Test Case 14: parenthesized (Hold OK)
+  let html14 = parseStrategyHubNotationToHtml('236X (Hold OK)', 'ggst');
+  assertContains(html14, 'class="combo-descriptor">HOLD OK<', 'Case 14 - (Hold OK)');
+  console.log('  ✅ 236X (Hold OK) parses "(Hold OK)" as a descriptor badge');
+
   console.log('\n──────────────────────────────────────────────────');
-  console.log('Results: 8 passed, 0 failed');
+  console.log('Results: 14 passed, 0 failed');
   console.log('✅ All tests passed\n');
 
 } catch (err) {
