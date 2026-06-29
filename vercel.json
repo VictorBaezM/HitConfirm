@@ -1,9 +1,12 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/(feed|dojo|builder|strategy|profile)", "destination": "/index.html" },
-    { "source": "/strategy/:id", "destination": "/index.html" },
-    { "source": "/profile/:id", "destination": "/index.html" },
-    { "source": "/character/:id", "destination": "/index.html" }
+    { "source": "/feed", "destination": "/index.html" },
+    { "source": "/dojo", "destination": "/index.html" },
+    { "source": "/builder", "destination": "/index.html" },
+    { "source": "/hub", "destination": "/index.html" },
+    { "source": "/profile", "destination": "/index.html" },
+    { "source": "/character/:path*", "destination": "/index.html" },
+    { "source": "/profile/:path*", "destination": "/index.html" }
   ]
 }
