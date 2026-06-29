@@ -186,17 +186,19 @@ const DEFAULT_STRATEGIES = [
 
 function mapUserFromDb(row) {
   if (!row) return null;
+  const dataRow = Array.isArray(row) ? row[0] : row;
+  if (!dataRow) return null;
   return {
-    id: row.id,
-    username: row.username,
-    avatarColor: row.avatar_color,
-    mainGame: row.main_game,
-    mainChar: row.main_char,
-    rank: row.rank,
-    savedCombos: row.saved_combos || [],
-    playedGames: row.played_games || [],
-    gameCharacters: row.game_characters || {},
-    following: row.following || []
+    id: dataRow.id,
+    username: dataRow.username,
+    avatarColor: dataRow.avatar_color,
+    mainGame: dataRow.main_game,
+    mainChar: dataRow.main_char,
+    rank: dataRow.rank,
+    savedCombos: dataRow.saved_combos || [],
+    playedGames: dataRow.played_games || [],
+    gameCharacters: dataRow.game_characters || {},
+    following: dataRow.following || []
   };
 }
 
@@ -334,6 +336,7 @@ class Store {
     this.usersCache = [];
     this.games = {};
     this.currentUser = JSON.parse(localStorage.getItem('hc_current_user')) || null;
+    this.characterStrategiesCache = {};
   }
 
   /**
@@ -389,45 +392,64 @@ class Store {
       const usersCount = await supabase.from('users').select('id', { count: 'exact', head: true });
       if (usersCount.count === 0) {
         await this.seedSupabase();
-      } else {
-        // Sync the games config to keep the character roster updated only if we have an active session.
-        // Wrap in a try-catch to handle offline mock testing or RLS restrictions gracefully.
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user) {
-          const gamesToSeed = Object.values(DEFAULT_GAMES).map(function (g) {
-            return {
-              id: g.id,
-              name: g.name,
-              characters: g.characters,
-              notation_type: g.notationType
-            };
-          });
-          try {
-            const { error } = await supabase.from('games').upsert(gamesToSeed);
-            if (error) {
-              console.debug('Note: Games configuration sync skipped (read-only client).');
-            }
-          } catch (e) {
-            console.debug('Note: Games configuration sync skipped (read-only or mocked client).');
-          }
-        }
       }
 
-      // 2. Fetch all tables in parallel including games
-      const [combosRes, postsRes, strategiesRes, usersRes, gamesRes] = await Promise.all([
-        supabase.from('combos').select('*').order('created_at', { ascending: false }),
-        supabase.from('posts').select('*').order('created_at', { ascending: false }),
-        supabase.from('strategies').select('*').order('created_at', { ascending: false }),
-        supabase.from('users').select('*'),
-        supabase.from('games').select('*')
-      ]);
+      // 2. Fetch games only
+      await this.getGamesCached();
 
-      // 3. Map database rows to client objects
-      this.combos = (combosRes.data || []).map(mapComboFromDb);
-      this.posts = (postsRes.data || []).map(mapPostFromDb);
-      this.strategies = (strategiesRes.data || []).map(mapStrategyFromDb);
-      this.usersCache = (usersRes.data || []).map(mapUserFromDb);
+      // 3. Sync active user state if logged in via Supabase Auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user) {
+        // Fetch only current user's profile row from Supabase
+        let userQuery = supabase.from('users').select('*').eq('id', session.user.id);
+        if (typeof userQuery.single === 'function') {
+          userQuery = userQuery.single();
+        }
+        const { data: profile } = await userQuery;
+        if (profile) {
+          const clientUser = mapUserFromDb(profile);
+          this.setCurrentUser(clientUser);
+          
+          // Ensure they are in the local usersCache
+          const idx = this.usersCache.findIndex(function (u) { return u.id === clientUser.id; });
+          if (idx !== -1) {
+            this.usersCache[idx] = clientUser;
+          } else {
+            this.usersCache.push(clientUser);
+          }
+        } else {
+          this.setCurrentUser(null);
+        }
+      } else {
+        this.setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error('Supabase loadAllData failed:', err);
+    }
+  }
 
+  /**
+   * Loads and caches the list of games.
+   */
+  async getGamesCached() {
+    if (this.games && Object.keys(this.games).length > 0) {
+      return this.games;
+    }
+    try {
+      const cached = localStorage.getItem('hc_cached_games');
+      const cachedTime = localStorage.getItem('hc_cached_games_time');
+      if (cached && cachedTime) {
+        const ageMs = Date.now() - parseInt(cachedTime, 10);
+        if (ageMs < 3600000) { // 1 hour
+          this.games = JSON.parse(cached);
+          return this.games;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached games:', e);
+    }
+    try {
+      const gamesRes = await supabase.from('games').select('*');
       this.games = {};
       if (gamesRes.data && gamesRes.data.length > 0) {
         gamesRes.data.forEach(function (row) {
@@ -438,27 +460,225 @@ class Store {
             notationType: row.notation_type
           };
         }.bind(this));
+        try {
+          localStorage.setItem('hc_cached_games', JSON.stringify(this.games));
+          localStorage.setItem('hc_cached_games_time', Date.now().toString());
+        } catch (e) {
+          console.warn('Failed to cache games in LocalStorage:', e);
+        }
       } else {
         this.games = DEFAULT_GAMES;
       }
+    } catch (e) {
+      this.games = DEFAULT_GAMES;
+    }
+    return this.games;
+  }
 
-      // Keep local list sync for backward-compatible lookups
-      localStorage.setItem('hc_users', JSON.stringify(this.usersCache));
+  /**
+   * Fetches only feed data (latest posts and top combos for hot combos list).
+   */
+  async fetchFeedData() {
+    try {
+      await this.getGamesCached();
+      let postsQuery = supabase.from('posts').select('*').order('created_at', { ascending: false });
+      if (typeof postsQuery.limit === 'function') {
+        postsQuery = postsQuery.limit(30);
+      }
+      let combosQuery = supabase.from('combos').select('*').order('upvotes', { ascending: false });
+      if (typeof combosQuery.limit === 'function') {
+        combosQuery = combosQuery.limit(5);
+      }
+      const [postsRes, combosRes] = await Promise.all([
+        postsQuery,
+        combosQuery
+      ]);
 
-      // 4. Sync active user state if logged in via Supabase Auth
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && session.user) {
-        const freshUser = this.usersCache.find(function (u) { return u.id === session.user.id; });
-        if (freshUser) {
-          this.setCurrentUser(freshUser);
-        } else {
-          this.setCurrentUser(null);
+      this.posts = (postsRes.data || []).map(mapPostFromDb);
+      this.combos = (combosRes.data || []).map(mapComboFromDb);
+
+      // Collect unique usernames of creators to seed userCache (needed for post/combo author mapping)
+      const uids = new Set();
+      this.posts.forEach(function (p) { if (p.userId) uids.add(p.userId); });
+      this.combos.forEach(function (c) { if (c.userId) uids.add(c.userId); });
+
+      if (uids.size > 0) {
+        let userQuery = supabase.from('users').select('*');
+        if (typeof userQuery.in === 'function') {
+          userQuery = userQuery.in('id', Array.from(uids));
         }
-      } else {
-        this.setCurrentUser(null);
+        const { data: usersData } = await userQuery;
+        if (usersData) {
+          const newUsers = usersData.map(mapUserFromDb);
+          newUsers.forEach(function (u) {
+            const idx = this.usersCache.findIndex(function (existing) { return existing.id === u.id; });
+            if (idx !== -1) {
+              this.usersCache[idx] = u;
+            } else {
+              this.usersCache.push(u);
+            }
+          }.bind(this));
+        }
       }
     } catch (err) {
-      console.error('Supabase loadAllData failed:', err);
+      console.error('fetchFeedData failed:', err);
+    }
+  }
+
+  /**
+   * Fetches combos and creators.
+   */
+  async fetchCombosData(gameId = null) {
+    try {
+      await this.getGamesCached();
+      let query = supabase.from('combos').select('*');
+      if (gameId) {
+        query = query.eq('game', gameId);
+      }
+      query = query.order('created_at', { ascending: false });
+      if (typeof query.limit === 'function') {
+        query = query.limit(100);
+      }
+      const { data: combosData } = await query;
+      this.combos = (combosData || []).map(mapComboFromDb);
+
+      const uids = new Set();
+      this.combos.forEach(function (c) { if (c.userId) uids.add(c.userId); });
+
+      if (uids.size > 0) {
+        const { data: usersData } = await supabase.from('users').select('*').in('id', Array.from(uids));
+        if (usersData) {
+          const newUsers = usersData.map(mapUserFromDb);
+          newUsers.forEach(function (u) {
+            const idx = this.usersCache.findIndex(function (existing) { return existing.id === u.id; });
+            if (idx !== -1) {
+              this.usersCache[idx] = u;
+            } else {
+              this.usersCache.push(u);
+            }
+          }.bind(this));
+        }
+      }
+    } catch (err) {
+      console.error('fetchCombosData failed:', err);
+    }
+  }
+
+  /**
+   * Fetches strategy guides for strategy hub page or character strategy guide page.
+   */
+  async fetchCharacterData(gameId, charName) {
+    const cacheKey = `${gameId}:${charName}`;
+    if (this.characterStrategiesCache[cacheKey]) {
+      this.strategies = this.characterStrategiesCache[cacheKey];
+      return;
+    }
+    try {
+      await this.getGamesCached();
+      // Fetch strategy guides for this character
+      const { data: stratData } = await supabase.from('strategies')
+        .select('*')
+        .eq('game', gameId)
+        .eq('character', charName)
+        .order('created_at', { ascending: false });
+
+      this.strategies = (stratData || []).map(mapStrategyFromDb);
+      this.characterStrategiesCache[cacheKey] = this.strategies;
+    } catch (err) {
+      console.error('fetchCharacterData failed:', err);
+    }
+  }
+
+  /**
+   * Fetches profile details, my combos, saved combos and posts for a user.
+   */
+  async fetchProfileData(userId) {
+    try {
+      await this.getGamesCached();
+      // 1. Fetch user profile row
+      let profileQuery = supabase.from('users').select('*').eq('id', userId);
+      if (typeof profileQuery.single === 'function') {
+        profileQuery = profileQuery.single();
+      }
+      const { data: profileData } = await profileQuery;
+      if (!profileData) return;
+
+      const profile = mapUserFromDb(profileData);
+      const idx = this.usersCache.findIndex(function (u) { return u.id === profile.id; });
+      if (idx !== -1) {
+        this.usersCache[idx] = profile;
+      } else {
+        this.usersCache.push(profile);
+      }
+
+      // 2. Fetch my combos, saved combos, and my posts in parallel
+      const savedIds = profile.savedCombos || [];
+      const queries = [
+        supabase.from('combos').select('*').eq('user_id', userId),
+        supabase.from('posts').select('*').eq('user_id', userId)
+      ];
+      if (savedIds.length > 0) {
+        let savedQuery = supabase.from('combos').select('*');
+        if (typeof savedQuery.in === 'function') {
+          savedQuery = savedQuery.in('id', savedIds);
+        }
+        queries.push(savedQuery);
+      }
+
+      const results = await Promise.all(queries);
+      const myCombos = (results[0].data || []).map(mapComboFromDb);
+      const myPosts = (results[1].data || []).map(mapPostFromDb);
+      const savedCombos = savedIds.length > 0 ? (results[2].data || []).map(mapComboFromDb) : [];
+
+      // Merge into local store caches
+      const comboMap = new Map();
+      this.combos.forEach(function (c) { comboMap.set(c.id, c); });
+      myCombos.forEach(function (c) { comboMap.set(c.id, c); });
+      savedCombos.forEach(function (c) { comboMap.set(c.id, c); });
+      this.combos = Array.from(comboMap.values());
+
+      const postMap = new Map();
+      this.posts.forEach(function (p) { postMap.set(p.id, p); });
+      myPosts.forEach(function (p) { postMap.set(p.id, p); });
+      this.posts = Array.from(postMap.values());
+
+      // Fetch followers/following users profiles
+      const uids = new Set();
+      if (profile.following) {
+        profile.following.forEach(function (f) { uids.add(f); });
+      }
+      
+      // Also query who follows them
+      const { data: followers } = await supabase.from('users').select('*').contains('following', [userId]);
+      if (followers) {
+        followers.forEach(function (f) {
+          const mapped = mapUserFromDb(f);
+          uids.add(mapped.id);
+          const idxF = this.usersCache.findIndex(function (u) { return u.id === mapped.id; });
+          if (idxF !== -1) {
+            this.usersCache[idxF] = mapped;
+          } else {
+            this.usersCache.push(mapped);
+          }
+        }.bind(this));
+      }
+
+      if (uids.size > 0) {
+        const { data: usersData } = await supabase.from('users').select('*').in('id', Array.from(uids));
+        if (usersData) {
+          const newUsers = usersData.map(mapUserFromDb);
+          newUsers.forEach(function (u) {
+            const idxU = this.usersCache.findIndex(function (existing) { return existing.id === u.id; });
+            if (idxU !== -1) {
+              this.usersCache[idxU] = u;
+            } else {
+              this.usersCache.push(u);
+            }
+          }.bind(this));
+        }
+      }
+    } catch (err) {
+      console.error('fetchProfileData failed:', err);
     }
   }
 
@@ -1108,6 +1328,9 @@ class Store {
 
     this.strategies.unshift(newStrategy);
 
+    const cacheKey = `${strategyData.game}:${strategyData.character}`;
+    delete this.characterStrategiesCache[cacheKey];
+
     // Also share to feed!
     await this.savePost({
       game: strategyData.game,
@@ -1156,6 +1379,8 @@ class Store {
 
     strategy.upvotedBy = upvotedBy;
     strategy.upvotes = upvotes;
+    const cacheKey = `${strategy.game}:${strategy.character}`;
+    delete this.characterStrategiesCache[cacheKey];
     return { success: true, upvotes, upvoted: index === -1 };
   }
 
@@ -1190,14 +1415,14 @@ class Store {
     try {
       let wikiData = null;
       if (gameId === 'sf6') {
-        const res = await fetch('src/data/sf6_cached.json');
+        const res = await fetch('/src/data/sf6_cached.json');
         if (res.ok) {
           wikiData = await res.json();
         } else {
           throw new Error(`Failed to load local sf6 fallback: ${res.statusText}`);
         }
       } else if (gameId === 't8') {
-        const res = await fetch('src/data/t8_cached.json');
+        const res = await fetch('/src/data/t8_cached.json');
         if (res.ok) {
           wikiData = await res.json();
         } else {

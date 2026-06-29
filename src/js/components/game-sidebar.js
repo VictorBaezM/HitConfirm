@@ -27,7 +27,7 @@ export function renderGameSidebar({ activeGame = 'all', onGameChange } = {}) {
   Object.values(games).forEach(function (game) {
     const isActive = activeGame === game.id ? 'active' : '';
     const logoHtml = KNOWN_LOGOS.includes(game.id)
-      ? `<img src="src/images/logo_${game.id}.png" alt="${game.name}" class="game-logo-image" />`
+      ? `<img src="/src/images/logo_${game.id}.png" alt="${game.name}" class="game-logo-image" />`
       : `<div class="game-logo-text">${game.name}</div>`;
 
     gameItemsHtml += `

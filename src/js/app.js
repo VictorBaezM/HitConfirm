@@ -8,19 +8,94 @@ import { renderProfilePage } from './pages/profile.js';
 import { openAuthModal } from './pages/auth.js';
 import { renderCharacterPage } from './pages/character.js';
 import { renderHubPage } from './pages/hub.js';
+import { render404Page } from './pages/404.js';
 
 // Global application state
 let currentPage = 'feed';
 let pageOptions = {};
 
+function getUrlForPage(pageId, options = {}) {
+  switch (pageId) {
+    case 'feed':
+      return '/feed';
+    case 'combos':
+      return options.game ? `/dojo?game=${options.game}` : '/dojo';
+    case 'builder':
+      return '/builder';
+    case 'hub':
+      return '/hub';
+    case 'profile':
+      return options.userId ? `/profile/${options.userId}` : '/profile';
+    case 'character':
+      return `/character/${options.gameId}/${encodeURIComponent(options.charName)}`;
+    case '404':
+      return options.path || '/404';
+    default:
+      return '/feed';
+  }
+}
+
+function getPageForUrlFromPath(path, search) {
+  const searchParams = new URLSearchParams(search);
+  
+  if (path === '/' || path === '' || path === '/index.html') {
+    return { pageId: 'feed', options: {} };
+  }
+  
+  if (path.startsWith('/feed')) {
+    return { pageId: 'feed', options: {} };
+  }
+  
+  if (path.startsWith('/dojo') || path.startsWith('/combos')) {
+    const game = searchParams.get('game') || searchParams.get('gameId');
+    return { pageId: 'combos', options: game ? { game } : {} };
+  }
+  
+  if (path.startsWith('/builder')) {
+    return { pageId: 'builder', options: {} };
+  }
+  
+  if (path.startsWith('/hub')) {
+    return { pageId: 'hub', options: {} };
+  }
+  
+  if (path.startsWith('/profile')) {
+    const parts = path.split('/').filter(Boolean);
+    const userId = parts[1]; // /profile/:userId
+    return { pageId: 'profile', options: userId ? { userId } : {} };
+  }
+  
+  if (path.startsWith('/character')) {
+    const parts = path.split('/').filter(Boolean);
+    const gameId = parts[1];
+    const charName = parts[2] ? decodeURIComponent(parts[2]) : '';
+    if (!gameId || !charName) {
+      return { pageId: '404', options: { path } };
+    }
+    return { pageId: 'character', options: { gameId, charName } };
+  }
+  
+  return { pageId: '404', options: { path } };
+}
+
+function getPageForUrl() {
+  return getPageForUrlFromPath(window.location.pathname, window.location.search);
+}
+
 /**
  * Handles Single Page Application routing by dynamically rendering components.
  * @param {string} pageId - The ID of the page/view to display (e.g., 'feed', 'combos', 'builder').
  * @param {Object} [options={}] - Optional context parameters passed to the page view.
+ * @param {boolean} [pushState=true] - Whether to push the new URL to the browser history.
  */
-export function navigate(pageId, options = {}) {
+export function navigate(pageId, options = {}, pushState = true) {
   currentPage = pageId;
   pageOptions = options;
+
+  if (pushState) {
+    const newUrl = getUrlForPage(pageId, options);
+    window.history.pushState(null, '', newUrl);
+  }
   
   // 1. Render navbar
   renderNavbar(currentPage, navigate);
@@ -42,9 +117,29 @@ export function navigate(pageId, options = {}) {
   // Short timeout to create smooth transition feel
   setTimeout(async function () {
     try {
-      // Pre-fetch all data from Supabase to fill store memory cache
+      // 1. Run lightweight global initialization check
       if (store.loadAllData) {
         await store.loadAllData();
+      }
+
+      // 2. Run page-specific lazy data loading
+      if (currentPage === 'feed') {
+        if (store.fetchFeedData) {
+          await store.fetchFeedData();
+        }
+      } else if (currentPage === 'combos') {
+        if (store.fetchCombosData) {
+          await store.fetchCombosData(pageOptions.game);
+        }
+      } else if (currentPage === 'profile') {
+        const targetId = pageOptions.userId || (store.getCurrentUser() ? store.getCurrentUser().id : null);
+        if (targetId && store.fetchProfileData) {
+          await store.fetchProfileData(targetId);
+        }
+      } else if (currentPage === 'character') {
+        if (pageOptions.gameId && pageOptions.charName && store.fetchCharacterData) {
+          await store.fetchCharacterData(pageOptions.gameId, pageOptions.charName);
+        }
       }
 
       switch (currentPage) {
@@ -65,6 +160,9 @@ export function navigate(pageId, options = {}) {
           break;
         case 'hub':
           renderHubPage(navigate);
+          break;
+        case '404':
+          render404Page(navigate);
           break;
         default:
           renderFeedPage(navigate);
@@ -129,6 +227,32 @@ function setupGlobalModals() {
   };
 }
 
+// Handle browser back/forward buttons
+window.addEventListener('popstate', function () {
+  const route = getPageForUrl();
+  navigate(route.pageId, route.options, false);
+});
+
+// Intercept clicks on links for soft routing
+document.addEventListener('click', function (e) {
+  const anchor = e.target.closest('a');
+  if (anchor && anchor.href && anchor.host === window.location.host && !anchor.target) {
+    const url = new URL(anchor.href);
+    const path = url.pathname;
+    
+    // Check if the path maps to one of our routes
+    const isAppRoute = ['/feed', '/dojo', '/combos', '/builder', '/hub', '/profile', '/character'].some(function (r) {
+      return path.startsWith(r);
+    }) || path === '/';
+    
+    if (isAppRoute) {
+      e.preventDefault();
+      const route = getPageForUrlFromPath(path, url.search);
+      navigate(route.pageId, route.options);
+    }
+  }
+});
+
 // Bootstrap Application
 document.addEventListener('DOMContentLoaded', function () {
   setupGlobalModals();
@@ -142,5 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  navigate('feed');
+  const route = getPageForUrl();
+  navigate(route.pageId, route.options, false);
 });

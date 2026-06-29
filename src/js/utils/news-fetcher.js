@@ -63,7 +63,7 @@ export async function fetchGameNews(supportedGameIds) {
   // 1. Try to load from local game_news.json for instant load
   let cachedNews = [];
   try {
-    const response = await fetch('src/data/game_news.json');
+    const response = await fetch('/src/data/game_news.json');
     if (response.ok) {
       const data = await response.json();
       cachedNews = data.map(item => ({

@@ -78,7 +78,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
 
               const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
               const logoHtml = KNOWN_LOGOS.includes(game.id)
-                ? `<img src="src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />`
+                ? `<img src="/src/images/logo_${game.id}.png" alt="${game.name} Logo" class="game-header-logo" onerror="this.style.display='none';" />`
                 : `<span class="material-symbols-rounded game-header-logo text-muted" style="font-size: 24px; width: 28px; text-align: center; vertical-align: middle;">sports_esports</span>`;
 
               return `

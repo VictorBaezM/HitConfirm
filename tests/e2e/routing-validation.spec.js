@@ -54,4 +54,22 @@ test.describe('HitConfirm SPA Page Routing', () => {
     await expect(sidebar).not.toHaveClass(/collapsed/);
     await expect(appContainer).not.toHaveClass(/sidebar-collapsed/);
   });
+
+  test('should display FGC-themed 404 page on invalid route and support back navigation', async ({ page }) => {
+    // 1. Navigate to an invalid path
+    await page.goto('/invalid-route-name');
+    
+    // 2. Expect 404 page header
+    await expect(page.locator('h1:has-text("Round Lost")')).toBeVisible();
+    await expect(page.locator('h2:has-text("404 - Page Not Found")')).toBeVisible();
+    
+    // 3. Click back to Feed button
+    const btn = page.locator('#btn-404-home');
+    await expect(btn).toBeVisible();
+    await btn.click();
+    
+    // 4. Expect to be back on the Feed page
+    await expect(page.locator('#timeline-list')).toBeVisible();
+    expect(page.url()).toContain('/feed');
+  });
 });

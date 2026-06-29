@@ -34,6 +34,20 @@ http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      // If it is a virtual SPA route (no file extension), serve index.html
+      if (!ext) {
+        const indexHtmlPath = path.join(ROOT, 'index.html');
+        fs.readFile(indexHtmlPath, (errIndex, dataIndex) => {
+          if (errIndex) {
+            res.writeHead(404);
+            res.end('Not found');
+          } else {
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(dataIndex);
+          }
+        });
+        return;
+      }
       res.writeHead(404);
       res.end('Not found');
       return;

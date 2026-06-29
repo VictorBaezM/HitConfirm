@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/(feed|dojo|builder|strategy|profile)", "destination": "/index.html" },
+    { "source": "/strategy/:id", "destination": "/index.html" },
+    { "source": "/profile/:id", "destination": "/index.html" },
+    { "source": "/character/:id", "destination": "/index.html" }
+  ]
+}

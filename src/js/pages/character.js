@@ -34,7 +34,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
   const KNOWN_LOGOS = ['ggst', 'sf6', 'ssbu', 't8'];
   const logoHtml = KNOWN_LOGOS.includes(gameId)
-    ? `<img src="src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
+    ? `<img src="/src/images/logo_${gameId}.png" alt="${getGameName(gameId)} Logo" class="game-header-logo-large" onerror="this.style.display='none';" />`
     : `<span class="material-symbols-rounded game-header-logo-large text-muted" style="font-size: 28px; width: 32px; text-align: center; vertical-align: middle;">sports_esports</span>`;
 
   // Page level state
@@ -735,12 +735,14 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             return `<td class="frame-data-td">${visualHtml}</td>`;
           }
           if (field === 'name') {
+            const cat = determineCategory(row);
+            const badgeHtml = `<span class="badge-type ${cat}">${cat}</span>`;
             if (item.isSubmove) {
               return `<td class="frame-data-td submove-name-td">
-                <span class="submove-connector">└─</span>${escapeHtml(cleanVal)}
+                <span class="submove-connector">└─</span>${badgeHtml} ${escapeHtml(cleanVal)}
               </td>`;
             }
-            return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
+            return `<td class="frame-data-td">${badgeHtml} ${escapeHtml(cleanVal)}</td>`;
           }
           return `<td class="frame-data-td">${escapeHtml(cleanVal)}</td>`;
         }).join('');
