@@ -1,7 +1,6 @@
 {
   "cleanUrls": true,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(feed|dojo|builder|hub|profile|character/.*|profile/.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
