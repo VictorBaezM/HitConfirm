@@ -7,14 +7,27 @@ import { cleanDustloopValue, parseNumericValue, formatAdvantageBadge } from '../
 import { parseStrategyHubNotationToHtml } from '../utils/combo-parser.js';
 import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, getWikiFilename, getLocalPortraitUrl, getCachedPortraitUrl, WIKI_CONFIG, saveResolvedImageUrl, getResolvedImageUrl, deleteResolvedImageUrl, deleteCachedPortraitUrl } from '../utils/portrait-resolver.js';
 import { hideGameSidebar } from '../components/game-sidebar.js';
+import { slugifyCharacterName } from '../utils/slugifier.js';
 
 export function renderCharacterPage(navigateCallback, options = {}) {
-  const { gameId, charName } = options;
+  const { gameId, charName: incomingCharName } = options;
   const mount = document.getElementById('content-mount');
   if (!mount) return;
 
   hideGameSidebar();
   mount.className = 'has-right-sidebar';
+
+  // Resolve slugified character name back to canonical database name
+  let charName = incomingCharName;
+  const game = store.games && store.games[gameId];
+  if (game && game.characters) {
+    const match = game.characters.find(function (c) {
+      return slugifyCharacterName(c) === incomingCharName.toLowerCase();
+    });
+    if (match) {
+      charName = match;
+    }
+  }
 
   const localPortraitUrl = getLocalPortraitUrl(gameId, charName);
   const cachedUrl = getCachedPortraitUrl(gameId, charName);
