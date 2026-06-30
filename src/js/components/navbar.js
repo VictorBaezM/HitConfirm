@@ -23,10 +23,10 @@ export function renderNavbar(activePage, navigateCallback) {
   const currentUser = store.getCurrentUser();
 
   const links = [
-    { id: 'feed', label: 'Feed', icon: 'rss_feed', path: '#/feed' },
-    { id: 'combos', label: 'Dojo', icon: 'sports_esports', path: '#/dojo' },
-    { id: 'builder', label: 'Builder', icon: 'build', path: '#/builder' },
-    { id: 'hub', label: 'Strategy Hub', icon: 'book', path: '#/hub' }
+    { id: 'feed', label: 'Feed', icon: 'rss_feed', path: '/feed' },
+    { id: 'combos', label: 'Dojo', icon: 'sports_esports', path: '/dojo' },
+    { id: 'builder', label: 'Builder', icon: 'build', path: '/builder' },
+    { id: 'hub', label: 'Strategy Hub', icon: 'book', path: '/hub' }
   ];
 
   let linksHtml = '';
@@ -46,7 +46,7 @@ export function renderNavbar(activePage, navigateCallback) {
   const profileActive = activePage === 'profile' ? 'active' : '';
   linksHtml += `
     <li class="wiki-nav-item">
-      <a class="wiki-nav-link nav-link ${profileActive}" href="#/profile" data-page="profile">
+      <a class="wiki-nav-link nav-link ${profileActive}" href="/profile" data-page="profile">
         <span class="material-symbols-rounded">person</span>
         <span class="wiki-nav-text">My Dojo</span>
       </a>

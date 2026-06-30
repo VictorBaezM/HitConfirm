@@ -9,6 +9,7 @@ import { openAuthModal } from './pages/auth.js';
 import { renderCharacterPage } from './pages/character.js';
 import { renderHubPage } from './pages/hub.js';
 import { render404Page } from './pages/404.js';
+import { slugifyCharacterName } from './utils/slugifier.js';
 
 // Global application state
 let currentPage = 'feed';
@@ -17,21 +18,21 @@ let pageOptions = {};
 function getUrlForPage(pageId, options = {}) {
   switch (pageId) {
     case 'feed':
-      return '#/feed';
+      return '/feed';
     case 'combos':
-      return options.game ? `#/dojo?game=${options.game}` : '#/dojo';
+      return options.game ? `/dojo?game=${options.game}` : '/dojo';
     case 'builder':
-      return '#/builder';
+      return '/builder';
     case 'hub':
-      return '#/hub';
+      return '/hub';
     case 'profile':
-      return options.userId ? `#/profile/${options.userId}` : '#/profile';
+      return options.userId ? `/profile/${options.userId}` : '/profile';
     case 'character':
-      return `#/character/${options.gameId}/${encodeURIComponent(options.charName)}`;
+      return `/character/${options.gameId}/${slugifyCharacterName(options.charName)}`;
     case '404':
-      return options.path ? `#/404?path=${encodeURIComponent(options.path)}` : '#/404';
+      return options.path || '/404';
     default:
-      return '#/feed';
+      return '/feed';
   }
 }
 
@@ -79,14 +80,7 @@ function getPageForUrlFromPath(path, search) {
 }
 
 function getPageForUrl() {
-  let hash = window.location.hash || '';
-  if (hash.startsWith('#')) {
-    hash = hash.substring(1);
-  }
-  const parts = hash.split('?');
-  const path = parts[0] || '/feed';
-  const search = parts[1] ? '?' + parts[1] : '';
-  return getPageForUrlFromPath(path, search);
+  return getPageForUrlFromPath(window.location.pathname, window.location.search);
 }
 
 /**
@@ -96,14 +90,13 @@ function getPageForUrl() {
  * @param {boolean} [pushState=true] - Whether to push the new URL to the browser history.
  */
 export function navigate(pageId, options = {}, pushState = true) {
-  if (pushState) {
-    const newUrl = getUrlForPage(pageId, options);
-    window.location.hash = newUrl;
-    return;
-  }
-
   currentPage = pageId;
   pageOptions = options;
+
+  if (pushState) {
+    const newUrl = getUrlForPage(pageId, options);
+    window.history.pushState(null, '', newUrl);
+  }
   
   // 1. Render navbar
   renderNavbar(currentPage, navigate);
@@ -236,7 +229,7 @@ function setupGlobalModals() {
 }
 
 // Handle browser back/forward buttons
-window.addEventListener('hashchange', function () {
+window.addEventListener('popstate', function () {
   const route = getPageForUrl();
   navigate(route.pageId, route.options, false);
 });
@@ -253,10 +246,10 @@ document.addEventListener('click', function (e) {
       return path.startsWith(r);
     }) || path === '/';
     
-    if (isAppRoute && !url.hash) {
+    if (isAppRoute) {
       e.preventDefault();
       const route = getPageForUrlFromPath(path, url.search);
-      navigate(route.pageId, route.options, true);
+      navigate(route.pageId, route.options);
     }
   }
 });

@@ -57,7 +57,7 @@ test.describe('HitConfirm SPA Page Routing', () => {
 
   test('should display FGC-themed 404 page on invalid route and support back navigation', async ({ page }) => {
     // 1. Navigate to an invalid path
-    await page.goto('/#/invalid-route-name');
+    await page.goto('/invalid-route-name');
     
     // 2. Expect 404 page header
     await expect(page.locator('h1:has-text("Round Lost")')).toBeVisible();
@@ -70,6 +70,6 @@ test.describe('HitConfirm SPA Page Routing', () => {
     
     // 4. Expect to be back on the Feed page
     await expect(page.locator('#timeline-list')).toBeVisible();
-    expect(page.url()).toContain('#/feed');
+    expect(page.url()).toContain('/feed');
   });
 });

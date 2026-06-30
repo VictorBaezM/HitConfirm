@@ -2,6 +2,7 @@
 import { supabase } from './supabase.js';
 import { dustloopService } from './services/dustloopService.js';
 import { cache } from './cache.js';
+import { slugifyCharacterName } from './utils/slugifier.js';
 
 
 const DEFAULT_GAMES = {
@@ -568,18 +569,34 @@ class Store {
    * Fetches strategy guides for strategy hub page or character strategy guide page.
    */
   async fetchCharacterData(gameId, charName) {
-    const cacheKey = `${gameId}:${charName}`;
+    try {
+      await this.getGamesCached();
+    } catch (err) {
+      console.error('getGamesCached failed in fetchCharacterData:', err);
+    }
+
+    let resolvedCharName = charName;
+    const game = this.games[gameId];
+    if (game && game.characters) {
+      const match = game.characters.find(function (c) {
+        return slugifyCharacterName(c) === charName.toLowerCase();
+      });
+      if (match) {
+        resolvedCharName = match;
+      }
+    }
+
+    const cacheKey = `${gameId}:${resolvedCharName}`;
     if (this.characterStrategiesCache[cacheKey]) {
       this.strategies = this.characterStrategiesCache[cacheKey];
       return;
     }
     try {
-      await this.getGamesCached();
       // Fetch strategy guides for this character
       const { data: stratData } = await supabase.from('strategies')
         .select('*')
         .eq('game', gameId)
-        .eq('character', charName)
+        .eq('character', resolvedCharName)
         .order('created_at', { ascending: false });
 
       this.strategies = (stratData || []).map(mapStrategyFromDb);
