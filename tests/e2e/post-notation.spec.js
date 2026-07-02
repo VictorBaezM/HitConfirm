@@ -49,13 +49,15 @@ async function injectFakeUser(page) {
           combos: [],
           posts: []
         };
+        window.__E2E_DB__ = db;
 
         export const supabase = {
           auth: {
             getSession: async () => ({
               data: {
                 session: {
-                  user: { id: 'test-user-e2e', email: 'test@hitconfirm.test' }
+                  user: { id: 'test-user-e2e', email: 'test@hitconfirm.test' },
+                  access_token: 'fake-e2e-token'
                 }
               },
               error: null
@@ -88,6 +90,75 @@ async function injectFakeUser(page) {
         export default supabase;
       `
     });
+  });
+
+  // Intercept write API requests and push mapped payloads into the browser-side mock database
+  await page.route('**/api/combos/save', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST') {
+      const payload = request.postDataJSON();
+      await page.evaluate(({ combo }) => {
+        if (window.__E2E_DB__) {
+          const dbCombo = {
+            id: combo.id || 'c_' + Date.now(),
+            user_id: combo.userId,
+            username: combo.username || 'Anonymous',
+            avatar_color: combo.avatarColor || '#3b82f6',
+            game: combo.game,
+            character: combo.character,
+            title: combo.title,
+            notation: combo.notation,
+            damage: combo.damage || 'N/A',
+            meter: combo.meter || 'None',
+            difficulty: combo.difficulty || 'medium',
+            description: combo.description || '',
+            upvotes: combo.upvotes || 0,
+            upvoted_by: combo.upvotedBy || [],
+            comments: combo.comments || [],
+            video_url: combo.videoUrl || '',
+            created_at: combo.createdAt || new Date().toISOString()
+          };
+          window.__E2E_DB__.combos.unshift(dbCombo);
+        }
+      }, payload);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    }
+    return route.continue();
+  });
+
+  await page.route('**/api/posts/create', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST') {
+      const payload = request.postDataJSON();
+      await page.evaluate(({ post }) => {
+        if (window.__E2E_DB__) {
+          const dbPost = {
+            id: post.id || 'p_' + Date.now(),
+            user_id: post.userId,
+            username: post.username || 'Anonymous',
+            avatar_color: post.avatarColor || '#3b82f6',
+            game: post.game || null,
+            content: post.content,
+            video_url: post.videoUrl || '',
+            upvotes: post.upvotes || 0,
+            upvoted_by: post.upvotedBy || [],
+            comments: post.comments || [],
+            created_at: post.createdAt || new Date().toISOString()
+          };
+          window.__E2E_DB__.posts.unshift(dbPost);
+        }
+      }, payload);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    }
+    return route.continue();
   });
 
   await page.addInitScript((user) => {

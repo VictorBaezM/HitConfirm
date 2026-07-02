@@ -18,5 +18,10 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/:path*", "destination": "/index.html" }
-  ]
+  ],
+  "images": {
+    "sizes": [256, 512, 1024],
+    "domains": ["fandom.com", "ultimateframedata.com", "dustloop.com", "wavu.wiki", "streetfighter.com", "tekken.com", "nintendo.com"],
+    "minimumCacheTTL": 86400
+  }
 }

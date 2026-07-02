@@ -27,6 +27,17 @@ http.createServer((req, res) => {
   const parsedUrl = req.url.split('?')[0];
   if (parsedUrl.startsWith('/api/')) {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    if (
+      parsedUrl === '/api/combos/save' ||
+      parsedUrl === '/api/posts/create' ||
+      parsedUrl === '/api/combos/vote' ||
+      parsedUrl === '/api/posts/vote' ||
+      parsedUrl === '/api/combos/comment' ||
+      parsedUrl === '/api/strategies/vote' ||
+      parsedUrl === '/api/strategies/save'
+    ) {
+      return res.end(JSON.stringify({ success: true }));
+    }
     if (parsedUrl === '/api/news') {
       const newsMock = [
         { gameId: 'sf6', title: 'Check out gameplay for the first Year 4 character, Yasmine!', date: 'Jun 18, 2026', url: 'https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199303153' },

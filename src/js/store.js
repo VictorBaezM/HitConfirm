@@ -341,6 +341,23 @@ class Store {
   }
 
   /**
+   * Helper to retrieve active Supabase authorization headers for API requests.
+   * @returns {Promise<Object>} Request headers object.
+   */
+  async getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    } catch (err) {
+      console.warn('Failed to retrieve authentication session token:', err.message);
+    }
+    return headers;
+  }
+
+  /**
    * Initializes the store system (legacy localstorage method, stubbed out for Supabase integration).
    */
   init() {
@@ -974,9 +991,24 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('combos').insert(mapComboToDb(newCombo));
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/combos/save', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ combo: newCombo })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
+    }
+
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     this.combos.unshift(newCombo);
@@ -1029,9 +1061,24 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('combos').insert(mapComboToDb(newCombo));
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/combos/save', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ combo: newCombo })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
+    }
+
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     this.combos.unshift(newCombo);
@@ -1062,17 +1109,24 @@ class Store {
       upvotes -= 1;
     }
 
-    const { data, error } = await supabase.from('combos').update({
-      upvotes,
-      upvoted_by: upvotedBy
-    }).eq('id', comboId).select();
-
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/combos/vote', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ comboId })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
     }
 
-    if (!data || data.length === 0) {
-      return { success: false, error: 'Database update failed. You may not have permission to react to this combo. (Check Row Level Security policies).' };
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     combo.upvotedBy = upvotedBy;
@@ -1103,13 +1157,24 @@ class Store {
 
     const comments = [...combo.comments, comment];
 
-    const { data, error } = await supabase.from('combos').update({ comments }).eq('id', comboId).select();
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/combos/comment', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ comboId, commentText })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
     }
 
-    if (!data || data.length === 0) {
-      return { success: false, error: 'Database update failed. You may not have permission to comment on this combo. (Check Row Level Security policies).' };
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     combo.comments = comments;
@@ -1223,9 +1288,24 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('posts').insert(mapPostToDb(newPost));
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/posts/create', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ post: newPost })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
+    }
+
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     this.posts.unshift(newPost);
@@ -1256,17 +1336,24 @@ class Store {
       upvotes -= 1;
     }
 
-    const { data, error } = await supabase.from('posts').update({
-      upvotes,
-      upvoted_by: upvotedBy
-    }).eq('id', postId).select();
-
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/posts/vote', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ postId })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
     }
 
-    if (!data || data.length === 0) {
-      return { success: false, error: 'Database update failed. You may not have permission to react to this post. (Check Row Level Security policies).' };
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     post.upvotedBy = upvotedBy;
@@ -1338,9 +1425,24 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('strategies').insert(mapStrategyToDb(newStrategy));
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/strategies/save', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ strategy: newStrategy })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
+    }
+
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     this.strategies.unshift(newStrategy);
@@ -1381,17 +1483,24 @@ class Store {
       upvotes -= 1;
     }
 
-    const { data, error } = await supabase.from('strategies').update({
-      upvotes,
-      upvoted_by: upvotedBy
-    }).eq('id', strategyId).select();
-
-    if (error) {
-      return { success: false, error: error.message };
+    let errorMsg = null;
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch('/api/strategies/vote', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ strategyId })
+      });
+      if (!response.ok) {
+        const errJson = await response.json();
+        errorMsg = errJson.error || `Server returned status ${response.status}`;
+      }
+    } catch (err) {
+      errorMsg = err.message;
     }
 
-    if (!data || data.length === 0) {
-      return { success: false, error: 'Database update failed. You may not have permission to react to this strategy. (Check Row Level Security policies).' };
+    if (errorMsg) {
+      return { success: false, error: errorMsg };
     }
 
     strategy.upvotedBy = upvotedBy;
