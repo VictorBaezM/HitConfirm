@@ -7,6 +7,20 @@ test.describe('HitConfirm Console Audit', () => {
   const errors = [];
 
   test.beforeEach(async ({ page }) => {
+    // Mock image requests to prevent external CDN/wiki calls
+    await page.route('**/*', function (route) {
+      const request = route.request();
+      if (request.resourceType() === 'image' && /(fandom|ultimateframedata|dustloop|wavu|streetfighter|tekken|ssbwiki)/.test(request.url())) {
+        route.fulfill({
+          status: 200,
+          contentType: 'image/svg+xml',
+          body: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>'
+        });
+      } else {
+        route.continue();
+      }
+    });
+
     page.on('console', msg => {
       const type = msg.type();
       const text = msg.text();
@@ -29,7 +43,8 @@ test.describe('HitConfirm Console Audit', () => {
   });
 
   test.afterAll(async () => {
-    const reportPath = path.join('C:', 'Users', 'Omen', '.gemini', 'antigravity', 'brain', '39ffb453-30e3-41fc-a88d-b6453c643059', 'console_audit_results.json');
+    const os = require('os');
+    const reportPath = path.join(os.homedir(), '.gemini', 'antigravity', 'brain', 'c6a9b5c4-7b23-4696-9577-526face9a2f1', 'console_audit_results.json');
     fs.writeFileSync(reportPath, JSON.stringify({ warnings, errors }, null, 2));
     console.log(`\nAudit completed: Saved ${warnings.length} warnings and ${errors.length} errors to ${reportPath}\n`);
   });

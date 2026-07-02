@@ -26,6 +26,11 @@ try {
   console.warn('Failed to load resolved image cache:', e);
 }
 
+/**
+ * Saves a resolved character portrait image URL to the image cache in localStorage.
+ * @param {string} originalKey - The unique game and character cache key.
+ * @param {string} resolvedUrl - The direct resolved image CDN/wiki URL.
+ */
 export function saveResolvedImageUrl(originalKey, resolvedUrl) {
   if (!resolvedUrl || resolvedUrl.startsWith('data:image/svg+xml') || resolvedUrl.includes('placeholder')) {
     return;
@@ -36,6 +41,11 @@ export function saveResolvedImageUrl(originalKey, resolvedUrl) {
   } catch (e) {}
 }
 
+/**
+ * Retrieves a resolved character portrait URL from the localStorage image cache if it exists.
+ * @param {string} originalKey - The unique cache key.
+ * @returns {string|null} - The cached URL, or null if not found.
+ */
 export function getResolvedImageUrl(originalKey) {
   const val = resolvedImageCache[originalKey];
   if (val && (val.startsWith('data:image/svg+xml') || val.includes('placeholder'))) {
@@ -45,6 +55,10 @@ export function getResolvedImageUrl(originalKey) {
   return val || null;
 }
 
+/**
+ * Deletes a resolved image URL from the localStorage cache.
+ * @param {string} originalKey - The unique cache key.
+ */
 export function deleteResolvedImageUrl(originalKey) {
   delete resolvedImageCache[originalKey];
   try {
@@ -52,6 +66,11 @@ export function deleteResolvedImageUrl(originalKey) {
   } catch (e) {}
 }
 
+/**
+ * Deletes a portrait URL from the portrait cache in localStorage.
+ * @param {string} gameId - The ID of the game context.
+ * @param {string} charName - The name of the character.
+ */
 export function deleteCachedPortraitUrl(gameId, charName) {
   const cacheKey = `${gameId}:${charName}`;
   delete urlCache[cacheKey];
@@ -80,6 +99,12 @@ export const KNOWN_LOCAL_PORTRAITS = {
   t8: ['Alisa', 'Asuka', 'Azucena', 'Claudio', 'Devil_Jin', 'Dragunov', 'Eddy', 'Feng', 'Heihachi', 'Hwoarang', 'Jack8', 'Jin', 'Jun', 'Kazuya', 'King', 'Kuma', 'Lars', 'Law', 'Lee', 'Leo', 'Leroy', 'Lidia', 'Lili', 'Nina', 'Panda', 'Paul', 'Raven', 'Reina', 'Shaheen', 'Steve', 'Victor', 'Xiaoyu', 'Yoshimitsu', 'Zafina']
 };
 
+/**
+ * Retrieves the local fallback portrait URL if a local asset is preloaded.
+ * @param {string} gameId - The ID of the game context.
+ * @param {string} charName - The name of the character.
+ * @returns {string|null} - The local asset file path, or null if no local asset exists.
+ */
 export function getLocalPortraitUrl(gameId, charName) {
   const sanitized = charName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
   const list = KNOWN_LOCAL_PORTRAITS[gameId];

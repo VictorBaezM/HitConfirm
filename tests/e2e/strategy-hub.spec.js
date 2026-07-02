@@ -1,13 +1,81 @@
 const { test, expect } = require('@playwright/test');
 
+async function injectMockSupabase(page) {
+  // Mock the supabase JS module to prevent remote database dependencies
+  await page.route('**/src/js/supabase.js', route => {
+    route.fulfill({
+      contentType: 'text/javascript',
+      body: `
+        const MOCKED_GAMES = [
+          { id: 'sf6', name: 'Street Fighter 6', characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'], notation_type: 'sf' },
+          { id: 't8', name: 'Tekken 8', characters: ['Alisa', 'Asuka', 'Azucena', 'Claudio', 'Devil Jin', 'Dragunov', 'Eddy', 'Feng', 'Heihachi', 'Hwoarang', 'Jack-8', 'Jin', 'Jun', 'Kazuya', 'King', 'Kuma', 'Lars', 'Law', 'Lee', 'Leo', 'Leroy', 'Lidia', 'Lili', 'Nina', 'Panda', 'Paul', 'Raven', 'Reina', 'Shaheen', 'Steve', 'Victor', 'Xiaoyu', 'Yoshimitsu', 'Zafina'], notation_type: 'tekken' },
+          { id: 'ggst', name: 'Guilty Gear -Strive-', characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Jam Kuradoberi', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'Lucy', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Queen Dizzy', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Unika', 'Venom', 'Zato-1'], notation_type: 'gg' },
+          { id: 'dbfz', name: 'Dragon Ball FighterZ', characters: ['Android 16', 'Android 17', 'Android 18', 'Android 21', 'Android 21 (Lab Coat)', 'Bardock', 'Beerus', 'Broly', 'Broly (DBS)', 'Captain Ginyu', 'Cell', 'Cooler', 'Frieza', 'Gogeta (SS4)', 'Gogeta (SSGSS)', 'Gohan (Adult)', 'Gohan (Teen)', 'Goku', 'Goku (GT)', 'Goku (SS4, DAIMA)', 'Goku (SSGSS)', 'Goku (Super Saiyan)', 'Goku (Ultra Instinct)', 'Goku Black', 'Gotenks', 'Hit', 'Janemba', 'Jiren', 'Kefla', 'Kid Buu', 'Krillin', 'Majin Buu', 'Master Roshi', 'Nappa', 'Piccolo', 'Super Baby 2', 'Tien', 'Trunks', 'Vegeta', 'Vegeta (SSGSS)', 'Vegeta (Super Saiyan)', 'Vegito (SSGSS)', 'Videl', 'Yamcha', 'Zamasu (Fused)'], notation_type: 'anime' },
+          { id: 'dbfzce', name: 'Dragon Ball FighterZ (CE)', characters: ['Adult Gohan', 'Android 16', 'Android 17', 'Android 18', 'Android 21', 'Bardock', 'Beerus', 'Broly', 'Captain Ginyu', 'Cell', 'Cooler', 'DBS Broly', 'Frieza', 'Fused Zamasu', 'Goku', 'Goku Black', 'Gotenks', 'GT Goku', 'Hit', 'Janemba', 'Jiren', 'Kefla', 'Kid Buu', 'Krillin', 'Majin Buu', 'Master Roshi', 'Nappa', 'Piccolo', 'SS Goku', 'SS Vegeta', 'SS4 Gogeta', 'SSB Gogeta', 'SSB Goku', 'SSB Vegeta', 'SSB Vegito', 'Super Baby 2', 'Teen Gohan', 'Tien', 'Trunks', 'UI Goku', 'Vegeta', 'Videl', 'Yamcha'], notation_type: 'anime' },
+          { id: 'gbvsr', name: 'Granblue Fantasy Versus: Rising', characters: ['2B', 'Anila', 'Anre', 'Avatar Belial', 'Beatrix', 'Beelzebub', 'Belial', 'Cagliostro', 'Charlotta', 'Djeeta', 'Djeeta (EX)', 'Eustace', 'Ferry', 'Galleon', 'Gran', 'Gran (EX)', 'Grimnir', 'Ilsa', 'Katalina', 'Ladiva', 'Lancelot', 'Lowain', 'Lucilius', 'Meg', 'Metera', 'Narmaya', 'Narmaya (EX)', 'Nier', 'Percival', 'Sandalphon', 'Seox', 'Siegfried', 'Soriz', 'Vane', 'Vaseraga', 'Versusia', 'Vikala', 'Vira', 'Wilnas', 'Yuel', 'Zeta', 'Zooey'], notation_type: 'anime' },
+          { id: 'dnfd', name: 'DNF Duel', characters: ['Battle Mage', 'Berserker', 'Brawler', 'Crusader', 'Dragon Knight', 'Enchantress', 'Ghostblade', 'Grappler', 'Hitman', 'Inquisitor', 'Kunoichi', 'Launcher', 'Lost Warrior', 'Monk', 'Nen Master', 'Ranger', 'Spectre', 'Striker', 'Swift Master', 'Troubleshooter', 'Vanguard'], notation_type: 'anime' },
+          { id: 'ssbu', name: 'Super Smash Bros. Ultimate', characters: ['Mario', 'Donkey Kong', 'Link', 'Samus', 'Dark Samus', 'Yoshi', 'Kirby', 'Fox', 'Pikachu', 'Luigi', 'Ness', 'Captain Falcon', 'Jigglypuff', 'Peach', 'Daisy', 'Bowser', 'Ice Climancers', 'Sheik', 'Zelda', 'Dr. Mario', 'Pichu', 'Falco', 'Marth', 'Lucina', 'Young Link', 'Ganondorf', 'Mewtwo', 'Roy', 'Chrom', 'Mr. Game & Watch', 'Meta Knight', 'Pit', 'Dark Pit', 'Zero Suit Samus', 'Wario', 'Snake', 'Ike', 'Squirtle', 'Ivysaur', 'Charizard', 'Diddy Kong', 'Lucas', 'Sonic', 'King Dedede', 'Olimar', 'Lucario', 'R.O.B.', 'Toon Link', 'Wolf', 'Villager', 'Mega Man', 'Wii Fit Trainer', 'Rosalina & Luma', 'Little Mac', 'Greninja', 'Palutena', 'Pac-Man', 'Robin', 'Shulk', 'Bowser Jr.', 'Duck Hunt', 'Ryu', 'Ken', 'Cloud', 'Corrin', 'Bayonetta', 'Inkling', 'Ridley', 'Simon', 'Richter', 'King K. Rool', 'Isabelle', 'Incineroar', 'Piranha Plant', 'Joker', 'Hero', 'Banjo & Kazooie', 'Terry', 'Byleth', 'Min Min', 'Steve', 'Sephiroth', 'Pyra', 'Mythra', 'Kazuya', 'Sora', 'Mii Brawler', 'Mii Swordfighter', 'Mii Gunner'], notation_type: 'smash' }
+        ];
+
+        export const supabase = {
+          auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+          },
+          from: (table) => {
+            const builder = {
+              select: () => builder,
+              order: () => builder,
+              eq: () => builder,
+              single: () => builder,
+              insert: () => builder,
+              update: () => builder,
+              upsert: () => builder,
+              then: (resolve) => {
+                let data = [];
+                if (table === 'games') {
+                  data = MOCKED_GAMES;
+                } else if (table === 'users') {
+                  data = [];
+                }
+                resolve({ data, error: null, count: Array.isArray(data) ? data.length : 1 });
+              }
+            };
+            return builder;
+          }
+        };
+        export default supabase;
+      `
+    });
+  });
+}
+
 test.describe('HitConfirm Strategy Hub E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
+    // Inject mock Supabase
+    await injectMockSupabase(page);
+
     // Log console errors to standard error
     page.on('console', msg => {
       if (msg.type() === 'error') {
         console.error(`PAGE CONSOLE ERROR: ${msg.text()}`);
       }
     });
+
+    // Mock image requests to prevent external CDN/wiki calls
+    await page.route('**/*', function (route) {
+      const request = route.request();
+      if (request.resourceType() === 'image' && /(fandom|ultimateframedata|dustloop|wavu|streetfighter|tekken|ssbwiki)/.test(request.url())) {
+        route.fulfill({
+          status: 200,
+          contentType: 'image/svg+xml',
+          body: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>'
+        });
+      } else {
+        route.continue();
+      }
+    });
+
     // Go to home page
     await page.goto('/');
   });

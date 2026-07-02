@@ -9,6 +9,14 @@ import { resolvePortraitUrl, resolveFileUrls, PLACEHOLDER_SVG, constructCdnUrl, 
 import { hideGameSidebar } from '../components/game-sidebar.js';
 import { slugifyCharacterName } from '../utils/slugifier.js';
 
+/**
+ * Renders the character-specific frame data sheet page, listing all moves, commands, startup/active/recovery values,
+ * and supporting search, sorting, move detail expansion, and tabbed grouping.
+ * @param {function} navigateCallback - SPA router callback function.
+ * @param {Object} options - Navigation configuration options.
+ * @param {string} options.gameId - The ID of the active game context.
+ * @param {string} options.charName - The canonical or slugified name of the character.
+ */
 export function renderCharacterPage(navigateCallback, options = {}) {
   const { gameId, charName: incomingCharName } = options;
   const mount = document.getElementById('content-mount');
@@ -371,10 +379,11 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (!container) return;
 
     // Filter rows belonging to this character first
-    const characterRows = rawRows.filter(r => 
-      (r.chara || r.Character || r.character || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === 
-      charName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
-    ).map(r => {
+    const characterRows = rawRows.filter(function (r) {
+      const charField = r.chara || r.Character || r.character || '';
+      return charField.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === 
+             charName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    }).map(function (r) {
       const rowCopy = { ...r };
       const charLower = charName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       if (gameId === 'ggst' && charLower === 'aba') {
@@ -385,7 +394,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         }
       }
       return rowCopy;
-    }).filter(r => {
+    }).filter(function (r) {
       // Remove dash cancels and counter blitz entries (universal mechanics without character-specific data)
       const nameLower = String(r.name || '').toLowerCase();
       if (/\bdash cancel\b/i.test(nameLower)) return false;
@@ -395,12 +404,19 @@ export function renderCharacterPage(navigateCallback, options = {}) {
 
     // Calculate move categories counts
     const allCount = characterRows.length;
-    const normalsCount = characterRows.filter(r => determineCategory(r) === 'normals').length;
-    const specialsCount = characterRows.filter(r => determineCategory(r) === 'specials').length;
-    const supersCount = characterRows.filter(r => determineCategory(r) === 'supers').length;
-    const grabsCount = characterRows.filter(r => determineCategory(r) === 'grabs').length;
-    const stateCount = characterRows.filter(r => determineCategory(r) === 'state').length;
-    const universalCount = characterRows.filter(r => determineCategory(r) === 'universal').length;
+    const segments = {
+      "normals":0,
+      "specials":0,
+      "supers":0,
+      "grabs":0,
+      "state":0,
+      "universal":0
+    };
+
+    for (let i = 0; i < characterRows.length; i++) {
+      const category = determineCategory(characterRows[i]);
+      segments[category] = segments[category] + 1;
+    }
 
     container.innerHTML = `
       <div class="table-controls flex justify-between items-center flex-wrap gap-4">
@@ -418,27 +434,27 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             </button>
             <button class="move-category-tab ${activeCategory === 'normals' ? 'active' : ''}" data-category="normals">
               <span class="category-indicator indicator-normals"></span>
-              Normals <span class="category-count">${normalsCount}</span>
+              Normals <span class="category-count">${segments.normals}</span>
             </button>
             <button class="move-category-tab ${activeCategory === 'specials' ? 'active' : ''}" data-category="specials">
               <span class="category-indicator indicator-specials"></span>
-              Specials <span class="category-count">${specialsCount}</span>
+              Specials <span class="category-count">${segments.specials}</span>
             </button>
             <button class="move-category-tab ${activeCategory === 'supers' ? 'active' : ''}" data-category="supers">
               <span class="category-indicator indicator-supers"></span>
-              Supers <span class="category-count">${supersCount}</span>
+              Supers <span class="category-count">${segments.supers}</span>
             </button>
             ${grabsCount > 0 ? `<button class="move-category-tab ${activeCategory === 'grabs' ? 'active' : ''}" data-category="grabs">
               <span class="category-indicator indicator-grabs"></span>
-              Grabs <span class="category-count">${grabsCount}</span>
+              Grabs <span class="category-count">${segments.grabs}</span>
             </button>` : ''}
             ${stateCount > 0 ? `<button class="move-category-tab ${activeCategory === 'state' ? 'active' : ''}" data-category="state">
               <span class="category-indicator indicator-state"></span>
-              State <span class="category-count">${stateCount}</span>
+              State <span class="category-count">${segments.state}</span>
             </button>` : ''}
             ${universalCount > 0 ? `<button class="move-category-tab ${activeCategory === 'universal' ? 'active' : ''}" data-category="universal">
               <span class="category-indicator indicator-universal"></span>
-              Universal <span class="category-count">${universalCount}</span>
+              Universal <span class="category-count">${segments.universal}</span>
             </button>` : ''}
           </div>
         </div>
@@ -508,14 +524,18 @@ export function renderCharacterPage(navigateCallback, options = {}) {
     if (!tableEl) return;
 
     // Helper to identify the parent move
-    const findParentMove = (row, allMoves) => {
+    function findParentMove(row, allMoves) {
       const name = String(row.name || '').trim();
       const input = String(row.input || '').trim();
-      const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      function norm(s) {
+        return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      }
 
       // 1. Search for sequential/state keywords in any field of the move (input, name, startup, recovery)
       const fieldsToSearch = ['input', 'name', 'startup', 'recovery'];
-      const parentCandidates = allMoves.filter(m => m !== row && (m.name || m.input));
+      const parentCandidates = allMoves.filter(function (m) {
+        return m !== row && (m.name || m.input);
+      });
 
       for (const field of fieldsToSearch) {
         const val = String(row[field] || '');
@@ -528,7 +548,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
           const normPhrase = norm(phrase);
           if (normPhrase) {
             // A. Try exact match first
-            let parent = parentCandidates.find(m => {
+            let parent = parentCandidates.find(function (m) {
               const normName = norm(m.name);
               const normInput = norm(m.input);
               return (normName && normPhrase === normName) || (normInput && normPhrase === normInput);
@@ -536,7 +556,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             if (parent) return parent;
 
             // B. Try prefix match (length bounded to avoid false positives)
-            parent = parentCandidates.find(m => {
+            parent = parentCandidates.find(function (m) {
               const normName = norm(m.name);
               const normInput = norm(m.input);
               const matchName = normName && normName.length >= 3 && normPhrase.startsWith(normName);
@@ -546,7 +566,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
             if (parent) return parent;
 
             // C. Try substring match (length bounded)
-            parent = parentCandidates.find(m => {
+            parent = parentCandidates.find(function (m) {
               const normName = norm(m.name);
               const normInput = norm(m.input);
               const matchName = normName && normName.length >= 3 && normPhrase.includes(normName);
@@ -564,7 +584,9 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         // A. Try exact prefix match first if raw input has the delimiter
         if (input.includes(delim)) {
           const parentInputPrefix = input.split(delim)[0].trim();
-          let parent = allMoves.find(m => m !== row && String(m.input || '').trim() === parentInputPrefix);
+          let parent = allMoves.find(function (m) {
+            return m !== row && String(m.input || '').trim() === parentInputPrefix;
+          });
           if (parent) return parent;
         }
 
@@ -572,7 +594,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         const baseInput = getBaseInput(input);
         if (baseInput.includes(delim)) {
           const parentBaseInput = baseInput.split(delim)[0].trim();
-          let parent = allMoves.find(m => {
+          let parent = allMoves.find(function (m) {
             if (m === row) return false;
             const mBase = getBaseInput(m.input);
             return mBase === parentBaseInput;
@@ -581,7 +603,7 @@ export function renderCharacterPage(navigateCallback, options = {}) {
         }
       }
       return null;
-    };
+    }
 
     // 1. Group the moves first to identify parent-child relationships using the complete list of character moves
     filteredRows.forEach(row => {

@@ -497,6 +497,12 @@ function translateStepToEmoji(stepStr, gameId) {
   return parts.join(' ');
 }
 
+/**
+ * Translates combo notation step-by-step into clean unicode text emojis for copy-paste sharing.
+ * @param {string} notationStr - The raw text combo notation string.
+ * @param {string} gameId - The ID of the active game context.
+ * @returns {string} - Plain-text emoji representation of the input string.
+ */
 export function translateNotationToEmoji(notationStr, gameId) {
   if (!notationStr) return '';
 
@@ -729,16 +735,21 @@ if (typeof document !== 'undefined') {
 
 function renderJoystickSvg(animId, title = '') {
   // SVG path overlays for each motion type
-  const arc = (d, arrowD) => `
-    <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
-    <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-  `;
-  const corner = (d, arrowD) => `
-    <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
-    <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
-  `;
-  const chargeDot = (cx, cy, opacity = 0.25, strokeOp = 0.5) =>
-    `<circle cx="${cx}" cy="${cy}" r="4.5" fill="rgba(0, 132, 255, ${opacity})" stroke="rgba(0, 132, 255, ${strokeOp})" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+  function arc(d, arrowD) {
+    return `
+      <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" />
+      <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+  }
+  function corner(d, arrowD) {
+    return `
+      <path d="${d}" fill="none" stroke="rgba(255, 159, 10, 0.45)" stroke-width="2" stroke-dasharray="2,2" stroke-linejoin="round" />
+      <path d="${arrowD}" fill="none" stroke="rgba(255, 159, 10, 0.65)" stroke-width="1.5" stroke-linecap="round" />
+    `;
+  }
+  function chargeDot(cx, cy, opacity = 0.25, strokeOp = 0.5) {
+    return `<circle cx="${cx}" cy="${cy}" r="4.5" fill="rgba(0, 132, 255, ${opacity})" stroke="rgba(0, 132, 255, ${strokeOp})" stroke-width="1" class="joystick-charge-area-pulsate" />`;
+  }
 
   const MOTION_PATHS = {
     '236':   arc('M16 26 A 10 10 0 0 0 26 16', 'M24 13 L27 16 L24 19'),
@@ -1153,6 +1164,12 @@ function parseStrategyHubStep(stepStr, gameId) {
   return html;
 }
 
+/**
+ * Parses raw fighting game notations into compact visual elements optimized for the strategy hub.
+ * @param {string} notationString - The raw numpad/text combo notation string.
+ * @param {string} gameId - The ID of the active game context.
+ * @returns {string} - Rendered HTML block of input badges and arrows.
+ */
 export function parseStrategyHubNotationToHtml(notationString, gameId) {
   if (!notationString || !notationString.trim()) {
     return '<span class="text-muted">-</span>';

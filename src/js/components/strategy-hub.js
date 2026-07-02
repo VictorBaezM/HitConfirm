@@ -1,6 +1,13 @@
 import { renderCharacterCard } from './character-card.js';
 import store from '../store.js';
 
+/**
+ * Renders the interactive strategy hub dashboard inside the page content mount, supporting game-specific
+ * filtering, pagination, character searches, and loading progress bar.
+ * @param {function} navigate - SPA router callback function.
+ * @param {string} [initialGameFilter='ggst'] - Initial game ID filter.
+ * @returns {Object} - Strategy Hub controller object containing filter APIs.
+ */
 export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
   const mount = document.getElementById('strategy-hub-mount');
   if (!mount) return;
@@ -12,16 +19,17 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
   let activeGameFilter = initialGameFilter;
   let currentPage = 1;
   const itemsPerPage = 16;
+  let timeoutId = null;
 
   function draw() {
     // 1. Gather all matching characters
     const allMatching = [];
-    Object.values(games).forEach(game => {
+    Object.values(games).forEach(function (game) {
       if (activeGameFilter !== 'all' && activeGameFilter !== game.id) return;
-      const matching = (game.characters || []).filter(char => 
-        char.toLowerCase().includes(searchFilter.toLowerCase())
-      );
-      matching.forEach(char => {
+      const matching = (game.characters || []).filter(function (char) {
+        return char.toLowerCase().includes(searchFilter.toLowerCase());
+      });
+      matching.forEach(function (char) {
         allMatching.push({ gameId: game.id, charName: char });
       });
     });
@@ -38,7 +46,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
 
     // Group current page items by gameId
     const itemsByGame = {};
-    pageItems.forEach(item => {
+    pageItems.forEach(function (item) {
       if (!itemsByGame[item.gameId]) {
         itemsByGame[item.gameId] = [];
       }
@@ -120,17 +128,17 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
 
     // Inject character cards into the grids
     let totalVisible = 0;
-    Object.values(games).forEach(game => {
+    Object.values(games).forEach(function (game) {
       const grid = document.getElementById(`grid-${game.id}`);
       if (!grid) return;
 
       const sectionChars = itemsByGame[game.id] || [];
-      sectionChars.forEach(char => {
+      sectionChars.forEach(function (char) {
         totalVisible++;
         const card = renderCharacterCard({
           gameId: game.id,
           charName: char,
-          navigate
+          navigate: navigate
         });
         grid.appendChild(card);
       });
@@ -149,7 +157,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
     // Attach search event listener
     const searchInput = document.getElementById('hub-search');
     if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
+      searchInput.addEventListener('input', function (e) {
         searchFilter = e.target.value;
         currentPage = 1; // Reset to page 1 on search filter change
         draw();
@@ -165,7 +173,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
     const prevBtn = document.getElementById('btn-prev-page');
     const nextBtn = document.getElementById('btn-next-page');
     if (prevBtn) {
-      prevBtn.addEventListener('click', () => {
+      prevBtn.addEventListener('click', function () {
         if (currentPage > 1) {
           currentPage--;
           window.scrollTo(0, 0);
@@ -174,7 +182,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       });
     }
     if (nextBtn) {
-      nextBtn.addEventListener('click', () => {
+      nextBtn.addEventListener('click', function () {
         if (currentPage < totalPages) {
           currentPage++;
           window.scrollTo(0, 0);
@@ -198,7 +206,7 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       if (overlay && wrapper) {
         overlay.classList.add('fade-out');
         wrapper.classList.remove('loading');
-        setTimeout(() => {
+        setTimeout(function () {
           overlay.classList.add('hidden');
         }, 300);
       }
@@ -224,7 +232,11 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       }
     }
 
-    let timeoutId = setTimeout(() => {
+    // Clear any existing active safety timeout before setting a new one
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(function () {
       hideLoader();
     }, 15000); // 15-second safety timeout fallback
 
@@ -232,15 +244,15 @@ export function renderStrategyHub(navigate, initialGameFilter = 'ggst') {
       updateProgressBar();
       hideLoader();
     } else {
-      portraits.forEach(img => {
+      portraits.forEach(function (img) {
         if (img.complete) {
           loadedCount++;
         } else {
-          img.addEventListener('load', () => {
+          img.addEventListener('load', function () {
             loadedCount++;
             checkImagesLoaded();
           });
-          img.addEventListener('error', () => {
+          img.addEventListener('error', function () {
             loadedCount++;
             checkImagesLoaded();
           });

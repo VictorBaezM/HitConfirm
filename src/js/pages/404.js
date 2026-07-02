@@ -32,8 +32,8 @@ export function render404Page(navigateCallback) {
 
   const btn = document.getElementById('btn-404-home');
   if (btn) {
-    btn.addEventListener('click', () => {
-      navigateCallback('/feed');
+    btn.addEventListener('click', function () {
+      navigateCallback('feed');
     });
   }
 }

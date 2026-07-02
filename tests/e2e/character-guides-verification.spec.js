@@ -178,7 +178,8 @@ test.describe('Character Details Guides Tab Integration', () => {
     await expect(readerView).not.toBeVisible();
     
     // 9. Take a visual verification screenshot
-    const screenshotsDir = 'C:/Users/Omen/.gemini/antigravity/brain/39ffb453-30e3-41fc-a88d-b6453c643059/scratch';
+    const os = require('os');
+    const screenshotsDir = path.join(os.homedir(), '.gemini', 'antigravity', 'brain', 'c6a9b5c4-7b23-4696-9577-526face9a2f1');
     await page.screenshot({ path: path.join(screenshotsDir, 'character_guides_page.png') });
   });
 

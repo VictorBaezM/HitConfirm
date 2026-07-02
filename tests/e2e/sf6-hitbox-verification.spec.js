@@ -1,6 +1,70 @@
 const { test, expect } = require('@playwright/test');
 
+async function injectMockSupabase(page) {
+  // Mock the supabase JS module to prevent remote database dependencies
+  await page.route('**/src/js/supabase.js', route => {
+    route.fulfill({
+      contentType: 'text/javascript',
+      body: `
+        const MOCKED_GAMES = [
+          { id: 'sf6', name: 'Street Fighter 6', characters: ['A.K.I.', 'Akuma', 'Blanka', 'Cammy', 'Chun-Li', 'Dee Jay', 'Dhalsim', 'E. Honda', 'Ed', 'Elena', 'Guile', 'Jamie', 'JP', 'Juri', 'Ken', 'Kimberly', 'Lily', 'Luke', 'M. Bison', 'Mai', 'Marisa', 'Rashid', 'Ryu', 'Terry', 'Zangief'], notation_type: 'sf' },
+          { id: 't8', name: 'Tekken 8', characters: ['Alisa', 'Asuka', 'Azucena', 'Claudio', 'Devil Jin', 'Dragunov', 'Eddy', 'Feng', 'Heihachi', 'Hwoarang', 'Jack-8', 'Jin', 'Jun', 'Kazuya', 'King', 'Kuma', 'Lars', 'Law', 'Lee', 'Leo', 'Leroy', 'Lidia', 'Lili', 'Nina', 'Panda', 'Paul', 'Raven', 'Reina', 'Shaheen', 'Steve', 'Victor', 'Xiaoyu', 'Yoshimitsu', 'Zafina'], notation_type: 'tekken' },
+          { id: 'ggst', name: 'Guilty Gear -Strive-', characters: ['A.B.A', 'Anji Mito', 'Asuka R#', 'Axl Low', 'Baiken', 'Bedman?', 'Bridget', 'Chipp Zanuff', 'Elphelt Valentine', 'Faust', 'Giovanna', 'Goldlewis Dickinson', 'Happy Chaos', 'I-No', 'Jack-O', 'Jam Kuradoberi', 'Johnny', 'Ky Kiske', 'Leo Whitefang', 'Lucy', 'May', 'Millia Rage', 'Nagoriyuki', 'Potemkin', 'Queen Dizzy', 'Ramlethal Valentine', 'Sin Kiske', 'Slayer', 'Sol Badguy', 'Testament', 'Unika', 'Venom', 'Zato-1'], notation_type: 'gg' }
+        ];
+
+        export const supabase = {
+          auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+          },
+          from: (table) => {
+            const builder = {
+              select: () => builder,
+              order: () => builder,
+              eq: () => builder,
+              single: () => builder,
+              insert: () => builder,
+              update: () => builder,
+              upsert: () => builder,
+              then: (resolve) => {
+                let data = [];
+                if (table === 'games') {
+                  data = MOCKED_GAMES;
+                } else if (table === 'users') {
+                  data = [];
+                }
+                resolve({ data, error: null, count: Array.isArray(data) ? data.length : 1 });
+              }
+            };
+            return builder;
+          }
+        };
+        export default supabase;
+      `
+    });
+  });
+}
+
 test.describe('Street Fighter 6 Hitbox E2E Verification', () => {
+  test.beforeEach(async ({ page }) => {
+    // Inject mock Supabase
+    await injectMockSupabase(page);
+
+    // Mock image requests to prevent external CDN/wiki calls
+    await page.route('**/*', function (route) {
+      const request = route.request();
+      if (request.resourceType() === 'image' && /(fandom|ultimateframedata|dustloop|wavu|streetfighter|tekken|ssbwiki)/.test(request.url())) {
+        route.fulfill({
+          status: 200,
+          contentType: 'image/svg+xml',
+          body: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>'
+        });
+      } else {
+        route.continue();
+      }
+    });
+  });
+
   test('should load ultimateframedata.com hitbox GIFs for Ryu', async ({ page }) => {
     // Go to home page
     await page.goto('/');
