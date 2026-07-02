@@ -444,15 +444,15 @@ export function renderCharacterPage(navigateCallback, options = {}) {
               <span class="category-indicator indicator-supers"></span>
               Supers <span class="category-count">${segments.supers}</span>
             </button>
-            ${grabsCount > 0 ? `<button class="move-category-tab ${activeCategory === 'grabs' ? 'active' : ''}" data-category="grabs">
+            ${segments.grabs > 0 ? `<button class="move-category-tab ${activeCategory === 'grabs' ? 'active' : ''}" data-category="grabs">
               <span class="category-indicator indicator-grabs"></span>
               Grabs <span class="category-count">${segments.grabs}</span>
             </button>` : ''}
-            ${stateCount > 0 ? `<button class="move-category-tab ${activeCategory === 'state' ? 'active' : ''}" data-category="state">
+            ${segments.state > 0 ? `<button class="move-category-tab ${activeCategory === 'state' ? 'active' : ''}" data-category="state">
               <span class="category-indicator indicator-state"></span>
               State <span class="category-count">${segments.state}</span>
             </button>` : ''}
-            ${universalCount > 0 ? `<button class="move-category-tab ${activeCategory === 'universal' ? 'active' : ''}" data-category="universal">
+            ${segments.universal > 0 ? `<button class="move-category-tab ${activeCategory === 'universal' ? 'active' : ''}" data-category="universal">
               <span class="category-indicator indicator-universal"></span>
               Universal <span class="category-count">${segments.universal}</span>
             </button>` : ''}

@@ -1411,24 +1411,21 @@ class Store {
     if (cached) return cached;
 
     try {
-      const { data, error } = await supabase
-        .from('dustloop_cache')
-        .select('data')
-        .eq('game_id', gameId)
-        .single();
-
-      if (error) throw error;
-      if (data && data.data) {
-        if (!data.data._unsupported) {
-          cache.set(`dustloop_${gameId}`, data.data);
-          return data.data;
+      const res = await fetch(`/api/dustloop?gameId=${encodeURIComponent(gameId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && !data._unsupported) {
+          cache.set(`dustloop_${gameId}`, data);
+          return data;
         }
+      } else {
+        throw new Error(`API returned status ${res.status}`);
       }
     } catch (e) {
-      console.warn(`Supabase fetch failed for ${gameId}:`, e);
+      console.warn(`API fetch failed for ${gameId}, trying local fallbacks:`, e);
     }
 
-    // Try client-side direct Cargo API fallback for sf6 and local JSON fallback for t8
+    // Try client-side local JSON fallback for sf6 and t8
     try {
       let wikiData = null;
       if (gameId === 'sf6') {
@@ -1451,7 +1448,7 @@ class Store {
         return wikiData;
       }
     } catch (wikiErr) {
-      console.warn(`Direct Wiki Cargo / local JSON fallback failed for ${gameId}:`, wikiErr);
+      console.warn(`Local JSON fallback failed for ${gameId}:`, wikiErr);
     }
 
     // Retrieve stale cache as last resort

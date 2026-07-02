@@ -2,7 +2,6 @@
  * Game News Fetcher Utility
  * Fetches verified recent news and updates for official games.
  */
-import { supabase } from '../supabase.js';
 
 // Static/offline fallback news payload
 const STATIC_FALLBACK_NEWS = [
@@ -52,68 +51,30 @@ const STATIC_FALLBACK_NEWS = [
 
 /**
  * Fetches recent news updates for supported games.
- * Fetches locally from game_news.json first (instant load),
- * then fetches the remote game_news table from Supabase.
+ * Fetches from the Vercel Serverless API `/api/news` which is Edge CDN cached.
+ * Falls back to static news in-memory if the API fails.
  * @param {Array<string>} supportedGameIds - Array of active game IDs to fetch.
  * @returns {Promise<Array<Object>>} List of news entries for supported games.
  */
 export async function fetchGameNews(supportedGameIds) {
-  const activeIds = supportedGameIds.filter(id => id !== 'dbfzce');
-  
-  // 1. Try to load from local game_news.json for instant load
-  let cachedNews = [];
+  const activeIds = supportedGameIds.filter(function (id) {
+    return id !== 'dbfzce';
+  });
+
   try {
-    const response = await fetch('/src/data/game_news.json');
+    const response = await fetch('/api/news');
     if (response.ok) {
       const data = await response.json();
-      cachedNews = data.map(item => ({
-        gameId: item.game_id,
-        title: item.title,
-        date: item.date,
-        url: item.url
-      }));
+      return data.filter(function (item) {
+        return activeIds.includes(item.gameId);
+      });
     }
   } catch (err) {
-    // Ignore error and use static fallbacks
+    console.warn('[News Fetcher] Failed to load news from API, using static fallback:', err.message);
   }
 
-  if (cachedNews.length === 0) {
-    cachedNews = STATIC_FALLBACK_NEWS;
-  }
-
-  const filteredCached = cachedNews.filter(item => activeIds.includes(item.gameId));
-
-  // 2. Fetch the latest live news from the Supabase game_news table
-  const dbPromise = (async () => {
-    const { data, error } = await supabase
-      .from('game_news')
-      .select('*')
-      .order('id', { ascending: true });
-    
-    if (error || !data || data.length === 0) {
-      throw new Error(error?.message || 'Empty data');
-    }
-    
-    return data
-      .map(item => ({
-        gameId: item.game_id,
-        title: item.title,
-        date: item.date,
-        url: item.url
-      }))
-      .filter(item => activeIds.includes(item.gameId));
-  })();
-
-  // Race the database request against a 1.2-second timeout
-  const timeoutPromise = new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Timeout')), 1200)
-  );
-
-  try {
-    const freshNews = await Promise.race([dbPromise, timeoutPromise]);
-    return freshNews;
-  } catch (err) {
-    console.log('[News Fetcher] Loading fallback news (DB slow or offline):', err.message);
-    return filteredCached;
-  }
+  // Fallback to static news if API call fails
+  return STATIC_FALLBACK_NEWS.filter(function (item) {
+    return activeIds.includes(item.gameId);
+  });
 }
